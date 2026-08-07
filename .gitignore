@@ -1,0 +1,10 @@
+.DS_Store
+.env.local
+DerivedData/
+.build/
+node_modules/
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+ui-debug.log*
+server/.secret.local
