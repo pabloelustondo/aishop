@@ -1,5 +1,7 @@
 # Sprint Registry
 
+HumanReviewerInitials:PME
+
 Register each sprint in its own subfolder. A suggested sprint package contains:
 
 1. approved sprint plan;

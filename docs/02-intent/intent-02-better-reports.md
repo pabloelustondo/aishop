@@ -1,5 +1,7 @@
 # Intent 02 — Better Product Reports
 
+HumanReviewerInitials:PME
+
 ## Intent
 
 After analyzing a product, AI Shop should present the result in a clear, dedicated report instead of fitting the complete answer into the camera header.

@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Shop Review</title>
+  <link rel="stylesheet" href="/styles/base.css">
+  <link rel="stylesheet" href="/styles/layout.css">
+  <link rel="stylesheet" href="/styles/components.css">
+</head>
+<body>
+  <header><div><p class="eyebrow">AI SHOP · PRIVATE</p><h1>Shelf inspection review</h1></div><button id="sign-out" hidden>Sign out</button></header>
+  <section id="signed-out" class="auth-card">
+    <p class="eyebrow">AUTHORIZED REVIEWERS</p><h2>Review evidence with confidence.</h2>
+    <p>Sign in to compare each original image with its immutable AI findings.</p>
+    <button id="sign-in" class="primary">Sign in with Google</button>
+  </section>
+  <main id="dashboard" hidden>
+    <aside>
+      <div class="aside-title"><h2>Inspections</h2><button id="refresh" aria-label="Refresh inspections">Refresh</button></div>
+      <h3>Pending</h3><div id="pending-list" class="scan-list"></div>
+      <h3>Recent</h3><div id="recent-list" class="scan-list"></div>
+    </aside>
+    <article id="detail">
+      <div id="empty-state"><p class="eyebrow">REVIEW QUEUE</p><h2>Select an inspection</h2><p>The original evidence and AI findings will stay side by side.</p></div>
+      <div id="inspection" hidden>
+        <div class="detail-heading"><div><p id="status" class="status"></p><h2 id="scan-title"></h2></div><p id="metadata"></p></div>
+        <div class="evidence-grid"><figure><img id="evidence-image" alt="Original shelf inspection"><figcaption><a id="original-link" download="original.jpg">Open original image</a></figcaption></figure>
+          <section><h3>Initial AI findings</h3><pre id="findings"></pre></section></div>
+        <section><h3>Review history</h3><div id="review-history"></div></section>
+        <form id="review-form"><fieldset><legend>Disposition</legend>
+          <label><input type="radio" name="disposition" value="verified" required> Verified</label>
+          <label><input type="radio" name="disposition" value="corrected"> Corrected</label>
+          <label><input type="radio" name="disposition" value="rejected"> Rejected</label>
+        </fieldset><label for="notes">Notes</label><textarea id="notes" maxlength="2000" rows="4"></textarea><button class="primary">Record review</button></form>
+      </div>
+    </article>
+  </main>
+  <p id="message" role="status" aria-live="polite"></p>
+  <script src="/__/firebase/8.10.1/firebase-app.js"></script><script src="/__/firebase/8.10.1/firebase-auth.js"></script><script src="/__/firebase/init.js"></script>
+  <script type="module" src="/scripts/app.js"></script>
+</body>
+</html>

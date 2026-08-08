@@ -1,45 +1,49 @@
 # AI Shop Agent Rules
 
-These rules apply throughout this repository.
+HumanReviewerInitials: PME
 
-## Human-validated artifacts
+These rules are mandatory throughout this repository.
 
-- A filename ending in `-ha` immediately before its extension means that a human validated the exact current contents.
-- Only Pablo's explicit instruction to mark an artifact as human validated authorizes adding `-ha`.
-- Never infer human validation from praise, acceptance, silence, or completed work.
-- Do not modify a human-validated artifact directly.
-- Before changing one, remove `-ha` from its filename and tell Pablo that its validation has been removed.
-- After making changes, leave the artifact without `-ha`. Only a new explicit human validation can restore it.
-- Human validation applies only to the artifact's contents. It does not authorize implementation, deployment, publication, or release.
-- Files named `README.md` or `AGENTS.md` are excluded from this naming rule and retain their conventional names.
-- Changes to `AGENTS.md` still require Pablo's explicit instruction.
+## Mandatory governance
 
-## Coding gate
+- Before changing documentation, plans, code, tests, or releases, read [SDLC2-Governance](docs/00-sdlc2-governance/README.md).
+- Follow its document-review rules before editing root-level Markdown or any Markdown file under `docs/`.
+- Follow its workflow rules before planning, implementing, reviewing, or releasing work.
+- Changes to `AGENTS.md` require Pablo's explicit instruction.
 
-- Do not create or modify executable code unless the active sprint has at least one human-validated sprint plan whose filename ends in `-ha`.
-- Every additional planning document that defines the authorized implementation scope must also be human validated before coding starts.
-- If an approved plan still says implementation is not authorized, require Pablo's separate explicit authorization to begin.
-- Plan approval authorizes only its defined implementation scope; it does not prove testing, review, release, or deployment.
+## File size
 
-## Autonomous execution
+- Every human-authored text file, including `AGENTS.md`, source code, and Markdown, must contain at most 50 physical lines.
+- Split content into focused files; never compress it into dense or unreadable lines.
+- Existing violations must be split before the file is otherwise modified.
+- Binary assets, generated files, lockfiles, Xcode-generated metadata, and third-party files are exempt.
+- Verify line counts before treating work as complete.
 
-- Once Pablo authorizes an approved sprint or step, independently complete its in-scope implementation and local validation.
-- Local builds, automated tests, and simulator boot, install, launch, and screenshots are included without separate confirmation.
-- Proceed without asking for routine, reversible actions or intermediate implementation choices.
-- Ask only when a decision changes approved scope or risks production, external data, secrets, money, or irreversible damage.
-- For required sandbox access, request the broadest safe reusable permission once instead of repeating equivalent prompts.
+## Human review
 
-## Communication and Git
+- Every root-level Markdown file and every Markdown file under `docs/` must contain the standard `HumanReviewerInitials:` field.
+- Only a human may enter initials registered in the root `README.md`; a blank field means unapproved.
+- A changed governed Markdown file is approved only when it has registered initials and its exact reviewed contents are staged in Git.
+- Any unapproved or partially staged governed Markdown file found staged must be unstaged immediately.
+- Before any agent edit, unstage the file and clear its reviewer initials; even a one-character edit invalidates approval.
+- Never request approval for a proposed revision until its exact content exists unstaged with blank initials and the provided link opens that revision.
+- Never present an unchanged approved document as pending approval; identify the missing revision and create it first when authorized.
+- The agent leaves governed Markdown deletions unstaged; only a human approves a deletion by staging it during final Git review.
+- If any governed Markdown file is not human-approved, executable code changes and Git commits are blocked.
+- Never infer approval from praise, silence, or unrelated acceptance.
 
-- Report meaningful completed milestones, material findings, or blockers requiring input; do not narrate routine commands.
-- Treat local Git branches, commits, and reverts as normal recovery tools; branch mistakes are recoverable and not approval events.
+## Execution
+
+- No sprint coding may start until every governed Markdown file is human-approved and every changed governed Markdown file is fully staged.
+- Every sprint requires an approved Sprint Plan followed by a separate approved Sprint Plan Tasks document before coding begins.
+- Each implementation task names exactly one approved component and modifies only that component; split multi-component work into ordered tasks.
+- Once Pablo authorizes a sprint or step, complete its in-scope implementation and local validation autonomously.
+- Routine reversible work, builds, tests, and simulator checks need no intermediate permission.
+- Ask before changing scope or risking production, external data, secrets, money, security, or irreversible damage.
+- Planning, implementation, tests, review, commit, merge, deployment, and release are distinct states.
+
+## Git and external systems
+
 - Never force-push, rewrite shared history, or delete shared branches without Pablo's explicit authorization.
-
-## Document size
-
-- Keep each textual project document at or below 50 physical lines, including blank lines.
-- Prefer one focused, readable purpose per document.
-- When more space is needed, split the material into small, clearly named fragments instead of growing one large document.
-- Do not compress content into dense or unreadable lines merely to satisfy the limit.
-- Check the line count before treating document work as complete.
-- If an existing document exceeds 50 lines, do not expand it. Split or simplify it as part of the next authorized change to that document.
+- Existing Firebase POC resources may be read, tested, updated, and deployed; ask before billing, deletion, destructive data, IAM, security, or secret changes.
+- Google Workspace may be read and summarized; ask before writing, deleting, sharing, or sending.

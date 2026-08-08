@@ -1,5 +1,7 @@
 # Step 06: Solution Design and Architecture
 
+HumanReviewerInitials: PME
+
 Record the solution structure, interaction design, component responsibilities, technology choices, trust boundaries, trade-offs, and rationale.
 
 ## Supporting folders

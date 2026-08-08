@@ -1,5 +1,6 @@
 import { defineSecret } from "firebase-functions/params";
 import { onRequest } from "firebase-functions/v2/https";
+import { createFirebaseInspectionHandler } from "./firebase-inspection-handler.js";
 import { createRequestHandler } from "./http-server.js";
 import { createOpenAIAnalyzer } from "./openai-analyzer.js";
 
@@ -15,12 +16,18 @@ export const api = onRequest({
   concurrency: 1,
   invoker: "public"
 }, async (request, response) => {
-  const handleRequest = createRequestHandler({
-    analyzeProduct: createOpenAIAnalyzer({
-      apiKey: openAIAPIKey.value(),
+  const apiKey = openAIAPIKey.value();
+  const clientToken = aiShopClientToken.value();
+  if (request.url.startsWith("/inspections")) {
+    await createFirebaseInspectionHandler({
+      apiKey,
+      clientToken,
       model: process.env.OPENAI_MODEL
-    }),
-    clientToken: aiShopClientToken.value()
-  });
-  await handleRequest(request, response);
+    })(request, response);
+    return;
+  }
+  await createRequestHandler({
+    analyzeProduct: createOpenAIAnalyzer({ apiKey, model: process.env.OPENAI_MODEL }),
+    clientToken
+  })(request, response);
 });

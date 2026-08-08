@@ -9,11 +9,8 @@ extension CameraController: AVCapturePhotoCaptureDelegate {
         let result: Result<Data, Error>
         if let error {
             result = .failure(error)
-        } else if
-            let original = photo.fileDataRepresentation(),
-            let jpeg = ImageProcessor.uploadJPEG(from: original)
-        {
-            result = .success(jpeg)
+        } else if let originalJPEG = photo.fileDataRepresentation() {
+            result = .success(originalJPEG)
         } else {
             result = .failure(CameraError.capture)
         }

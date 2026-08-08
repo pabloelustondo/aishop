@@ -1,5 +1,7 @@
 # AI Shop — Project Intent
 
+HumanReviewerInitials:PME
+
 AI Shop helps people shop wisely across different supermarkets.
 
 The prototypical user is Pablo. He has four nearby supermarkets, and no single store is best for every product. Prices, quality, and product availability vary between them. Because he usually shops on foot and cannot visit every store on every trip, deciding what to buy—and where—can be confusing.

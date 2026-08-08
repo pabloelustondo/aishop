@@ -1,5 +1,7 @@
 # Benchmark 02 — Human Product Identification
 
+HumanReviewerInitials:PME
+
 ## Benchmark
 
 Without AI Shop, Pablo identifies all the products in front of him by looking at them himself.

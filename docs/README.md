@@ -1,6 +1,10 @@
 # AI Shop — SDLC2 Documentation
 
-This repository is a documentation-only skeleton for managing AI Shop through the twelve-step SDLC2 lifecycle. Each folder owns a distinct class of decisions and evidence.
+HumanReviewerInitials: PME
+
+This documentation manages AI Shop through the twelve-step SDLC2 lifecycle. Each folder owns a distinct class of decisions and evidence.
+
+Read [SDLC2-Governance](00-sdlc2-governance/README.md) before changing documentation, planning, implementation, review, or release work.
 
 ## Lifecycle
 

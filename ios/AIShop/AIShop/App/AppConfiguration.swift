@@ -7,12 +7,17 @@ enum AppConfiguration {
                 serverURL: bundle.object(forInfoDictionaryKey: "AIShopServerBaseURL") as? String,
                 clientToken: bundle.object(forInfoDictionaryKey: "AIShopClientToken") as? String
             )
-            return APIClient(baseURL: values.baseURL, clientToken: values.clientToken)
+            let version = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+            let build = bundle.infoDictionary?["CFBundleVersion"] as? String ?? "unknown"
+            return InspectionAPIClient(
+                baseURL: values.baseURL,
+                clientToken: values.clientToken,
+                appVersion: "\(version) (\(build))"
+            )
         } catch {
             return UnavailableAnalysisAPI(message: error.localizedDescription)
         }
     }
-
     static func validate(serverURL: String?, clientToken: String?) throws -> ClientConfiguration {
         let rawURL = serverURL?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let placeholderURL = rawURL.lowercased()
