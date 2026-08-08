@@ -1,6 +1,7 @@
 import SwiftUI
 
 struct BottomControls: View {
+    let mode: ScanMode
     let phase: AnalysisPhase
     let canCapture: Bool
     let canRetry: Bool
@@ -30,8 +31,12 @@ struct BottomControls: View {
         if phase.isAnalyzing {
             ProgressView().tint(.white)
         } else {
-            Image(systemName: "viewfinder")
-                .foregroundStyle(ShopStyle.green).font(.title2)
+            VStack(spacing: 3) {
+                Image(systemName: mode == .targetProduct ? "scope" : "square.grid.2x2")
+                    .font(.title3)
+                Text("\(mode.shortTitle) MODE").font(.caption2.bold())
+            }
+            .foregroundStyle(ShopStyle.green)
         }
     }
 

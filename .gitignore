@@ -8,3 +8,8 @@ firebase-debug.log*
 firestore-debug.log*
 ui-debug.log*
 server/.secret.local
+ios/AIShop/AIShop/Support/Local.xcconfig
+.codex/
+**/xcuserdata/
+**/*.xcuserstate
+ios/AIShop/AIShop.xcodeproj/project.xcworkspace/

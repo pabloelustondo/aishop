@@ -11,6 +11,24 @@ const tinyJpegBase64 = readFileSync(
 ).replace(/\s+/g, "");
 
 const validBody = { imageBase64: tinyJpegBase64, mediaType: "image/jpeg" };
+const targetReport = {
+  productName: "Tomatoes",
+  summary: "These are red tomatoes.",
+  visibleEvidence: ["Red color"],
+  missingInformation: ["Price"],
+  conclusion: "insufficient_evidence",
+  conclusionReason: "The price is not visible.",
+  confidence: "medium"
+};
+const areaReport = {
+  summary: "One product is visible.",
+  identifiedProducts: [{
+    name: "Tomatoes",
+    visibleEvidence: ["Red produce"],
+    confidence: "medium"
+  }],
+  uncertainItems: []
+};
 const silentLogger = { error() {} };
 const clientToken = "test-client-token";
 
@@ -48,7 +66,7 @@ test("runs the complete route with a mocked OpenAI request", async (t) => {
   const fetchImpl = async () => new Response(JSON.stringify({
     output: [{
       type: "message",
-      content: [{ type: "output_text", text: "These are red tomatoes." }]
+      content: [{ type: "output_text", text: JSON.stringify(targetReport) }]
     }]
   }), { status: 200, headers: { "Content-Type": "application/json" } });
   const analyzeProduct = createOpenAIAnalyzer({ apiKey: "test-api-key", fetchImpl });
@@ -60,12 +78,46 @@ test("runs the complete route with a mocked OpenAI request", async (t) => {
   assert.equal(response.headers.get("cache-control"), "no-store");
 });
 
+test("returns separate structured responses for both scan modes", async (t) => {
+  const receivedModes = [];
+  const url = await startServer(t, {
+    analyzeProduct: async ({ mode }) => {
+      receivedModes.push(mode);
+      return mode === "targetProduct" ? targetReport : areaReport;
+    }
+  });
+
+  const targetResponse = await postJson(url, { ...validBody, mode: "targetProduct" });
+  assert.equal(targetResponse.status, 200);
+  assert.deepEqual(await targetResponse.json(), { mode: "targetProduct", report: targetReport });
+
+  const areaResponse = await postJson(url, { ...validBody, mode: "areaScan" });
+  assert.equal(areaResponse.status, 200);
+  assert.deepEqual(await areaResponse.json(), { mode: "areaScan", report: areaReport });
+  assert.deepEqual(receivedModes, ["targetProduct", "areaScan"]);
+});
+
+test("rejects an unsupported scan mode before analysis", async (t) => {
+  let calls = 0;
+  const url = await startServer(t, {
+    analyzeProduct: async () => {
+      calls += 1;
+      return targetReport;
+    }
+  });
+  const response = await postJson(url, { ...validBody, mode: "unknown" });
+
+  assert.equal(response.status, 400);
+  assert.deepEqual(await response.json(), { error: ERROR_MESSAGES.invalidRequest });
+  assert.equal(calls, 0);
+});
+
 test("accepts Firebase's pre-parsed JSON body without reading the stream", async () => {
   let receivedImage;
   const handleRequest = createRequestHandler({
     analyzeProduct: async (image) => {
       receivedImage = image;
-      return "These are red tomatoes.";
+      return targetReport;
     },
     clientToken
   });
@@ -95,7 +147,7 @@ test("accepts Firebase's pre-parsed JSON body without reading the stream", async
   await handleRequest(request, response);
   assert.equal(result.status, 200);
   assert.deepEqual(result.body, { message: "These are red tomatoes." });
-  assert.deepEqual(receivedImage, validBody);
+  assert.deepEqual(receivedImage, { ...validBody, mode: "targetProduct" });
 });
 
 test("enforces the size limit on Firebase's raw body", async () => {

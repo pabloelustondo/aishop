@@ -39,7 +39,7 @@ struct ClientConfiguration {
 private struct UnavailableAnalysisAPI: AnalyzeProductAPI {
     let message: String
 
-    func analyze(jpegData: Data) async throws -> String {
+    func analyze(jpegData: Data, mode: ScanMode) async throws -> AnalysisReportResponse {
         throw APIError.configuration(message)
     }
 }

@@ -3,13 +3,16 @@ import Foundation
 @MainActor
 final class AnalysisViewModel: ObservableObject {
     @Published private(set) var phase: AnalysisPhase = .idle
+    @Published private(set) var report: AnalysisReportResponse?
     private let api: AnalyzeProductAPI
+    private let mode: ScanMode
     private var lastJPEG: Data?
     private var requestGeneration = 0
 
     var canRetry: Bool { lastJPEG != nil }
 
-    init(api: AnalyzeProductAPI) {
+    init(mode: ScanMode, api: AnalyzeProductAPI) {
+        self.mode = mode
         self.api = api
     }
 
@@ -19,9 +22,10 @@ final class AnalysisViewModel: ObservableObject {
         lastJPEG = jpegData
         phase = .analyzing
         do {
-            let message = try await api.analyze(jpegData: jpegData)
+            let report = try await api.analyze(jpegData: jpegData, mode: mode)
             guard generation == requestGeneration else { return }
-            phase = .result(message)
+            self.report = report
+            phase = .reportReady
         } catch {
             guard generation == requestGeneration else { return }
             phase = .failure(
@@ -39,12 +43,14 @@ final class AnalysisViewModel: ObservableObject {
     func showCaptureError(_ message: String) {
         requestGeneration += 1
         lastJPEG = nil
+        report = nil
         phase = .failure(message)
     }
 
     func clear() {
         requestGeneration += 1
         lastJPEG = nil
+        report = nil
         phase = .idle
     }
 }

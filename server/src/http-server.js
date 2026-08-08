@@ -2,6 +2,7 @@ import http from "node:http";
 import { isAuthorized, requireClientToken } from "./client-auth.js";
 import { ClientError, ERROR_MESSAGES, ProviderError } from "./errors.js";
 import { MAX_IMAGE_BYTES, validateImageInput } from "./image-input.js";
+import { ANALYSIS_MODES, validateAnalysisMode } from "./analysis-contracts.js";
 
 export const MAX_REQUEST_BYTES = Math.ceil(MAX_IMAGE_BYTES * 4 / 3) + 4096;
 
@@ -123,8 +124,15 @@ export function createRequestHandler({
     try {
       const body = await readJson(request, maxRequestBytes);
       const image = validateImageInput(body);
-      const message = await analyzeProduct(image);
-      sendJson(response, 200, { message });
+      const legacyRequest = body.mode === undefined;
+      const mode = legacyRequest
+        ? ANALYSIS_MODES.targetProduct
+        : validateAnalysisMode(body.mode);
+      const report = await analyzeProduct({ ...image, mode });
+      const payload = legacyRequest
+        ? { message: report.summary }
+        : { mode, report };
+      sendJson(response, 200, payload);
     } catch (error) {
       handleError(error, response, logger);
     }

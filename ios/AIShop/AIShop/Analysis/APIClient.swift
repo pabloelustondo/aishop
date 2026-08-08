@@ -11,7 +11,7 @@ final class APIClient: AnalyzeProductAPI {
         self.session = session
     }
 
-    func analyze(jpegData: Data) async throws -> String {
+    func analyze(jpegData: Data, mode: ScanMode) async throws -> AnalysisReportResponse {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -19,7 +19,8 @@ final class APIClient: AnalyzeProductAPI {
         request.httpBody = try JSONEncoder().encode(
             AnalyzeProductRequest(
                 imageBase64: jpegData.base64EncodedString(),
-                mediaType: "image/jpeg"
+                mediaType: "image/jpeg",
+                mode: mode
             )
         )
 
@@ -34,12 +35,14 @@ final class APIClient: AnalyzeProductAPI {
         guard let http = response as? HTTPURLResponse else {
             throw APIError.invalidResponse
         }
-        guard let payload = try? JSONDecoder().decode(AnalyzeProductResponse.self, from: data) else {
-            throw APIError.invalidResponse
+        if (200..<300).contains(http.statusCode) {
+            guard let report = try? JSONDecoder().decode(AnalysisReportResponse.self, from: data),
+                  report.mode == mode else {
+                throw APIError.invalidResponse
+            }
+            return report
         }
-        if (200..<300).contains(http.statusCode), let message = payload.message, !message.isEmpty {
-            return message
-        }
-        throw APIError.server(payload.error ?? "The product could not be analyzed. Please try again.")
+        let payload = try? JSONDecoder().decode(AnalysisErrorResponse.self, from: data)
+        throw APIError.server(payload?.error ?? "The product could not be analyzed. Please try again.")
     }
 }

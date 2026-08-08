@@ -1,7 +1,7 @@
 enum AnalysisPhase: Equatable {
     case idle
     case analyzing
-    case result(String)
+    case reportReady
     case failure(String)
 
     var isAnalyzing: Bool {

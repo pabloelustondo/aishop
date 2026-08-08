@@ -1,13 +1,13 @@
 import { ProviderError } from "./errors.js";
+import {
+  ANALYSIS_CONTRACTS,
+  ANALYSIS_MODES,
+  assertValidReport
+} from "./analysis-contracts.js";
 
 const RESPONSES_URL = "https://api.openai.com/v1/responses";
 export const DEFAULT_MODEL = "gpt-5.4-mini";
-export const PRODUCT_INSTRUCTION = [
-  "Identify the main grocery product in this photo.",
-  "In one short sentence, name it and describe only visible signs of quality or freshness.",
-  "If the product is unclear, say what additional view is needed.",
-  "Do not give a buy/skip judgment or invent a price."
-].join(" ");
+export const PRODUCT_INSTRUCTION = ANALYSIS_CONTRACTS.targetProduct.instruction;
 
 function extractMessage(payload) {
   if (typeof payload?.output_text === "string") {
@@ -40,7 +40,13 @@ export function createOpenAIAnalyzer({
   }
   const authorization = `Bearer ${apiKey.trim()}`;
 
-  return async function analyzeProduct({ imageBase64, mediaType }) {
+  return async function analyzeProduct({
+    imageBase64,
+    mediaType,
+    mode = ANALYSIS_MODES.targetProduct
+  }) {
+    const contract = ANALYSIS_CONTRACTS[mode];
+    if (!contract) throw new ProviderError("invalid-mode");
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -54,11 +60,19 @@ export function createOpenAIAnalyzer({
         body: JSON.stringify({
           model,
           store: false,
-          max_output_tokens: 100,
+          max_output_tokens: 1_200,
+          text: {
+            format: {
+              type: "json_schema",
+              name: contract.schemaName,
+              strict: true,
+              schema: contract.schema
+            }
+          },
           input: [{
             role: "user",
             content: [
-              { type: "input_text", text: PRODUCT_INSTRUCTION },
+              { type: "input_text", text: contract.instruction },
               {
                 type: "input_image",
                 image_url: `data:${mediaType};base64,${imageBase64}`,
@@ -86,7 +100,13 @@ export function createOpenAIAnalyzer({
       if (!message) {
         throw new ProviderError("empty-response");
       }
-      return message;
+      let report;
+      try {
+        report = JSON.parse(message);
+      } catch {
+        throw new ProviderError("invalid-response");
+      }
+      return assertValidReport(mode, report);
     } catch (error) {
       if (error instanceof ProviderError) throw error;
       const kind = error?.name === "AbortError" ? "timeout" : "network";
