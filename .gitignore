@@ -9,6 +9,7 @@ firestore-debug.log*
 ui-debug.log*
 server/.secret.local
 ios/AIShop/AIShop/Support/Local.xcconfig
+ios/AIShop/AIShop/Support/GoogleService-Info.plist
 .codex/
 **/xcuserdata/
 **/*.xcuserstate

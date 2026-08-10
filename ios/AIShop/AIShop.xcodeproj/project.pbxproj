@@ -54,6 +54,7 @@
 		40000000000000000000002E /* AuthScreen+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30000000000000000000002F /* AuthScreen+Actions.swift */; };
 		40000000000000000000002F /* InspectionAuthToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000030 /* InspectionAuthToken.swift */; };
 		400000000000000000000030 /* InspectionAPIClientAuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000031 /* InspectionAPIClientAuthTests.swift */; };
+		400000000000000000000031 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000032 /* GoogleService-Info.plist */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -116,6 +117,7 @@
 		30000000000000000000002F /* AuthScreen+Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AuthScreen+Actions.swift"; sourceTree = "<group>"; };
 		300000000000000000000030 /* InspectionAuthToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectionAuthToken.swift; sourceTree = "<group>"; };
 		300000000000000000000031 /* InspectionAPIClientAuthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectionAPIClientAuthTests.swift; sourceTree = "<group>"; };
+		300000000000000000000032 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,7 +159,7 @@
 		10000000000000000000000A /* Auth */ = {isa = PBXGroup; children = (30000000000000000000002C, 30000000000000000000002D, 30000000000000000000002E, 30000000000000000000002F); path = Auth; sourceTree = "<group>"; };
 		100000000000000000000006 /* Camera */ = {isa = PBXGroup; children = (300000000000000000000008, 300000000000000000000009, 30000000000000000000000A, 30000000000000000000000B, 30000000000000000000000C, 30000000000000000000000D, 30000000000000000000000E); path = Camera; sourceTree = "<group>"; };
 		100000000000000000000007 /* UI */ = {isa = PBXGroup; children = (30000000000000000000000F, 300000000000000000000021, 300000000000000000000010, 30000000000000000000001E, 300000000000000000000011, 300000000000000000000012, 300000000000000000000013, 300000000000000000000014, 300000000000000000000024, 300000000000000000000025, 300000000000000000000026, 300000000000000000000027, 300000000000000000000028); path = UI; sourceTree = "<group>"; };
-		100000000000000000000008 /* Support */ = {isa = PBXGroup; children = (300000000000000000000015, 300000000000000000000023); path = Support; sourceTree = "<group>"; };
+		100000000000000000000008 /* Support */ = {isa = PBXGroup; children = (300000000000000000000015, 300000000000000000000023, 300000000000000000000032); path = Support; sourceTree = "<group>"; };
 		100000000000000000000009 /* AIShopTests */ = {isa = PBXGroup; children = (300000000000000000000016, 300000000000000000000017, 300000000000000000000018, 30000000000000000000001B, 30000000000000000000001C, 30000000000000000000001D, 300000000000000000000020, 300000000000000000000022, 30000000000000000000002B, 300000000000000000000031); path = AIShopTests; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
@@ -213,7 +215,7 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		500000000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		500000000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (400000000000000000000031); runOnlyForDeploymentPostprocessing = 0; };
 		500000000000000000000006 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
