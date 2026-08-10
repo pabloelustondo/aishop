@@ -13,6 +13,7 @@ struct AIShopApp: App {
     var body: some Scene {
         WindowGroup {
             content
+                .environmentObject(session)
                 .preferredColorScheme(.dark)
         }
     }
