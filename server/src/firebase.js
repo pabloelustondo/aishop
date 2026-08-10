@@ -21,7 +21,6 @@ export const api = onRequest({
   if (request.url.startsWith("/inspections")) {
     await createFirebaseInspectionHandler({
       apiKey,
-      clientToken,
       model: process.env.OPENAI_MODEL
     })(request, response);
     return;
