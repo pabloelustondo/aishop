@@ -4,8 +4,6 @@
 <dict>
 	<key>AIShopServerBaseURL</key>
 	<string>$(AI_SHOP_SERVER_BASE_URL)</string>
-	<key>AIShopClientToken</key>
-	<string>$(AI_SHOP_CLIENT_TOKEN)</string>
 	<key>CFBundleDisplayName</key>
 	<string>AI Shop</string>
 	<key>CFBundleExecutable</key>

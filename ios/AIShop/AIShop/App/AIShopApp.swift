@@ -1,11 +1,26 @@
+import FirebaseCore
 import SwiftUI
 
 @main
 struct AIShopApp: App {
+    @StateObject private var session = AuthSession()
+
+    init() {
+        FirebaseApp.configure()
+    }
+
     var body: some Scene {
         WindowGroup {
-            launchView
+            content
                 .preferredColorScheme(.dark)
+        }
+    }
+
+    @ViewBuilder private var content: some View {
+        if session.phase == .signedIn {
+            launchView
+        } else {
+            AuthScreen(session: session)
         }
     }
 
