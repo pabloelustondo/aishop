@@ -1,6 +1,6 @@
 # AI Shop Agent Rules
 
-HumanReviewerInitials: PME
+HumanReviewerInitials:PME
 
 These rules are mandatory throughout this repository.
 
@@ -36,6 +36,7 @@ These rules are mandatory throughout this repository.
 
 - No sprint coding may start until every governed Markdown file is human-approved and every changed governed Markdown file is fully staged.
 - Every sprint requires an approved Sprint Plan followed by a separate approved Sprint Plan Tasks document before coding begins.
+- After both approvals, create and switch to a dedicated sprint branch before coding; merge it into `main` through the normal reviewed workflow.
 - Each implementation task names exactly one approved component and modifies only that component; split multi-component work into ordered tasks.
 - Once Pablo authorizes a sprint or step, complete its in-scope implementation and local validation autonomously.
 - Routine reversible work, builds, tests, and simulator checks need no intermediate permission.

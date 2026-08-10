@@ -19,6 +19,8 @@ The twelve lifecycle areas and their navigation are maintained in the [SDLC2 Doc
 - Documentation may be drafted and revised before human review.
 - Human approval of changed documentation requires registered initials and staging of the exact reviewed contents.
 - No sprint coding may start until every governed Markdown file is human-approved and every changed governed Markdown file is fully staged.
+- After the approved Sprint Plan Tasks define the steps, create and switch to a dedicated sprint branch before coding.
+- Review the completed sprint branch and merge it into `main` through the normal Git workflow.
 - Do not create a Git commit while any governed Markdown file is unapproved or has unstaged changes.
 - Every implementation task names one approved component and modifies only that component; split cross-component work into ordered tasks with stable interfaces.
 - Implementation must remain within the authorized sprint or step.
