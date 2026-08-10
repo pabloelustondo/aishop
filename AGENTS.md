@@ -38,10 +38,10 @@ These rules are mandatory throughout this repository.
 - Every sprint requires an approved Sprint Plan followed by a separate approved Sprint Plan Tasks document before coding begins.
 - After both approvals, create and switch to a dedicated sprint branch before coding; merge it into `main` through the normal reviewed workflow.
 - Each implementation task names exactly one approved component and modifies only that component; split multi-component work into ordered tasks.
-- Once Pablo authorizes a sprint or step, complete its in-scope implementation and local validation autonomously.
-- Routine reversible work, builds, tests, and simulator checks need no intermediate permission.
-- Ask before changing scope or risking production, external data, secrets, money, security, or irreversible damage.
-- Planning, implementation, tests, review, commit, merge, deployment, and release are distinct states.
+- Sprint authorization covers its approved tasks, branch creation, routine changes, builds, tests, simulator checks, local commits, and pushing the sprint branch; proceed autonomously without intermediate permission.
+- Do not ask between routine, reversible, in-scope steps or before advancing to the next approved task.
+- Ask only before changing approved scope, deploying to production, merging into `main`, releasing, or risking external data, secrets, money, security, or irreversible damage.
+- Planning, implementation, validation, review, production deployment, merge, and release remain distinct states.
 
 ## Git and external systems
 
