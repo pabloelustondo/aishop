@@ -3,10 +3,11 @@ import SwiftUI
 
 @main
 struct AIShopApp: App {
-    @StateObject private var session = AuthSession()
+    @StateObject private var session: AuthSession
 
     init() {
         FirebaseApp.configure()
+        _session = StateObject(wrappedValue: AuthSession())
     }
 
     var body: some Scene {
