@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vista.invalid/schemas/inspection-package-receipt-v1.json",
+  "title": "VISTA Inspection Package Receipt v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "status",
+    "receiptId",
+    "runId",
+    "manifestSha256",
+    "artifactSha256",
+    "receivedAt",
+    "serverEnvironment",
+    "ingestVersion",
+    "analysisStatus"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "status": { "const": "received" },
+    "receiptId": { "type": "string", "format": "uuid" },
+    "runId": { "type": "string", "format": "uuid" },
+    "manifestSha256": { "$ref": "#/$defs/sha256" },
+    "artifactSha256": {
+      "type": "array",
+      "minItems": 2,
+      "uniqueItems": true,
+      "items": { "$ref": "#/$defs/sha256" }
+    },
+    "receivedAt": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+    },
+    "serverEnvironment": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "ingestVersion": { "type": "string", "minLength": 1, "maxLength": 128 },
+    "analysisStatus": { "const": "notRequested" }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    }
+  }
+}

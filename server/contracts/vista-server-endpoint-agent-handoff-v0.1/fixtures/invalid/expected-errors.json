@@ -1,0 +1,10 @@
+{
+  "manifest-extra-owner.json": "manifest_invalid",
+  "manifest-wrong-run-kind.json": "manifest_invalid",
+  "multipart-missing-declared-artifact": "artifact_missing",
+  "multipart-undeclared-artifact": "artifact_unexpected",
+  "multipart-invalid-artifact-filename": "artifact_identity_invalid",
+  "multipart-wrong-artifact-bytes": "artifact_hash_mismatch",
+  "multipart-truncated-jpeg": "invalid_jpeg",
+  "same-owner-run-different-manifest": "run_manifest_conflict"
+}

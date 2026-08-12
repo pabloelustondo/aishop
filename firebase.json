@@ -2,6 +2,7 @@
   "functions": {
     "source": "server",
     "runtime": "nodejs22",
+    "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run predeploy:vista"],
     "ignore": [
       "node_modules",
       ".git",
@@ -12,13 +13,22 @@
   "hosting": {
     "public": "dashboard",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [{
-      "source": "/inspections{,/**}",
-      "function": {
-        "functionId": "api",
-        "region": "northamerica-northeast2"
+    "rewrites": [
+      {
+        "source": "/v1/vista/inspection-packages",
+        "function": {
+          "functionId": "api",
+          "region": "northamerica-northeast2"
+        }
+      },
+      {
+        "source": "/inspections{,/**}",
+        "function": {
+          "functionId": "api",
+          "region": "northamerica-northeast2"
+        }
       }
-    }],
+    ],
     "headers": [{
       "source": "**",
       "headers": [
@@ -27,5 +37,10 @@
         {"key": "X-Frame-Options", "value": "DENY"}
       ]
     }]
+  },
+  "emulators": {
+    "firestore": {"port": 8080},
+    "storage": {"port": 9199},
+    "singleProjectMode": true
   }
 }

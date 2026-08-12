@@ -1,0 +1,13 @@
+rules_version = '2';
+
+// End-to-end emulator rules: deny every client SDK access.
+// The server uses the Admin SDK, which bypasses these rules, so a
+// deny-all policy mirrors the production stance that evidence objects
+// are never publicly readable or writable.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

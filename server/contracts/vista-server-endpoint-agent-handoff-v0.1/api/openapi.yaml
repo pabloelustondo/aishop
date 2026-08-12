@@ -1,0 +1,170 @@
+openapi: 3.1.0
+info:
+  title: VISTA Inspection Package Ingestion API
+  version: 0.2.0
+  description: >-
+    One-endpoint contract for authenticated, idempotent receipt of a
+    client-declared VISTA manifest, audit JSON, and JPEG transport set.
+servers:
+  - url: https://REPLACE-WITH-DEVELOPMENT-HOST
+    description: Development only; receiving agent must replace from verified configuration.
+paths:
+  /v1/vista/inspection-packages:
+    post:
+      operationId: submitVistaInspectionPackage
+      summary: Submit one VISTA inspection transport package
+      description: >-
+        Verifies Firebase identity, strict manifest and multipart completeness,
+        exact artifact hashes and byte counts, and immutable persistence before
+        returning a hash-bound receipt for the complete client-declared set.
+        Does not attest device origin or wait for server AI analysis.
+      security:
+        - firebaseBearer: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Must equal manifest runId after UUID parsing and lowercase canonical normalization.
+          schema:
+            type: string
+            format: uuid
+        - name: X-Vista-Manifest-SHA256
+          in: header
+          required: true
+          description: SHA-256 of the exact UTF-8 manifest multipart-part bytes.
+          schema:
+            $ref: '#/components/schemas/SHA256'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              additionalProperties: false
+              required:
+                - manifest
+                - artifact
+              properties:
+                manifest:
+                  description: Content-Disposition filename must be manifest.json.
+                  $ref: '#/components/schemas/Manifest'
+                artifact:
+                  type: array
+                  minItems: 2
+                  items:
+                    type: string
+                    format: binary
+                    description: >-
+                      Content-Disposition filename is mandatory and must be the
+                      selected manifest SHA-256 plus .json or .jpg. It is an
+                      untrusted binding claim, never a Storage path.
+            encoding:
+              manifest:
+                contentType: application/json
+              artifact:
+                contentType: application/json, image/jpeg
+      responses:
+        '201':
+          description: Request that first finalizes the durable receipt for this owner/run/manifest.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Receipt'
+        '200':
+          description: Idempotent replay of an already received identical package.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Receipt'
+        '400':
+          description: Invalid headers, multipart, manifest, set, bytes, audit JSON, or JPEG.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '401':
+          description: Missing or invalid Firebase bearer token.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '409':
+          description: Same trusted owner/run ID already exists with a different manifest.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '413':
+          description: Artifact or package exceeds configured limits.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '415':
+          description: Unsupported request or artifact media type.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Safe unexpected server failure.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '503':
+          description: Durable evidence persistence temporarily unavailable.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+components:
+  headers:
+    NoStore:
+      description: Evidence-bearing responses must not be cached.
+      required: true
+      schema:
+        type: string
+        const: no-store
+  securitySchemes:
+    firebaseBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: Firebase ID token
+  schemas:
+    SHA256:
+      type: string
+      pattern: '^[0-9a-f]{64}$'
+    Manifest:
+      $ref: '../schemas/manifest-v1.schema.json'
+    Receipt:
+      $ref: '../schemas/receipt-v1.schema.json'
+    ErrorEnvelope:
+      $ref: '../schemas/error-v1.schema.json'

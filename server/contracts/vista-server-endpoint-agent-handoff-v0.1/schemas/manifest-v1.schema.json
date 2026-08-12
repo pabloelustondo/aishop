@@ -1,0 +1,155 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vista.invalid/schemas/inspection-package-manifest-v1.json",
+  "title": "VISTA Inspection Package Manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "runId",
+    "runKind",
+    "completedAt",
+    "versions",
+    "context",
+    "terminalChainHash",
+    "sealedManifest",
+    "artifacts"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "runId": { "type": "string", "format": "uuid" },
+    "runKind": { "const": "inspection" },
+    "completedAt": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$"
+    },
+    "versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "app",
+        "osVersion",
+        "device",
+        "model",
+        "catalog",
+        "policy",
+        "profileVersion",
+        "scenario"
+      ],
+      "properties": {
+        "app": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "osVersion": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "device": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "model": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "catalog": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "policy": { "type": "string", "minLength": 1, "maxLength": 128 },
+        "profileVersion": { "type": "integer", "minimum": 0 },
+        "scenario": {
+          "oneOf": [
+            { "type": "string", "minLength": 1, "maxLength": 128 },
+            { "type": "null" }
+          ]
+        }
+      }
+    },
+    "context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["visitId", "storeId", "assignmentId", "targetAreaId"],
+      "properties": {
+        "visitId": { "$ref": "#/$defs/nullableIdentifier" },
+        "storeId": { "$ref": "#/$defs/nullableIdentifier" },
+        "assignmentId": { "$ref": "#/$defs/nullableIdentifier" },
+        "targetAreaId": { "$ref": "#/$defs/nullableIdentifier" }
+      }
+    },
+    "terminalChainHash": { "$ref": "#/$defs/sha256" },
+    "sealedManifest": { "$ref": "#/$defs/sha256" },
+    "artifacts": {
+      "type": "array",
+      "minItems": 2,
+      "maxItems": 100,
+      "items": { "$ref": "#/$defs/artifact" },
+      "allOf": [
+        {
+          "contains": {
+            "type": "object",
+            "required": ["kind"],
+            "properties": { "kind": { "const": "audit/events" } }
+          },
+          "minContains": 1,
+          "maxContains": 1
+        },
+        {
+          "contains": {
+            "type": "object",
+            "required": ["kind"],
+            "properties": {
+              "kind": { "enum": ["image/globalStill", "image/detailStill"] }
+            }
+          },
+          "minContains": 1
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "nullableIdentifier": {
+      "oneOf": [
+        { "type": "string", "minLength": 1, "maxLength": 256 },
+        { "type": "null" }
+      ]
+    },
+    "artifact": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "kind",
+        "mediaType",
+        "sha256",
+        "byteCount",
+        "captureId"
+      ],
+      "properties": {
+        "id": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "kind": {
+          "enum": ["audit/events", "image/globalStill", "image/detailStill"]
+        },
+        "mediaType": { "enum": ["application/json", "image/jpeg"] },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "byteCount": { "type": "integer", "minimum": 1 },
+        "captureId": { "$ref": "#/$defs/nullableIdentifier" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "kind": { "const": "audit/events" } } },
+          "then": {
+            "properties": {
+              "mediaType": { "const": "application/json" },
+              "captureId": { "type": "null" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": { "enum": ["image/globalStill", "image/detailStill"] }
+            }
+          },
+          "then": {
+            "properties": {
+              "mediaType": { "const": "image/jpeg" },
+              "captureId": { "type": "string", "minLength": 1, "maxLength": 256 }
+            }
+          }
+        }
+      ]
+    }
+  }
+}

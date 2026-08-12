@@ -10,10 +10,15 @@
   "scripts": {
     "dev": "node --env-file-if-exists=../.env.local --watch src/start.js",
     "start": "node --env-file-if-exists=../.env.local src/start.js",
+    "predeploy:vista": "node scripts/verify-vista-startup-config.mjs",
     "test": "node --test"
   },
   "dependencies": {
+    "ajv": "8.20.0",
+    "ajv-formats": "3.0.1",
+    "busboy": "1.6.0",
     "firebase-admin": "^14.2.0",
-    "firebase-functions": "^7.3.2"
+    "firebase-functions": "^7.3.2",
+    "sharp": "0.35.3"
   }
 }

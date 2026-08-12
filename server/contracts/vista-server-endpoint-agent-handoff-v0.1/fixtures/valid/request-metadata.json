@@ -1,0 +1,42 @@
+{
+  "method": "POST",
+  "path": "/v1/vista/inspection-packages",
+  "headers": {
+    "Authorization": "Bearer <fresh-firebase-id-token>",
+    "Idempotency-Key": "2C11D24C-86DA-4AE9-9BE4-D67308E27389",
+    "X-Vista-Manifest-SHA256": "3e338f7284385a87c96d2f0e97eeabf9c5dc1d3b932892a58e9101a51064b439"
+  },
+  "multipart": [
+    {
+      "fieldName": "manifest",
+      "filename": "manifest.json",
+      "mediaType": "application/json",
+      "sha256": "3e338f7284385a87c96d2f0e97eeabf9c5dc1d3b932892a58e9101a51064b439",
+      "byteCount": 1267
+    },
+    {
+      "fieldName": "artifact",
+      "filename": "881cbdace3db209aab4f8cbb5d183ec8f6a71662ff6f5d7e5c22c7fecca858b3.json",
+      "mediaType": "application/json",
+      "sha256": "881cbdace3db209aab4f8cbb5d183ec8f6a71662ff6f5d7e5c22c7fecca858b3",
+      "byteCount": 2553,
+      "sourceFile": "audit-transport.json"
+    },
+    {
+      "fieldName": "artifact",
+      "filename": "7f2ef803eb18c972385ea5f830fb59e95f40ae0be34de1dceb275b7da787f607.jpg",
+      "mediaType": "image/jpeg",
+      "sha256": "7f2ef803eb18c972385ea5f830fb59e95f40ae0be34de1dceb275b7da787f607",
+      "byteCount": 865,
+      "sourceFile": "accepted-detail.jpg"
+    }
+  ],
+  "expectedFirstResponse": {
+    "httpStatus": 201,
+    "bodyFile": "receipt.json"
+  },
+  "expectedIdenticalRetryResponse": {
+    "httpStatus": 200,
+    "bodyFile": "receipt.json"
+  }
+}
