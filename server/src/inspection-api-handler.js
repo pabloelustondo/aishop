@@ -1,4 +1,4 @@
-import { isAuthorized } from "./client-auth.js";
+import { authenticateCustomer } from "./customer-auth.js";
 import { ClientError, ERROR_MESSAGES } from "./errors.js";
 import { MAX_REQUEST_BYTES } from "./http-server.js";
 import { readJson, sendBytes, sendJson } from "./http-json.js";
@@ -13,20 +13,20 @@ function evidenceScanId(url) {
 }
 
 export function createInspectionAPIHandler({
-  clientToken, submitInspection, evidenceReader, verifyIdToken, logger = console
+  submitInspection, evidenceReader, verifyIdToken, logger = console
 }) {
   return async function handle(request, response) {
     try {
       if (request.method === "POST" && request.url === "/inspections") {
-        if (!isAuthorized(request.headers.authorization, clientToken)) {
-          throw new ClientError(401, ERROR_MESSAGES.unauthorized);
-        }
+        const { ownerId } = await authenticateCustomer(
+          request.headers.authorization, verifyIdToken
+        );
         const type = request.headers["content-type"]?.split(";", 1)[0].toLowerCase();
         if (type !== "application/json") {
           throw new ClientError(415, ERROR_MESSAGES.invalidRequest);
         }
         sendJson(response, 201, await submitInspection(
-          await readJson(request, MAX_REQUEST_BYTES)
+          await readJson(request, MAX_REQUEST_BYTES), ownerId
         ));
         return;
       }

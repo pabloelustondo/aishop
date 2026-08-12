@@ -1,0 +1,166 @@
+{
+  "schemaVersion": 1,
+  "baseRequest": "../valid/request-metadata.json",
+  "cases": [
+    {
+      "id": "authorization-missing",
+      "mutation": "remove Authorization header",
+      "expected": { "http": 401, "code": "unauthorized", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "authorization-invalid",
+      "mutation": "replace bearer token with an unverifiable token",
+      "expected": { "http": 401, "code": "unauthorized", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "request-content-type-unsupported",
+      "mutation": "send application/json rather than multipart/form-data",
+      "expected": { "http": 415, "code": "unsupported_media_type", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "multipart-malformed",
+      "mutation": "truncate or invalidate the multipart boundary",
+      "expected": { "http": 400, "code": "multipart_invalid", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "manifest-part-duplicate",
+      "mutation": "send two manifest fields",
+      "expected": { "http": 400, "code": "manifest_part_count_invalid", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "artifact-filename-invalid",
+      "mutation": "omit the artifact filename or use a path-bearing/non-lowercase/non-hash filename",
+      "expected": { "http": 400, "code": "artifact_identity_invalid", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "idempotency-key-missing",
+      "mutation": "remove Idempotency-Key",
+      "expected": { "http": 400, "code": "idempotency_key_missing", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "idempotency-key-invalid",
+      "mutation": "set Idempotency-Key to a non-UUID",
+      "expected": { "http": 400, "code": "idempotency_key_invalid", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "idempotency-key-mismatch",
+      "mutation": "set Idempotency-Key to a different valid UUID",
+      "expected": { "http": 400, "code": "idempotency_key_mismatch", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "manifest-hash-missing",
+      "mutation": "remove X-Vista-Manifest-SHA256",
+      "expected": { "http": 400, "code": "manifest_hash_missing", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "manifest-hash-invalid",
+      "mutation": "set X-Vista-Manifest-SHA256 to non-lowercase or non-64-hex text",
+      "expected": { "http": 400, "code": "manifest_hash_invalid", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "manifest-hash-mismatch",
+      "mutation": "send a valid 64-hex header that differs from the exact manifest-part hash",
+      "expected": { "http": 400, "code": "manifest_hash_mismatch", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "manifest-extra-owner",
+      "mutation": "use manifest-extra-owner.json and its exact new header hash",
+      "expected": { "http": 400, "code": "manifest_invalid", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "manifest-wrong-run-kind",
+      "mutation": "use manifest-wrong-run-kind.json and its exact new header hash",
+      "expected": { "http": 400, "code": "manifest_invalid", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "audit-json-invalid",
+      "mutation": "declare the exact hash/length of non-JSON audit bytes and upload those bytes",
+      "expected": { "http": 400, "code": "audit_json_invalid", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "artifact-missing",
+      "mutation": "omit one declared artifact part",
+      "expected": { "http": 400, "code": "artifact_missing", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "artifact-unexpected",
+      "mutation": "append one undeclared artifact part",
+      "expected": { "http": 400, "code": "artifact_unexpected", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "artifact-duplicate-physical-part",
+      "mutation": "upload the same hash-bearing artifact body twice",
+      "expected": { "http": 400, "code": "artifact_duplicate", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "artifact-repeated-logical-reference",
+      "mutation": "add a second logical descriptor with a unique id and the same SHA/mediaType/byteCount; upload its body once",
+      "expected": { "http": 201, "code": null, "retryable": null, "durableMutation": "one object and both logical descriptors" }
+    },
+    {
+      "id": "artifact-repeated-hash-inconsistent-descriptor",
+      "mutation": "repeat a SHA with a different byteCount or mediaType",
+      "expected": { "http": 400, "code": "manifest_invalid", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "artifact-byte-count-mismatch",
+      "mutation": "change only the declared byteCount while preserving the declared hash",
+      "expected": { "http": 400, "code": "artifact_byte_count_mismatch", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "artifact-hash-mismatch",
+      "mutation": "replace the upload with different equal-length bytes without changing filename, declared hash, or byteCount",
+      "expected": { "http": 400, "code": "artifact_hash_mismatch", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "jpeg-invalid-with-matching-declaration",
+      "mutation": "replace JPEG with equal-length non-JPEG bytes and update manifest/header hashes to match those bytes",
+      "expected": { "http": 400, "code": "invalid_jpeg", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "jpeg-heic-or-concatenated",
+      "mutation": "declare image/jpeg for HEIC bytes or multiple concatenated JPEG images",
+      "expected": { "http": 400, "code": "invalid_jpeg", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "configured-limit-exceeded",
+      "mutation": "independently exceed part count, manifest, audit, image, pixel, and total-package limits",
+      "expected": { "http": 413, "code": "package_too_large", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "identical-retry-after-receipt",
+      "mutation": "submit the unchanged package after its receipt exists",
+      "expected": { "http": 200, "code": null, "retryable": null, "durableMutation": "none; return identical receipt" }
+    },
+    {
+      "id": "same-owner-run-conflicting-manifest",
+      "mutation": "after reservation or receipt, submit the same normalized run ID with a different valid manifest hash",
+      "expected": { "http": 409, "code": "run_manifest_conflict", "retryable": false, "durableMutation": "none" }
+    },
+    {
+      "id": "concurrent-identical",
+      "mutation": "release two identical validated requests concurrently at the reservation barrier",
+      "expected": { "http": 201, "alsoHttp": 200, "code": null, "retryable": null, "durableMutation": "one package and one receipt" }
+    },
+    {
+      "id": "concurrent-conflicting",
+      "mutation": "release two different valid manifest hashes for one owner/run concurrently",
+      "expected": { "http": 201, "alsoHttp": 409, "code": "run_manifest_conflict", "retryable": false, "durableMutation": "one package only" }
+    },
+    {
+      "id": "storage-failure-after-reservation",
+      "mutation": "inject Storage failure after the receiving reservation is committed",
+      "expected": { "http": 503, "code": "evidence_persistence_unavailable", "retryable": true, "durableMutation": "receiving reservation; no receipt" }
+    },
+    {
+      "id": "database-finalize-failure-then-retry",
+      "mutation": "persist all objects, fail final transaction, then retry the same package",
+      "expected": { "http": 503, "alsoHttp": 201, "code": "evidence_persistence_unavailable", "retryable": true, "durableMutation": "same reservation and receipt id; one final receipt" }
+    },
+    {
+      "id": "cross-owner-same-run",
+      "mutation": "submit the same run UUID under two separately verified Firebase UIDs",
+      "expected": { "http": 201, "alsoHttp": 201, "code": null, "retryable": null, "durableMutation": "two isolated owner-scoped packages" }
+    }
+  ]
+}

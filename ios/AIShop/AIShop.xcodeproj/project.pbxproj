@@ -45,6 +45,19 @@
 		400000000000000000000025 /* InspectionSubmissionRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000029 /* InspectionSubmissionRequest.swift */; };
 		400000000000000000000026 /* InspectionAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30000000000000000000002A /* InspectionAPIClient.swift */; };
 		400000000000000000000027 /* InspectionAPIClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30000000000000000000002B /* InspectionAPIClientTests.swift */; };
+		400000000000000000000028 /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000001 /* FirebaseCore */; };
+		400000000000000000000029 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000002 /* FirebaseAuth */; };
+		40000000000000000000002A /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = A00000000000000000000003 /* GoogleSignIn */; };
+		40000000000000000000002B /* AuthSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30000000000000000000002C /* AuthSession.swift */; };
+		40000000000000000000002C /* GoogleSignInBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30000000000000000000002D /* GoogleSignInBridge.swift */; };
+		40000000000000000000002D /* AuthScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30000000000000000000002E /* AuthScreen.swift */; };
+		40000000000000000000002E /* AuthScreen+Actions.swift in Sources */ = {isa = PBXBuildFile; fileRef = 30000000000000000000002F /* AuthScreen+Actions.swift */; };
+		40000000000000000000002F /* InspectionAuthToken.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000030 /* InspectionAuthToken.swift */; };
+		400000000000000000000030 /* InspectionAPIClientAuthTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000031 /* InspectionAPIClientAuthTests.swift */; };
+		400000000000000000000031 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000032 /* GoogleService-Info.plist */; };
+		400000000000000000000032 /* AIShopRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000033 /* AIShopRootView.swift */; };
+		400000000000000000000033 /* ScanModeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000034 /* ScanModeButton.swift */; };
+		400000000000000000000034 /* AppVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000035 /* AppVersion.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -101,10 +114,20 @@
 		300000000000000000000029 /* InspectionSubmissionRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectionSubmissionRequest.swift; sourceTree = "<group>"; };
 		30000000000000000000002A /* InspectionAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectionAPIClient.swift; sourceTree = "<group>"; };
 		30000000000000000000002B /* InspectionAPIClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectionAPIClientTests.swift; sourceTree = "<group>"; };
+		30000000000000000000002C /* AuthSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthSession.swift; sourceTree = "<group>"; };
+		30000000000000000000002D /* GoogleSignInBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignInBridge.swift; sourceTree = "<group>"; };
+		30000000000000000000002E /* AuthScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AuthScreen.swift; sourceTree = "<group>"; };
+		30000000000000000000002F /* AuthScreen+Actions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "AuthScreen+Actions.swift"; sourceTree = "<group>"; };
+		300000000000000000000030 /* InspectionAuthToken.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectionAuthToken.swift; sourceTree = "<group>"; };
+		300000000000000000000031 /* InspectionAPIClientAuthTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InspectionAPIClientAuthTests.swift; sourceTree = "<group>"; };
+		300000000000000000000032 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
+		300000000000000000000033 /* AIShopRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AIShopRootView.swift; sourceTree = "<group>"; };
+		300000000000000000000034 /* ScanModeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanModeButton.swift; sourceTree = "<group>"; };
+		300000000000000000000035 /* AppVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersion.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		500000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		500000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (400000000000000000000028, 400000000000000000000029, 40000000000000000000002A); runOnlyForDeploymentPostprocessing = 0; };
 		500000000000000000000004 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
@@ -129,6 +152,7 @@
 			children = (
 				100000000000000000000004 /* App */,
 				100000000000000000000005 /* Analysis */,
+				10000000000000000000000A /* Auth */,
 				100000000000000000000006 /* Camera */,
 				100000000000000000000007 /* UI */,
 				100000000000000000000008 /* Support */,
@@ -137,11 +161,12 @@
 			sourceTree = "<group>";
 		};
 		100000000000000000000004 /* App */ = {isa = PBXGroup; children = (300000000000000000000001, 300000000000000000000002); path = App; sourceTree = "<group>"; };
-		100000000000000000000005 /* Analysis */ = {isa = PBXGroup; children = (300000000000000000000003, 300000000000000000000004, 300000000000000000000005, 300000000000000000000029, 30000000000000000000002A, 300000000000000000000006, 300000000000000000000007, 30000000000000000000001F); path = Analysis; sourceTree = "<group>"; };
+		100000000000000000000005 /* Analysis */ = {isa = PBXGroup; children = (300000000000000000000003, 300000000000000000000004, 300000000000000000000005, 300000000000000000000029, 30000000000000000000002A, 300000000000000000000030, 300000000000000000000006, 300000000000000000000007, 30000000000000000000001F); path = Analysis; sourceTree = "<group>"; };
+		10000000000000000000000A /* Auth */ = {isa = PBXGroup; children = (30000000000000000000002C, 30000000000000000000002D, 30000000000000000000002E, 30000000000000000000002F); path = Auth; sourceTree = "<group>"; };
 		100000000000000000000006 /* Camera */ = {isa = PBXGroup; children = (300000000000000000000008, 300000000000000000000009, 30000000000000000000000A, 30000000000000000000000B, 30000000000000000000000C, 30000000000000000000000D, 30000000000000000000000E); path = Camera; sourceTree = "<group>"; };
-		100000000000000000000007 /* UI */ = {isa = PBXGroup; children = (30000000000000000000000F, 300000000000000000000021, 300000000000000000000010, 30000000000000000000001E, 300000000000000000000011, 300000000000000000000012, 300000000000000000000013, 300000000000000000000014, 300000000000000000000024, 300000000000000000000025, 300000000000000000000026, 300000000000000000000027, 300000000000000000000028); path = UI; sourceTree = "<group>"; };
-		100000000000000000000008 /* Support */ = {isa = PBXGroup; children = (300000000000000000000015, 300000000000000000000023); path = Support; sourceTree = "<group>"; };
-		100000000000000000000009 /* AIShopTests */ = {isa = PBXGroup; children = (300000000000000000000016, 300000000000000000000017, 300000000000000000000018, 30000000000000000000001B, 30000000000000000000001C, 30000000000000000000001D, 300000000000000000000020, 300000000000000000000022, 30000000000000000000002B); path = AIShopTests; sourceTree = "<group>"; };
+		100000000000000000000007 /* UI */ = {isa = PBXGroup; children = (30000000000000000000000F, 300000000000000000000021, 300000000000000000000010, 30000000000000000000001E, 300000000000000000000011, 300000000000000000000012, 300000000000000000000013, 300000000000000000000014, 300000000000000000000024, 300000000000000000000025, 300000000000000000000026, 300000000000000000000027, 300000000000000000000028, 300000000000000000000033, 300000000000000000000034, 300000000000000000000035); path = UI; sourceTree = "<group>"; };
+		100000000000000000000008 /* Support */ = {isa = PBXGroup; children = (300000000000000000000015, 300000000000000000000023, 300000000000000000000032); path = Support; sourceTree = "<group>"; };
+		100000000000000000000009 /* AIShopTests */ = {isa = PBXGroup; children = (300000000000000000000016, 300000000000000000000017, 300000000000000000000018, 30000000000000000000001B, 30000000000000000000001C, 30000000000000000000001D, 300000000000000000000020, 300000000000000000000022, 30000000000000000000002B, 300000000000000000000031); path = AIShopTests; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -152,6 +177,11 @@
 			buildRules = ();
 			dependencies = ();
 			name = AIShop;
+			packageProductDependencies = (
+				A00000000000000000000001 /* FirebaseCore */,
+				A00000000000000000000002 /* FirebaseAuth */,
+				A00000000000000000000003 /* GoogleSignIn */
+			);
 			productName = AIShop;
 			productReference = 300000000000000000000019 /* AIShop.app */;
 			productType = "com.apple.product-type.application";
@@ -179,6 +209,10 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (en, Base);
 			mainGroup = 100000000000000000000001;
+			packageReferences = (
+				900000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				900000000000000000000002 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */
+			);
 			productRefGroup = 100000000000000000000002 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -187,7 +221,7 @@
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		500000000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
+		500000000000000000000003 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (400000000000000000000031); runOnlyForDeploymentPostprocessing = 0; };
 		500000000000000000000006 /* Resources */ = {isa = PBXResourcesBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXResourcesBuildPhase section */
 
@@ -203,10 +237,13 @@
 				400000000000000000000011, 400000000000000000000012, 400000000000000000000013, 400000000000000000000014, 40000000000000000000001B, 40000000000000000000001C, 40000000000000000000001E,
 				400000000000000000000020, 400000000000000000000021, 400000000000000000000022, 400000000000000000000023,
 				400000000000000000000024, 400000000000000000000025, 400000000000000000000026,
+				40000000000000000000002B, 40000000000000000000002C, 40000000000000000000002D,
+				40000000000000000000002E, 40000000000000000000002F,
+				400000000000000000000032, 400000000000000000000033, 400000000000000000000034,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		500000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (400000000000000000000015, 400000000000000000000016, 400000000000000000000017, 400000000000000000000018, 400000000000000000000019, 40000000000000000000001A, 40000000000000000000001D, 40000000000000000000001F, 400000000000000000000027); runOnlyForDeploymentPostprocessing = 0; };
+		500000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (400000000000000000000015, 400000000000000000000016, 400000000000000000000017, 400000000000000000000018, 400000000000000000000019, 40000000000000000000001A, 40000000000000000000001D, 40000000000000000000001F, 400000000000000000000027, 400000000000000000000030); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -227,6 +264,37 @@
 		800000000000000000000002 /* Build configuration list for PBXNativeTarget "AIShop" */ = {isa = XCConfigurationList; buildConfigurations = (600000000000000000000003, 600000000000000000000004); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 		800000000000000000000003 /* Build configuration list for PBXNativeTarget "AIShopTests" */ = {isa = XCConfigurationList; buildConfigurations = (600000000000000000000005, 600000000000000000000006); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release; };
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		900000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/firebase/firebase-ios-sdk";
+			requirement = {kind = upToNextMajorVersion; minimumVersion = 11.0.0; };
+		};
+		900000000000000000000002 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/google/GoogleSignIn-iOS";
+			requirement = {kind = upToNextMajorVersion; minimumVersion = 7.0.0; };
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A00000000000000000000001 /* FirebaseCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 900000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseCore;
+		};
+		A00000000000000000000002 /* FirebaseAuth */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 900000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
+			productName = FirebaseAuth;
+		};
+		A00000000000000000000003 /* GoogleSignIn */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 900000000000000000000002 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */;
+			productName = GoogleSignIn;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 000000000000000000000001 /* Project object */;
 }

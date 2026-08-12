@@ -15,9 +15,8 @@ function responseResult() {
 
 function handler(error) {
   return createInspectionAPIHandler({
-    clientToken: "client-token",
     submitInspection: async () => { throw error; },
-    evidenceReader: {}, verifyIdToken: async () => ({}),
+    evidenceReader: {}, verifyIdToken: async () => ({ uid: "customer-1" }),
     logger: { error() {} }
   });
 }

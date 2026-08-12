@@ -15,7 +15,6 @@ function responseResult() {
 
 function handler(verifyIdToken) {
   return createInspectionAPIHandler({
-    clientToken: "client-token",
     submitInspection: async () => ({}),
     verifyIdToken,
     evidenceReader: { readOriginal: async () => ({

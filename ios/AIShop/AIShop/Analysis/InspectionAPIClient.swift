@@ -2,23 +2,23 @@ import Foundation
 
 final class InspectionAPIClient: AnalyzeProductAPI {
     private let endpoint: URL
-    private let clientToken: String
     private let appVersion: String
     private let session: URLSession
+    private let idToken: () async throws -> String
 
-    init(baseURL: URL, clientToken: String, appVersion: String,
-         session: URLSession = .shared) {
+    init(baseURL: URL, appVersion: String, session: URLSession = .shared,
+         idToken: @escaping () async throws -> String = InspectionAuthToken.current) {
         endpoint = baseURL.appendingPathComponent("inspections")
-        self.clientToken = clientToken
         self.appVersion = appVersion
         self.session = session
+        self.idToken = idToken
     }
 
     func analyze(jpegData: Data, mode: ScanMode) async throws -> AnalysisReportResponse {
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        request.setValue("Bearer \(clientToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("Bearer \(try await idToken())", forHTTPHeaderField: "Authorization")
         request.httpBody = try JSONEncoder().encode(InspectionSubmissionRequest(
             imageBase64: jpegData.base64EncodedString(),
             mediaType: "image/jpeg",

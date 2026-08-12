@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vista.invalid/schemas/inspection-package-error-v1.json",
+  "title": "VISTA Inspection Package Error v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["error"],
+  "properties": {
+    "error": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["code", "message", "retryable"],
+      "properties": {
+        "code": {
+          "enum": [
+            "multipart_invalid",
+            "manifest_part_count_invalid",
+            "idempotency_key_missing",
+            "idempotency_key_invalid",
+            "idempotency_key_mismatch",
+            "manifest_hash_missing",
+            "manifest_hash_invalid",
+            "manifest_hash_mismatch",
+            "manifest_invalid",
+            "artifact_missing",
+            "artifact_unexpected",
+            "artifact_duplicate",
+            "artifact_identity_invalid",
+            "artifact_hash_mismatch",
+            "artifact_byte_count_mismatch",
+            "audit_json_invalid",
+            "invalid_jpeg",
+            "unauthorized",
+            "run_manifest_conflict",
+            "package_too_large",
+            "unsupported_media_type",
+            "evidence_persistence_unavailable",
+            "unexpected_server_error"
+          ]
+        },
+        "message": { "type": "string", "minLength": 1, "maxLength": 256 },
+        "retryable": { "type": "boolean" }
+      }
+    }
+  }
+}

@@ -24,9 +24,9 @@ final class InspectionAPIClientTests: XCTestCase {
         configuration.protocolClasses = [StubURLProtocol.self]
         let client = InspectionAPIClient(
             baseURL: URL(string: "https://shop.test")!,
-            clientToken: "test-token",
             appVersion: "1.2 (3)",
-            session: URLSession(configuration: configuration)
+            session: URLSession(configuration: configuration),
+            idToken: { "test-id-token" }
         )
 
         _ = try await client.analyze(jpegData: jpeg, mode: .targetProduct)

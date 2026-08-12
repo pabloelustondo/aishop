@@ -3,22 +3,17 @@ import Foundation
 enum AppConfiguration {
     static func makeAnalysisAPI(bundle: Bundle = .main) -> AnalyzeProductAPI {
         do {
-            let values = try validate(
-                serverURL: bundle.object(forInfoDictionaryKey: "AIShopServerBaseURL") as? String,
-                clientToken: bundle.object(forInfoDictionaryKey: "AIShopClientToken") as? String
+            let baseURL = try validate(
+                serverURL: bundle.object(forInfoDictionaryKey: "AIShopServerBaseURL") as? String
             )
             let version = bundle.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
             let build = bundle.infoDictionary?["CFBundleVersion"] as? String ?? "unknown"
-            return InspectionAPIClient(
-                baseURL: values.baseURL,
-                clientToken: values.clientToken,
-                appVersion: "\(version) (\(build))"
-            )
+            return InspectionAPIClient(baseURL: baseURL, appVersion: "\(version) (\(build))")
         } catch {
             return UnavailableAnalysisAPI(message: error.localizedDescription)
         }
     }
-    static func validate(serverURL: String?, clientToken: String?) throws -> ClientConfiguration {
+    static func validate(serverURL: String?) throws -> URL {
         let rawURL = serverURL?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let placeholderURL = rawURL.lowercased()
         guard let url = URL(string: rawURL), url.scheme == "https", let host = url.host,
@@ -26,19 +21,8 @@ enum AppConfiguration {
               !placeholderURL.contains("placeholder"), !rawURL.contains("$(") else {
             throw APIError.configuration("Configure AI_SHOP_SERVER_BASE_URL with the server HTTPS address.")
         }
-        let token = clientToken?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        let placeholderToken = token.lowercased()
-        guard !token.isEmpty, placeholderToken != "change_me",
-              !placeholderToken.contains("placeholder"), !token.contains("$(") else {
-            throw APIError.configuration("Configure AI_SHOP_CLIENT_TOKEN before analyzing a product.")
-        }
-        return ClientConfiguration(baseURL: url, clientToken: token)
+        return url
     }
-}
-
-struct ClientConfiguration {
-    let baseURL: URL
-    let clientToken: String
 }
 
 private struct UnavailableAnalysisAPI: AnalyzeProductAPI {

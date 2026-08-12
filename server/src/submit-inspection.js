@@ -5,7 +5,7 @@ import { validateInspectionSubmission } from "./inspection-submission.js";
 export function createInspectionSubmitter({
   evidenceStore, analyzeInspection, recordStore, createScanId = randomUUID
 }) {
-  return async function submit(body) {
+  return async function submit(body, ownerId) {
     const submission = validateInspectionSubmission(body);
     const scanId = createScanId();
     let evidence;
@@ -19,6 +19,7 @@ export function createInspectionSubmitter({
     }
     const record = {
       scanId,
+      ownerId,
       mode: submission.mode,
       appVersion: submission.appVersion,
       targetPosition: submission.targetPosition,
