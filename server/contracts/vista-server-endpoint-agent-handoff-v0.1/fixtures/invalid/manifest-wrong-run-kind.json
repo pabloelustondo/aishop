@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "runId": "2C11D24C-86DA-4AE9-9BE4-D67308E27389",
+  "runKind": "onboarding",
+  "completedAt": "2026-08-10T22:30:00Z",
+  "versions": {
+    "app": "1.0 (42)",
+    "osVersion": "iOS 27.0",
+    "device": "iPhone",
+    "model": "vista-local-model-version",
+    "catalog": "0.1.0",
+    "policy": "guidance-policy-version",
+    "profileVersion": 1,
+    "scenario": null
+  },
+  "context": {
+    "visitId": null,
+    "storeId": "store-id",
+    "assignmentId": null,
+    "targetAreaId": "target-area-id"
+  },
+  "terminalChainHash": "c6f4617ce37b231246079d80b4f1d99b1cf2eec7306bf40a300bd34c54ff50b5",
+  "sealedManifest": "c6118106568513f4a7780cb094ad54055a9c9941cb5665fbd47d43cd1c21b2f4",
+  "artifacts": [
+    {
+      "id": "audit-events",
+      "kind": "audit/events",
+      "mediaType": "application/json",
+      "sha256": "881cbdace3db209aab4f8cbb5d183ec8f6a71662ff6f5d7e5c22c7fecca858b3",
+      "byteCount": 2553,
+      "captureId": null
+    },
+    {
+      "id": "94E71966-B393-4B6D-953A-6929633C31BE",
+      "kind": "image/detailStill",
+      "mediaType": "image/jpeg",
+      "sha256": "7f2ef803eb18c972385ea5f830fb59e95f40ae0be34de1dceb275b7da787f607",
+      "byteCount": 865,
+      "captureId": "CA1279DB-254B-4520-9681-82C905C80DD6"
+    }
+  ]
+}

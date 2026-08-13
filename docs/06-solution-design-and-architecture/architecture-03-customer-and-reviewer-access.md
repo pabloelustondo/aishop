@@ -1,6 +1,6 @@
 # AI Shop Customer and Reviewer Access
 
-HumanReviewerInitials:PME
+HumanReviewerInitials:
 
 ## Purpose
 
@@ -37,7 +37,7 @@ flowchart LR
 
 ## Status
 
-Decided: customers get Google Sign-In and Email/Password, self-service; old shared-token submissions keep no owner; the reviewer path needs no new tooling. Gap: the app still shares one static client token instead of verified per-user identity — closing it is planned in [Sprint 004](../07-planning/sprints/sprint-004/01-sprint-plan.md), not built yet.
+Delivered in [Sprint 004](../07-planning/sprints/sprint-004/01-sprint-plan.md): customers self-register with Google Sign-In or Email/Password, the app sends a verified Firebase ID token instead of the retired shared client token, and every submission carries an immutable `ownerId` the server enforces on read. Submissions made before this keep no owner and stay reviewer-only.
 
 ## Decisions still required
 

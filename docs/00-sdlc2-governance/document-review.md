@@ -1,44 +1,49 @@
 # Document Review
 
-HumanReviewerInitials:PME
+Supersedes the reviewer-initials mechanism, by Pablo's decision of
+2026-08-13. Approved by the commit that introduces it.
 
 ## Scope
 
-These rules apply to every project-owned Markdown file at the repository root and under `docs/`, including `AGENTS.md` and every `README.md`.
+These rules apply to every project-owned Markdown file at the
+repository root and under `docs/`, including `AGENTS.md` and every
+`README.md`. Markdown elsewhere does not use this mechanism unless
+governance explicitly adds it.
 
-Markdown elsewhere in the repository does not use this approval mechanism unless governance explicitly adds it.
+## Approval is the commit
 
-## Standard entry
+Git already records what changed, when, and by whom. The only fact it
+cannot infer is that Pablo read the change and accepted it. So the
+commit carries that fact, and nothing else needs to.
 
-Every document contains exactly one `HumanReviewerInitials:` field near its title.
+- An agent writes, and may stage. **An agent never commits, pushes,
+  merges, rebases, or amends.**
+- Pablo commits after reviewing the diff. That commit approves those
+  exact contents.
+- Uncommitted work, staged or not, is a proposal. Staging is how an
+  agent offers work for review; it never implies approval.
+- A later edit is unapproved until its own commit.
 
-## Decisions
+## Attribution is the weak point
 
-- Only a human may enter initials listed under **Project collaborators** in the root [README](../../README.md).
-- A blank field means the document is unapproved.
-- Human initials mean the exact document contents are approved.
-- When changes are requested, the field remains blank until revision and approval.
-- Praise, silence, or acceptance elsewhere never changes the entry.
-
-If any governed Markdown file is not approved, the agent must not create or modify executable code or create a Git commit.
-
-## Git staging
-
-- Unstaged document changes are pending human review.
-- Registered initials plus the exact staged contents mean a changed document is approved and awaiting commit.
-- A partially staged document is unapproved.
-- A clean committed document retains the approval recorded in its contents.
-- Any unapproved or partially staged governed document found staged must be unstaged immediately.
+Git attributes a commit to whoever runs it, and this machine's config
+names Pablo. The mechanism therefore holds only while agents never
+commit. An agent that believes a commit is needed says so and stops.
 
 ## Deletions
 
-- A deleted document cannot contain reviewer initials.
-- The agent leaves governed Markdown deletions unstaged.
-- A human approves a deletion by staging it during final Git review.
-- An unstaged governed Markdown deletion is pending and blocks a commit.
+An agent may delete a file and stage the deletion. Pablo's commit
+approves it. An uncommitted deletion is a proposal.
 
-## Revision rule
+## Retired: reviewer initials
 
-Approval applies only to the exact reviewed contents. Before any edit, the agent unstages the document and clears its initials. Any later change, including formatting or typo correction, invalidates approval. Git history retains the earlier decision and its date.
+`HumanReviewerInitials:` is superseded. No new document carries one,
+and no agent may write initials into any file for any reason. Fields
+surviving in existing documents are historical record of approvals
+already given; they are removed as those documents are next revised.
 
-Document approval is separate from implementation, testing, deployment, publication, and release authorization.
+## Limits
+
+Document approval is separate from implementation, testing, deployment,
+publication, and release. Each is separately authorized, and a commit
+approving a document authorizes none of them.
