@@ -1,0 +1,74 @@
+Yes. I would make this a normative SDLC2 rule, short enough to live directly in the repository and be consumed by development agents.
+
+Inter-Component Contract Gate
+
+Status: Normative SDLC2 development rule
+Applies to: Any sprint that creates or changes communication across component boundaries.
+
+Rule
+
+Implementation across a component boundary MUST NOT begin until an intended interface contract exists and has been reviewed and approved.
+
+A sprint involving only one self-contained component does not trigger this gate.
+
+Purpose
+
+Components must not independently invent opposite sides of an interface during implementation.
+
+The boundary between components is part of the architecture and MUST be treated as an explicit engineering artifact.
+
+Sprint-Start Gate
+
+Before coding begins, identify every component boundary affected by the sprint.
+
+For each affected boundary, an intended contract MUST define at least:
+
+* participating components and their responsibilities;
+* direction and purpose of communication;
+* communication mechanism or protocol;
+* principal operations or interactions;
+* information crossing the boundary;
+* expected success and failure semantics;
+* intended authoritative contract artifact.
+
+The contract may initially be high-level.
+
+Unknown implementation details MAY remain unresolved when they do not prevent both components from sharing the same architectural intent.
+
+Contract Artifacts
+
+Use the most appropriate machine-readable artifact when practical, including:
+
+* Protocol Buffers for gRPC;
+* OpenAPI for HTTP APIs;
+* JSON Schema for structured documents;
+* event/message schemas for asynchronous communication;
+* database schemas for shared persistence boundaries.
+
+A concise Markdown specification is acceptable when a more formal representation is not yet justified.
+
+During Implementation
+
+The contract MAY evolve as implementation reveals new information.
+
+Changes MUST be made explicitly to the contract rather than independently inferred by participating components.
+
+Implementation agents MUST NOT silently invent, reinterpret, or diverge from an approved interface.
+
+Ambiguity affecting component interoperability MUST return to contract definition before implementation continues.
+
+Code-Review Gate
+
+Code review MUST verify implementation against the resulting interface contract.
+
+Review includes both sides of the boundary and checks contract conformance, compatibility, errors, identifiers, security assumptions, and relevant failure behavior.
+
+Sprint-Close Gate
+
+The contract MUST represent the interface that actually shipped.
+
+A sprint MUST NOT close with undocumented contract drift between the approved contract and implementation.
+
+Lifecycle Invariant
+
+Sprint planning establishes interface intent. Implementation evolves it explicitly. Code review verifies conformance. Sprint closure preserves the shipped contract.
