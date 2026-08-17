@@ -8,7 +8,7 @@ import { request } from "../test-support/vista-package-fixture.js";
 import { createMemoryVistaBucket } from "../test-support/memory-vista-bucket.js";
 
 const limits = { manifestBytes: 262_144, auditBytes: 5_242_880,
-  jpegBytes: 5_242_880, packageBytes: 26_214_400, jpegAxis: 4_096,
+  jpegBytes: 5_242_880, packageBytes: 104_857_600, jpegAxis: 4_096,
   jpegPixels: 16_777_216, artifacts: 40, artifactParts: 40,
   multipartParts: 41 };
 const ownerKey = "a77417321dde97958dd3349a2b98a12d2ddbc8d286b4d293a7d24102a7a33224";

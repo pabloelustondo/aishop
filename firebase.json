@@ -2,7 +2,9 @@
   "functions": {
     "source": "server",
     "runtime": "nodejs22",
-    "predeploy": ["npm --prefix \"$RESOURCE_DIR\" run predeploy:vista"],
+    "predeploy": [
+      "npm --prefix \"$RESOURCE_DIR\" run predeploy:vista"
+    ],
     "ignore": [
       "node_modules",
       ".git",
@@ -12,10 +14,14 @@
   },
   "hosting": {
     "public": "dashboard",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
     "rewrites": [
       {
-        "source": "/v1/vista/inspection-packages",
+        "source": "/v1/vista/inspection-packages{,/**}",
         "function": {
           "functionId": "api",
           "region": "northamerica-northeast2"
@@ -29,18 +35,42 @@
         }
       }
     ],
-    "headers": [{
-      "source": "**",
-      "headers": [
-        {"key": "X-Content-Type-Options", "value": "nosniff"},
-        {"key": "Referrer-Policy", "value": "no-referrer"},
-        {"key": "X-Frame-Options", "value": "DENY"}
-      ]
-    }]
+    "headers": [
+      {
+        "source": "**",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "Referrer-Policy",
+            "value": "no-referrer"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          }
+        ]
+      },
+      {
+        "source": "**/*.@(js|css|html)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      }
+    ]
   },
   "emulators": {
-    "firestore": {"port": 8080},
-    "storage": {"port": 9199},
+    "firestore": {
+      "port": 8080
+    },
+    "storage": {
+      "port": 9199
+    },
     "singleProjectMode": true
   }
 }

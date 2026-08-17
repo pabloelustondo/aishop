@@ -1,5 +1,10 @@
-import { loadDetail, loadEvidence, loadInspections, recordReview } from "./api.js";
-import { message, renderDetail, renderLists, showSession } from "./view.js";
+import {
+  loadDetail, loadEvidence, loadInspections, loadVistaArtifact,
+  loadVistaPackages, recordReview
+} from "./api.js";
+import {
+  message, renderDetail, renderLists, renderVistaDetail, renderVistaList, showSession
+} from "./view.js";
 
 const auth = firebase.auth();
 const byId = (id) => document.getElementById(id);
@@ -8,6 +13,23 @@ let selectedScanId;
 async function refresh() {
   try {
     renderLists(await loadInspections(), selectInspection);
+    message("");
+  } catch (error) { message(error.message); }
+  // VISTA packages load independently: the older inspections view failing
+  // should not hide them, nor the reverse.
+  try {
+    renderVistaList(await loadVistaPackages(), selectVistaPackage);
+  } catch (error) { message(error.message); }
+}
+
+async function selectVistaPackage(run) {
+  message("Loading package evidence…");
+  try {
+    const images = run.artifacts.filter((a) => a.kind.startsWith("image/"));
+    const blobs = new Map(await Promise.all(images.map(async (artifact) =>
+      [artifact.sha256, await loadVistaArtifact(run.runId, artifact.sha256, run.ownerKey)]
+    )));
+    renderVistaDetail(run, blobs);
     message("");
   } catch (error) { message(error.message); }
 }

@@ -28,6 +28,23 @@ export async function loadEvidence(scanId) {
   return (await authorizedFetch(`/inspections/${scanId}/evidence`)).blob();
 }
 
+const VISTA = "/v1/vista/inspection-packages";
+
+/** Every VISTA package this caller may see: their own, or all for a reviewer. */
+export async function loadVistaPackages() {
+  return (await authorizedFetch(VISTA)).json();
+}
+
+/**
+ * One artifact's bytes. Storage objects are private to the function's service
+ * account, so the server reads and streams them — the browser never touches
+ * Cloud Storage directly.
+ */
+export async function loadVistaArtifact(runId, sha256, ownerKey) {
+  const owner = ownerKey ? `?owner=${encodeURIComponent(ownerKey)}` : "";
+  return (await authorizedFetch(`${VISTA}/${runId}/artifacts/${sha256}${owner}`)).blob();
+}
+
 export async function recordReview(scanId, disposition, notes) {
   return (await authorizedFetch(`/inspections/${scanId}/reviews`, {
     method: "POST",

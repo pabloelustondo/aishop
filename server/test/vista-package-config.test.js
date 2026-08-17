@@ -15,7 +15,7 @@ test("loads every approved VISTA package limit explicitly", () => {
     manifestBytes: 262_144,
     auditBytes: 5_242_880,
     jpegBytes: 5_242_880,
-    packageBytes: 26_214_400,
+    packageBytes: 104_857_600,
     jpegAxis: 4_096,
     jpegPixels: 16_777_216,
     artifacts: 40,

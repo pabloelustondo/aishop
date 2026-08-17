@@ -22,3 +22,27 @@ fieldset { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0; padding: 0; bor
 legend { margin-bottom: .6rem; font-weight: 650; }
 textarea { width: 100%; padding: .75rem; border: 1px solid #a9afa8; border-radius: .55rem; background: white; resize: vertical; }
 form .primary { justify-self: start; }
+
+/* VISTA package evidence: several captures per run, unlike the single
+   image an inspection carries. */
+.vista-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+.vista-gallery figure { margin: 0; }
+.vista-gallery img {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+}
+.vista-gallery figcaption {
+  font-size: 0.8rem;
+  opacity: 0.75;
+  margin-top: 0.4rem;
+}
+.vista-gallery code {
+  font-size: 0.7rem;
+  opacity: 0.5;
+  word-break: break-all;
+}

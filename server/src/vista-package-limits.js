@@ -2,7 +2,7 @@ export const APPROVED_VISTA_PACKAGE_LIMITS = Object.freeze({
   manifestBytes: { environment: "VISTA_MAX_MANIFEST_BYTES", value: 262_144 },
   auditBytes: { environment: "VISTA_MAX_AUDIT_BYTES", value: 5_242_880 },
   jpegBytes: { environment: "VISTA_MAX_JPEG_BYTES", value: 5_242_880 },
-  packageBytes: { environment: "VISTA_MAX_PACKAGE_BYTES", value: 26_214_400 },
+  packageBytes: { environment: "VISTA_MAX_PACKAGE_BYTES", value: 104_857_600 },
   jpegAxis: { environment: "VISTA_MAX_JPEG_AXIS", value: 4_096 },
   jpegPixels: { environment: "VISTA_MAX_JPEG_PIXELS", value: 16_777_216 },
   artifacts: { environment: "VISTA_MAX_ARTIFACTS", value: 40 },
