@@ -18,7 +18,11 @@ const vistaHandler = (request, response) => {
 };
 let cachedVistaReadHandler;
 const vistaReadHandler = (request, response) => {
-  cachedVistaReadHandler ??= createFirebaseVistaReadHandler();
+  // Built on first request, not at module load: a secret's value is only
+  // resolvable inside an invocation.
+  cachedVistaReadHandler ??= createFirebaseVistaReadHandler({
+    apiKey: openAIAPIKey.value(), model: process.env.OPENAI_MODEL
+  });
   return cachedVistaReadHandler(request, response);
 };
 

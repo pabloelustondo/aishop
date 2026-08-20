@@ -1,5 +1,5 @@
 import {
-  loadDetail, loadEvidence, loadInspections, loadVistaArtifact,
+  analyzeVistaPhoto, loadDetail, loadEvidence, loadInspections, loadVistaArtifact,
   loadVistaPackages, recordReview
 } from "./api.js";
 import {
@@ -29,9 +29,51 @@ async function selectVistaPackage(run) {
     const blobs = new Map(await Promise.all(images.map(async (artifact) =>
       [artifact.sha256, await loadVistaArtifact(run.runId, artifact.sha256, run.ownerKey)]
     )));
-    renderVistaDetail(run, blobs);
+    // The device's own account of the run travels inside the package as an
+    // artifact. Fetching it is what lets the review show what the iPhone
+    // reported beside the photograph, instead of only the photograph.
+    const chain = await loadAuditChain(run);
+
+    // The finding is merged into the run object already in hand and the view
+    // redrawn from it. Re-fetching the package instead would re-download every
+    // photograph to show one new cell.
+    async function analysePhoto(sha256, button) {
+      button.disabled = true;
+      button.textContent = "Analysing…";
+      message("Asking the server to recognise this capture…");
+      try {
+        const { finding } = await analyzeVistaPhoto(run.runId, sha256, run.ownerKey);
+        run.analysis ??= {};
+        run.analysis.photos ??= {};
+        run.analysis.photos[sha256] = finding;
+        renderVistaDetail(run, blobs, chain, analysePhoto);
+        message("");
+      } catch (error) {
+        button.disabled = false;
+        button.textContent = "Analyse this photo";
+        message(error.message);
+      }
+    }
+
+    renderVistaDetail(run, blobs, chain, analysePhoto);
     message("");
   } catch (error) { message(error.message); }
+}
+
+/**
+ * The sealed audit chain, or null when the package carries none. A package
+ * without it is still worth showing — the photographs are the evidence — so a
+ * failure here degrades the iPhone column rather than the whole view.
+ */
+async function loadAuditChain(run) {
+  const audit = run.artifacts.find((a) => a.kind === "audit/events");
+  if (!audit) return null;
+  try {
+    const blob = await loadVistaArtifact(run.runId, audit.sha256, run.ownerKey);
+    return JSON.parse(await blob.text());
+  } catch {
+    return null;
+  }
 }
 
 async function selectInspection(scanId) {

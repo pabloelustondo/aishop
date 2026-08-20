@@ -1,5 +1,6 @@
 import { createFirebaseVistaServices } from "./firebase-services.js";
 import { createVistaPackageReader } from "./vista-package-read.js";
+import { createOpenAIAnalyzer, DEFAULT_MODEL } from "./openai-analyzer.js";
 
 /**
  * Who may read packages they do not own.
@@ -18,7 +19,7 @@ import { createVistaPackageReader } from "./vista-package-read.js";
  */
 const REVIEWER_EMAILS = Object.freeze(["pablo.elustondo@gmail.com"]);
 
-export function createFirebaseVistaReadHandler({ logger = console } = {}) {
+export function createFirebaseVistaReadHandler({ logger = console, apiKey = null, model } = {}) {
   const services = createFirebaseVistaServices({
     serverEnvironment: "development",
     ingestVersion: "vista-package-ingest-v1",
@@ -29,6 +30,10 @@ export function createFirebaseVistaReadHandler({ logger = console } = {}) {
     bucket: services.bucket,
     verifyIdToken: services.verifyIdToken,
     reviewers: REVIEWER_EMAILS,
-    logger
+    logger,
+    // Without a key the reader still serves every read path; only analysis
+    // refuses, which is the honest behaviour for a missing secret.
+    analyzeProduct: apiKey ? createOpenAIAnalyzer({ apiKey, model }) : null,
+    analysisModel: apiKey ? (model ?? DEFAULT_MODEL) : null
   });
 }

@@ -28,6 +28,7 @@ function summarize(document) {
     status: data.status ?? null,
     receivedAt: data.receivedAt ?? null,
     analysisStatus: data.analysisStatus ?? null,
+    analysis: data.analysis ?? null,
     manifestSha256: data.manifestSha256 ?? null,
     terminalChainHash: data.terminalChainHash ?? null,
     artifacts: (data.artifactDescriptors ?? []).map((artifact) => ({
@@ -50,7 +51,10 @@ function summarize(document) {
  * never the same identity.
  */
 export function createVistaPackageReader({
-  firestore, bucket, verifyIdToken, reviewers = [], logger = console
+  firestore, bucket, verifyIdToken, reviewers = [], logger = console,
+  // Recognition is optional: without an analyzer the read paths all still
+  // work and only the analyse route refuses.
+  analyzeProduct = null, analysisModel = null
 }) {
   /**
    * The read side needs the caller's email for the reviewer check, which the
@@ -100,7 +104,7 @@ export function createVistaPackageReader({
    * so a caller can never name an arbitrary object path — only evidence the
    * server already recorded as part of the package.
    */
-  async function artifact({ ownerKey, isReviewer }, runId, sha256, owner, response) {
+  async function resolveArtifact({ ownerKey, isReviewer }, runId, sha256, owner) {
     if (!normalizeVistaRunId(runId) || !SHA256.test(sha256)) {
       throw vistaError("artifact_identity_invalid");
     }
@@ -134,11 +138,65 @@ export function createVistaPackageReader({
 
     const path = `${prefixFor(data.ownerKey, data.runId)}/artifacts/${sha256}`;
     const [bytes] = await bucket.file(path).download();
+    return { reference: record.ref, data, descriptor, bytes };
+  }
 
+  async function artifact(identity, runId, sha256, owner, response) {
+    const { descriptor, bytes } = await resolveArtifact(identity, runId, sha256, owner);
     response.statusCode = 200;
     response.setHeader("Content-Type", descriptor.mediaType ?? "application/octet-stream");
     response.setHeader("Cache-Control", "no-store");
     response.end(bytes);
+  }
+
+  /**
+   * Recognition over one capture, on demand.
+   *
+   * One photograph per request on purpose. The function's ceiling is 30 s and
+   * a shelf photograph costs several seconds, so a package-wide sweep would
+   * sit against that limit and fail as a whole. Per photo it never approaches
+   * it, and the reviewer watches findings land one at a time instead of
+   * staring at a spinner.
+   *
+   * The result is additive: it never touches the device's own findings, and
+   * `analysisStatus` records that the server was asked, not that the server
+   * was right.
+   */
+  async function analyzePhoto(identity, runId, sha256, owner, response) {
+    if (!analyzeProduct) throw vistaError("unexpected_server_error");
+    const { reference, data, descriptor, bytes } =
+      await resolveArtifact(identity, runId, sha256, owner);
+    if (!String(descriptor.kind ?? "").startsWith("image/")) {
+      throw vistaError("artifact_identity_invalid");
+    }
+
+    const report = await analyzeProduct({
+      imageBase64: bytes.toString("base64"),
+      mediaType: descriptor.mediaType ?? "image/jpeg",
+      mode: "areaScan"
+    });
+
+    const finding = {
+      report,
+      model: analysisModel,
+      mode: "areaScan",
+      // Open world, deliberately: this increment asks what is actually on the
+      // shelf, including products no catalog knows. Those answers are what a
+      // catalog gets built from. Constraining to a catalog is the next step,
+      // and until it exists a name here is an observation, not a match.
+      catalogVersion: null,
+      analyzedAt: new Date().toISOString().replace(/\.\d{3}Z$/, "Z")
+    };
+
+    await reference.update({
+      [`analysis.photos.${sha256}`]: finding,
+      analysisStatus: "analyzed"
+    });
+
+    logger.info("VISTA package photo analysed.", {
+      runId: data.runId, sha256, model: analysisModel
+    });
+    sendJson(response, 200, { schemaVersion: 1, sha256, finding });
   }
 
   return async function handleVistaRead(request, response) {
@@ -156,10 +214,16 @@ export function createVistaPackageReader({
         return;
       }
       const parts = rest.split("/");
+      const owner = url.searchParams.get("owner");
       if (parts.length === 3 && parts[1] === "artifacts") {
-        await artifact(
-          identity, parts[0], parts[2], url.searchParams.get("owner"), response
-        );
+        await artifact(identity, parts[0], parts[2], owner, response);
+        return;
+      }
+      // Analysis writes, so it is POST — and only POST. A GET here would
+      // otherwise spend an OpenAI call on a browser prefetch.
+      if (parts.length === 4 && parts[1] === "artifacts" && parts[3] === "analysis") {
+        if (request.method !== "POST") throw vistaError("artifact_identity_invalid");
+        await analyzePhoto(identity, parts[0], parts[2], owner, response);
         return;
       }
       throw vistaError("artifact_identity_invalid");

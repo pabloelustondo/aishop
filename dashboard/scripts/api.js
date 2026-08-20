@@ -45,6 +45,18 @@ export async function loadVistaArtifact(runId, sha256, ownerKey) {
   return (await authorizedFetch(`${VISTA}/${runId}/artifacts/${sha256}${owner}`)).blob();
 }
 
+/**
+ * Asks the server to recognise one capture. One photo per call: the function
+ * has a 30 s ceiling and a shelf photograph costs seconds, so a whole-package
+ * sweep would sit against that limit and fail as a unit.
+ */
+export async function analyzeVistaPhoto(runId, sha256, ownerKey) {
+  const owner = ownerKey ? `?owner=${encodeURIComponent(ownerKey)}` : "";
+  return (await authorizedFetch(
+    `${VISTA}/${runId}/artifacts/${sha256}/analysis${owner}`, { method: "POST" }
+  )).json();
+}
+
 export async function recordReview(scanId, disposition, notes) {
   return (await authorizedFetch(`/inspections/${scanId}/reviews`, {
     method: "POST",

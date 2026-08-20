@@ -7,7 +7,12 @@ export function createFirebaseAPIRouter({
     if (request.method === "POST" && request.url === VISTA_PACKAGE_PATH) {
       await vistaHandler(request, response);
     } else if (
-      vistaReadHandler && request.method === "GET"
+      // Ingest owns POST on the collection itself and nothing else. Sub-paths
+      // go to the read handler, whose own dispatch decides which methods each
+      // one accepts — analysis is a POST against a single artifact.
+      vistaReadHandler
+      && (request.method === "GET"
+        || (request.method === "POST" && request.url.startsWith(`${VISTA_PACKAGE_PATH}/`)))
       && request.url.startsWith(VISTA_PACKAGE_PATH)
     ) {
       await vistaReadHandler(request, response);
