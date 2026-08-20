@@ -1,0 +1,410 @@
+{
+  "catalog_version": "0.2.0",
+  "catalog_name": "VISTA CeraVe Argentina Catalog",
+  "as_of": "2026-08-20",
+  "recognition_mode": "closed_world",
+  "unknown_label": "UNKNOWN",
+  "source": "https://www.cerave.com.ar — JSON-LD Product data and official packshots",
+  "products": [
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-MOI-CREMA-HIDRATANTE",
+      "counting_key": "CER-MOI-CREMA-HIDRATANTE",
+      "brand": "CeraVe",
+      "canonical_name": "Crema hidratante",
+      "category": "Hidratante",
+      "use_case": "Mientras que una barrera cutánea comprometida puede provocar sequedad y picores, una crema hidratante con ácido hialurónico y ceramidas puede ayudar. Al hidratar la piel y restaura",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-MOI-CREMA-HIDRATANTE.jpg",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/hidratantes/crema-hidratante",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/new_product/new_product_700x875/hidratantes/crema-hidratante-454g/3337875597388.jpg?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "fce773bf685e50a2e740bd161e10a339189b3303b51465306d0228238a5e3ac0",
+      "vendor_sku_declared": "3606000537729"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-MOI-CREMA-RENOVADORA-PIES",
+      "counting_key": "CER-MOI-CREMA-RENOVADORA-PIES",
+      "brand": "CeraVe",
+      "canonical_name": "Crema Renovadora de Pies",
+      "category": "Hidratante",
+      "use_case": "La Crema Renovadora de Pies de CeraVe está formulada con Ácido Salicílico y 3 ceramidas esenciales, que exfolia, hidrata intensamente la piel agrietada o extremadamente seca, mient",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-MOI-CREMA-RENOVADORA-PIES.jpg",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/hidratantes/crema-renovadora-de-pies",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/new_product/hidratantes/sa-crema-renovadora-de-pies-88ml/skin-renewing-cream-lg.jpg?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "017c60ac0025c06f50783fa1377613f035c114d6048432a27d97d60e84a192d2",
+      "vendor_sku_declared": "3337875597296"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-MOI-CREMA-REPARADORA-MANOS",
+      "counting_key": "CER-MOI-CREMA-REPARADORA-MANOS",
+      "brand": "CeraVe",
+      "canonical_name": "Crema Reparadora de Manos",
+      "category": "Hidratante",
+      "use_case": "La exposición a los agentes irritantes del medio ambiente, el lavado frecuente de las manos y las actividades cotidianas más comunes pueden resequar y dañar las manos. La Crema ter",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-MOI-CREMA-REPARADORA-MANOS.jpg",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/hidratantes/reparative-hand-cream",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/new_product/hidratantes/therapeutic-hand-cream/crema-de-manos-_700-x-875.jpg?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "74b95bbf01b6f2164d9bd4b1e8a57140b9178fc62ce1f6a6fc3881071e2be34e",
+      "vendor_sku_declared": "3606000537699"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-MOI-CREMA-REPARADORA-CONTORNO",
+      "counting_key": "CER-MOI-CREMA-REPARADORA-CONTORNO",
+      "brand": "CeraVe",
+      "canonical_name": "Crema reparadora para contorno de ojos",
+      "category": "Hidratante",
+      "use_case": "Cuando se trata de la piel del contorno de los ojos, la hinchazón y las ojeras son algunas de las preocupaciones más comunes. Afortunadamente, una crema de contorno de ojos adecuad",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-MOI-CREMA-REPARADORA-CONTORNO.jpg",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/hidratantes/crema-reparadora-para-contorno-de-ojos",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/new_product/new_product_700x875/hidratantes/crema-reparadora-para-el-contorno-de-ojos-14ml/3337875597272.jpg?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "1c3aaa709f3fa1547e4abe26334e8e11bcc24eff9b3b93c9de3dd48a6ab4ce9b",
+      "vendor_sku_declared": "3606000537613"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-MOI-LOCION-HIDRATANTE-FACIAL",
+      "counting_key": "CER-MOI-LOCION-HIDRATANTE-FACIAL",
+      "brand": "CeraVe",
+      "canonical_name": "Loción hidratante facial de noche",
+      "category": "Hidratante",
+      "use_case": "Su piel necesita hidratación las 24 horas del día, pero también puede necesitar otras cosas, como calmarse. Una crema de noche que contenga niacinamida, para contribuir a calmar la",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-MOI-LOCION-HIDRATANTE-FACIAL.jpg",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/hidratantes/loci%c3%b3n-hidratante-facial-de-noche",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/new_product/new_product_700x875/hidratantes/locion-hidratante-de-rostro-52ml/3337875597449.jpg?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "1ceaf76d0e65f1ba927544a00188d240c1cdca5618c5a7f3f91c27cfb8516743",
+      "vendor_sku_declared": "3606000537453"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-MOI-LOCION-HIDRATANTE-INTENSIVA",
+      "counting_key": "CER-MOI-LOCION-HIDRATANTE-INTENSIVA",
+      "brand": "CeraVe",
+      "canonical_name": "Loción Hidratante Intensiva",
+      "category": "Hidratante",
+      "use_case": "Desarrollada con dermatólogos, la Loción Hidratante Intensiva de CeraVe está formulada con Hydro-Urea™, un complejo único que ayuda a restaurar los factores hidratantes naturales d",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-MOI-LOCION-HIDRATANTE-INTENSIVA.webp",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/hidratantes/locion-hidratante-intensiva",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/products/iml/hidratacion-intensiva-front-lg.webp?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "44006c59c764a9bb4a7c204df45f317602a45009c946c959abc963301d393eb1",
+      "vendor_sku_declared": "3337875904292"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-MOI-LOCION-HIDRATANTE-NO",
+      "counting_key": "CER-MOI-LOCION-HIDRATANTE-NO",
+      "brand": "CeraVe",
+      "canonical_name": "Loción hidratante no comedogénica con FPS",
+      "category": "Hidratante",
+      "use_case": "Una loción hidratante facial es una parte clave de cualquier rutina de cuidado de la piel por la mañana, y un hidratante con FPS de amplio espectro es fundamental para ayudar a pro",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-MOI-LOCION-HIDRATANTE-NO.jpg",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/hidratantes/locion-hidratante-no-comedogenica-con-fps",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/new_product/hidratantes/spf-30/facial-moisturizing-lotion-spf30-1-lg.jpg?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "98362bcca5f9838fc003e01f56706ed72498c2aebaf1edf89f90da6c97c3465d",
+      "vendor_sku_declared": "3606000537460"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-MOI-LOCION-HIDRATANTE-USO",
+      "counting_key": "CER-MOI-LOCION-HIDRATANTE-USO",
+      "brand": "CeraVe",
+      "canonical_name": "Loción hidratante para uso diario",
+      "category": "Hidratante",
+      "use_case": "Encontrar los productos adecuados para su rutina de cuidado de la piel debería reducirse a unos pocos y sencillos pasos. Además de la limpieza y la protección solar, es esencial un",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-MOI-LOCION-HIDRATANTE-USO.jpg",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/hidratantes/loci%c3%b3n-hidratante-para-uso-diario",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/new_product/new_product_700x875/hidratantes/locion-hidratante-473ml/3337875597395.jpg?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "86018081648ab6d3bcb8a30aa3ee767834e2423d73f6301a7f2e265888b1dc91",
+      "vendor_sku_declared": "3606000537743"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-MOI-OIL-CONTROL-GEL",
+      "counting_key": "CER-MOI-OIL-CONTROL-GEL",
+      "brand": "CeraVe",
+      "canonical_name": "OIL CONTROL GEL-CREMA HIDRATANTE",
+      "category": "Hidratante",
+      "use_case": "CeraVe Oil Control Gel-Crema Hidratante es un hidratante ultra-ligero que ayuda a absorber el exceso de sebo para que la piel se vea matificada todo el día. Formulada para pieles m",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-MOI-OIL-CONTROL-GEL.jpg",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/hidratantes/gel-crema-hidratante-facial-oil-control",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/products/gel-crema-hidratante-facil/oil-control-1-lg.jpg?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "83aafbbc747a347afcfee25a25d55471ae4c911cbdaa5a8818a63b51e3927b20",
+      "vendor_sku_declared": "3337875904513"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-MOI-SA-CREMA-ALISADORA",
+      "counting_key": "CER-MOI-SA-CREMA-ALISADORA",
+      "brand": "CeraVe",
+      "canonical_name": "SA Crema Alisadora Anti-rugosidades",
+      "category": "Hidratante",
+      "use_case": "La SA Crema Alisadora Anti-rugosidades de CeraVe contiene Urea, Ácido Salicílico y 3 ceramidas esenciales para exfoliar gentilmente la piel, mientras la hidrata y restaura la barre",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-MOI-SA-CREMA-ALISADORA.jpg",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/hidratantes/crema-de-dia-renovadora-de-la-piel",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/mx/new_product/hidratantes/sa-crema-alisadora-anti-rugosidades-340g/3337875684101.jpg?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "918cd6538cfca483623ce08ca866c019b9624026acf784e18bb5784146ba998b",
+      "vendor_sku_declared": "3337875684101"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-MOI-WATER-GEL-HIDRATANTE",
+      "counting_key": "CER-MOI-WATER-GEL-HIDRATANTE",
+      "brand": "CeraVe",
+      "canonical_name": "Water Gel Hidratante Ácido Hialurónico",
+      "category": "Hidratante",
+      "use_case": "El Water Gel Hidratante Ácido Hialurónico CeraVe es apto para todo tipo de pieles, incluidas las sensibles. Proporciona 3 días de hidratación en 3 segundos* con efecto PLUMP. Las 3",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-MOI-WATER-GEL-HIDRATANTE.webp",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/hidratantes/water-gel-hidratante-acido-hialuronico",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/products/water-gel/wg-1-lg.webp?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "28bdb5ca82d18e9d3146290abdd2d8a669bc554c13aab8ec5e2b456aa61de22e",
+      "vendor_sku_declared": "3337875952903"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-CLE-AGUA-MICELAR-HIDRATANTE",
+      "counting_key": "CER-CLE-AGUA-MICELAR-HIDRATANTE",
+      "brand": "CeraVe",
+      "canonical_name": "Agua micelar hidratante",
+      "category": "Limpiador",
+      "use_case": "Un agua micelar limpiadora es una forma ultra suave de eliminar el exceso de grasa, suciedad y maquillaje sin tener que enjuagar. El Agua micelar hidratante CeraVe, con ceramidas y",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-CLE-AGUA-MICELAR-HIDRATANTE.webp",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/limpiadores/agua-micelar-hidratante",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/new_product/limpieza/new-agua-micelar-limpiadora/micellar-water-1-lg.webp?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "605b1732e42d9e556bd90d47508f27c57dbda863392507591bb22a08bd9a3a4b",
+      "vendor_sku_declared": "3606000538184"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-CLE-GEL-LIMPIADOR-ESPUMOSO",
+      "counting_key": "CER-CLE-GEL-LIMPIADOR-ESPUMOSO",
+      "brand": "CeraVe",
+      "canonical_name": "Gel limpiador espumoso para el rostro",
+      "category": "Limpiador",
+      "use_case": "Un limpiador facial espumoso es ideal para eliminar el exceso de grasa, suciedad y maquillaje, y elegir uno que sea suave, que no altere la barrera protectora natural de la piel y ",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-CLE-GEL-LIMPIADOR-ESPUMOSO.jpg",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/limpiadores/limpiador-facial-espumoso",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/new_product/new_product_700x875/limpieza/gel-limpiador-espumoso-473ml/3337875597357.jpg?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "5aed8b443da974c48fdde20518edbf4d7cac347561c2c2814c4070635b6bf24f",
+      "vendor_sku_declared": "3606000537750"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-CLE-LIMPIADOR-AIR-FOAM",
+      "counting_key": "CER-CLE-LIMPIADOR-AIR-FOAM",
+      "brand": "CeraVe",
+      "canonical_name": "Limpiador Air Foam Reequilibrante",
+      "category": "Limpiador",
+      "use_case": "El Limpiador Air Foam Reequilibrante de CeraVe con textura en espuma que limpia la piel, mientras la hidrata y controla el exceso de grasa. Ideal para piel normal a mixta, incluso ",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-CLE-LIMPIADOR-AIR-FOAM.webp",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/limpiadores/limpiador-air-foam-reequilibrante",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/products/airfoam-2025/air-foam-clenaser-front-1-lg.webp?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "6b496c100e039d6e8bc424ff1d4d2fe4c0ad62c7e4e84fb12e4a5aa4444cd8ba",
+      "vendor_sku_declared": "3337875925358"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-CLE-LIMPIADOR-ACEITE-ESPUMOSO",
+      "counting_key": "CER-CLE-LIMPIADOR-ACEITE-ESPUMOSO",
+      "brand": "CeraVe",
+      "canonical_name": "Limpiador en Aceite Espumoso Hidratante",
+      "category": "Limpiador",
+      "use_case": "El Limpiador en Aceite tiene una textura de aceite a espuma que limpia e hidrata la piel sin dejar sensación grasosa. Ayuda a eliminar la suciedad y el exceso de sebo de la superfi",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-CLE-LIMPIADOR-ACEITE-ESPUMOSO.jpg",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/limpiadores/limpiador-en-aceite-espumoso-hidratante",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/new_product/new_product_700x875/limpieza/limpiador-en-aceite-espumoso-hidratante-473ml/3337875773447.jpg?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "cf0ef2b0344a773fbb00e1dd32a12db287f78279a4bb9bd0efdee3988a98dd76",
+      "vendor_sku_declared": "3606000537699"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-CLE-LIMPIADOR-FACIAL-HIDRATANTE",
+      "counting_key": "CER-CLE-LIMPIADOR-FACIAL-HIDRATANTE",
+      "brand": "CeraVe",
+      "canonical_name": "Limpiador facial hidratante",
+      "category": "Limpiador",
+      "use_case": "Un limpiador puede eliminar la suciedad, el maquillaje y otros residuos, pero un limpiador hidratante, como el Limpiador facial hidratante CeraVe, puede hacer todo eso sin alterar ",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-CLE-LIMPIADOR-FACIAL-HIDRATANTE.jpg",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/limpiadores/limpiador-facial-hidratante",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/new_product/new_product_700x875/limpieza/limpiadora-hidratante-473ml/3337875597333.jpg?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "198c3d1bab0dcbda4310e0ef5c8c987fe6c44251e27c34fc7512aeede05c64ee",
+      "vendor_sku_declared": "3606000537699"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-REF-RECARGA-CREMA-HIDRATANTE",
+      "counting_key": "CER-REF-RECARGA-CREMA-HIDRATANTE",
+      "brand": "CeraVe",
+      "canonical_name": "Recarga Crema Hidratante",
+      "category": "Recarga",
+      "use_case": "La Crema Hidratante CeraVe es una crema hidratante rica, no grasa y de rápida absorción para pieles secas a muy secas del rostro y el cuerpo. Formulado con tres ceramidas esenciale",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-REF-RECARGA-CREMA-HIDRATANTE.webp",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/recargas/crema-hidratante-recarga",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/products/moisturising-cream-refill/moisturising-cream-refill-1-lg.webp?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "057b987ecadecfcba6c9d5ae20ab4b1722f98c982d8ec7701a428c42ca1c6f04",
+      "vendor_sku_declared": "3337875904285"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-REF-RECARGA-GEL-LIMPIADOR",
+      "counting_key": "CER-REF-RECARGA-GEL-LIMPIADOR",
+      "brand": "CeraVe",
+      "canonical_name": "Recarga Gel Limpiador Espumoso",
+      "category": "Recarga",
+      "use_case": "Un limpiador facial con textura de gel a espuma, el cual es ideal para eliminar el exceso de grasa y suciedad. El Gel Limpiador Espumoso de CeraVe contiene 3 ceramidas esenciales, ",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-REF-RECARGA-GEL-LIMPIADOR.webp",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/recargas/gel-limpiador-espumoso-recarga",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/products/foaming-cleanser-refill/foaming-cleanser-refill-1-lg.webp?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "4aa631834e081ed83e15d3df8e4d5961161ad42b4e4020c28ec6e93fadcd95e1",
+      "vendor_sku_declared": "3337875904285"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-REF-RECARGA-LIMPIADORA-HIDRATANTE",
+      "counting_key": "CER-REF-RECARGA-LIMPIADORA-HIDRATANTE",
+      "brand": "CeraVe",
+      "canonical_name": "Recarga Limpiadora Hidratante",
+      "category": "Recarga",
+      "use_case": "La Limpiadora Hidratante de CeraVe limpia e hidrata la piel sin alterar la barrera cutánea. Desarrollado con dermatólogos, es un limpiador suave con ingredientes como las ceramidas",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-REF-RECARGA-LIMPIADORA-HIDRATANTE.webp",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/recargas/limpiadora-hidratante-recarga",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/products/hydrating-cleanser-refill/hydrating-cleanser-refill-1-lg.webp?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "c9f58047d9927397a9b0e08e38cb6c5778b5046c57f36ca2a4f2efbee73ba472",
+      "vendor_sku_declared": "3337875904285"
+    },
+    {
+      "catalog_version": "0.2.0",
+      "canonical_product_id": "CER-REF-RECARGA-LOCION-HIDRATANTE",
+      "counting_key": "CER-REF-RECARGA-LOCION-HIDRATANTE",
+      "brand": "CeraVe",
+      "canonical_name": "Recarga Loción Hidratante",
+      "category": "Recarga",
+      "use_case": "La Loción Hidratante para uso diario de CeraVe ayuda a hidratar y a restaurar la barrera protectora de la piel. Deja una sensación de confort y suavidad, mientras que es ligera y n",
+      "reference_market": "AR",
+      "confirmed_markets": [
+        "AR"
+      ],
+      "local_image_file": "images/CER-REF-RECARGA-LOCION-HIDRATANTE.webp",
+      "image_status": "downloaded_official_reference",
+      "official_product_page": "https://www.cerave.com.ar/cuidado-de-la-piel/recargas/locion-hidratante-recarga",
+      "official_image_url": "https://www.cerave.com.ar/-/media/project/loreal/brand-sites/cerave/americas/ar/products/moistursing-lotion-refill/moisturising-lotion-refill-1-lg.webp?rev=-1",
+      "source_checked_at": "2026-08-20T06:04:55Z",
+      "image_sha256": "67815dd9fb761553fa1fe5e02d05ad9d33205fc5d97a47475cf0c8c977343590",
+      "vendor_sku_declared": "3337875904285"
+    }
+  ]
+}

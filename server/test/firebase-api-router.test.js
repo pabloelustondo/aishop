@@ -25,3 +25,20 @@ test("preserves inspection and legacy routing", async () => {
   await route({ method: "POST", url: "/analyze-product" }, {});
   assert.deepEqual(calls, ["inspection", "inspection", "legacy"]);
 });
+
+test("routes VISTA sub-path POST to the reader, which owns analysis", async () => {
+  const calls = [];
+  const handler = (name) => async () => { calls.push(name); };
+  const route = createFirebaseAPIRouter({
+    vistaHandler: handler("vista"), vistaReadHandler: handler("read"),
+    inspectionHandler: handler("inspection"), legacyHandler: handler("legacy")
+  });
+  // Ingest still owns POST on the collection itself.
+  await route({ method: "POST", url: "/v1/vista/inspection-packages" }, {});
+  await route({ method: "POST",
+    url: "/v1/vista/inspection-packages/RUN/artifacts/HASH/analysis" }, {});
+  await route({ method: "GET", url: "/v1/vista/inspection-packages/RUN" }, {});
+  // A method the reader does not serve must not reach ingest.
+  await route({ method: "DELETE", url: "/v1/vista/inspection-packages/RUN" }, {});
+  assert.deepEqual(calls, ["vista", "read", "read", "legacy"]);
+});
