@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import { VISTA_CATALOG, catalogProductIds, catalogRoster } from "../src/vista-catalog.js";
 
@@ -29,4 +31,29 @@ test("the roster names each product so a reader can map a pack to an id", () => 
   const roster = catalogRoster();
   assert.equal(roster.split("\n").length, VISTA_CATALOG.products.length);
   assert.match(roster, /CER-MOI-CREMA-REPARADORA-CONTORNO — CeraVe Crema reparadora/);
+});
+
+test("the browsable copy and the server copy are the same bytes", () => {
+  // Two copies exist because hosting serves static files from `dashboard/`
+  // and cannot reach `server/data`. A silent divergence would let the page
+  // show one catalog while recognition answers against another.
+  const digest = (path) => createHash("sha256")
+    .update(readFileSync(new URL(path, import.meta.url))).digest("hex");
+  assert.equal(
+    digest("../data/vista-catalog-cerave-ar.json"),
+    digest("../../dashboard/catalog/catalog.json"),
+    "dashboard/catalog/catalog.json has drifted from server/data"
+  );
+});
+
+test("every catalog packshot is present for the browser to show", () => {
+  const catalog = JSON.parse(readFileSync(
+    new URL("../data/vista-catalog-cerave-ar.json", import.meta.url), "utf8"));
+  for (const product of catalog.products) {
+    const path = new URL(`../../dashboard/catalog/${product.local_image_file}`,
+      import.meta.url);
+    const bytes = readFileSync(path);
+    assert.equal(createHash("sha256").update(bytes).digest("hex"),
+      product.image_sha256, `packshot bytes differ: ${product.canonical_product_id}`);
+  }
 });

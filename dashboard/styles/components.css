@@ -88,3 +88,29 @@ form .primary { justify-self: start; }
 }
 .cell-action[disabled] { opacity: .55; cursor: default; }
 .cell-summary { margin: 0 0 .6rem; font-size: .85rem; }
+
+/* Catalog browser: the reference a run is counted against. */
+.product-grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 300px) 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+.product-shot { margin: 0; }
+.product-shot img {
+  width: 100%;
+  display: block;
+  background: #fff;
+  border: 1px solid #dcd9cf;
+  border-radius: 8px;
+}
+.product-shot figcaption {
+  margin-top: .5rem;
+  color: #5e6b64;
+  font-size: .72rem;
+}
+.scan-item.selected { border-color: #1d6b4b; }
+.header-link { color: #1d6b4b; font-size: .85rem; }
+@media (max-width: 720px) {
+  .product-grid { grid-template-columns: 1fr; }
+}
