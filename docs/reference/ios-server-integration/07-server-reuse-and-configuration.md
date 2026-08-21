@@ -21,7 +21,7 @@ For isolation, create another Firebase project or explicitly namespace records a
 
 1. Register the second iOS bundle ID as another iOS app in Firebase project `aishop-99d36`.
 2. Give it its own downloaded Firebase plist and Google callback scheme.
-3. Use the same production base URL and request contract.
+3. Use the same test base URL and request contract.
 4. Confirm the enabled Firebase providers and customer sign-up setting.
 5. Verify the server accepts its ID tokens; Firebase apps in the same project share the issuer/audience.
 

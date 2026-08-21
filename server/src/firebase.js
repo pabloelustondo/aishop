@@ -3,6 +3,7 @@ import { onRequest } from "firebase-functions/v2/https";
 import { createFirebaseAPIRouter } from "./firebase-api-router.js";
 import { createFirebaseInspectionHandler } from "./firebase-inspection-handler.js";
 import { createFirebaseVistaPackageHandler } from "./firebase-vista-package-handler.js";
+import { createFirebaseVistaReadHandler } from "./firebase-vista-read-handler.js";
 import { createRequestHandler } from "./http-server.js";
 import { createOpenAIAnalyzer } from "./openai-analyzer.js";
 import { readVistaStartupLimits } from "./vista-startup-limits.js";
@@ -15,12 +16,21 @@ const vistaHandler = (request, response) => {
   cachedVistaHandler ??= createFirebaseVistaPackageHandler({ limits: vistaLimits });
   return cachedVistaHandler(request, response);
 };
+let cachedVistaReadHandler;
+const vistaReadHandler = (request, response) => {
+  // Built on first request, not at module load: a secret's value is only
+  // resolvable inside an invocation.
+  cachedVistaReadHandler ??= createFirebaseVistaReadHandler({
+    apiKey: openAIAPIKey.value(), model: process.env.OPENAI_MODEL
+  });
+  return cachedVistaReadHandler(request, response);
+};
 
 export const api = onRequest({
   region: "northamerica-northeast2",
   secrets: [openAIAPIKey, aiShopClientToken],
   timeoutSeconds: 30,
-  memory: "256MiB",
+  memory: "1GiB",
   maxInstances: 1,
   concurrency: 1,
   invoker: "public"
@@ -33,6 +43,6 @@ export const api = onRequest({
       model: process.env.OPENAI_MODEL }), clientToken: aiShopClientToken.value()
   })(req, res);
   await createFirebaseAPIRouter({
-    vistaHandler, inspectionHandler, legacyHandler
+    vistaHandler, vistaReadHandler, inspectionHandler, legacyHandler
   })(request, response);
 });

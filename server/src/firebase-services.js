@@ -40,6 +40,8 @@ export function createFirebaseVistaServices({ serverEnvironment, ingestVersion,
     recordStore: createVistaPackageRecordStore({ firestore,
       clock: () => Timestamp.now().toDate(), serverEnvironment, ingestVersion,
       emitDiagnostic: createFirebaseVistaReservationDiagnostic(logger) }),
-    verifyIdToken: createFirebaseVistaTokenVerifier(getAuth(app))
+    verifyIdToken: createFirebaseVistaTokenVerifier(getAuth(app)),
+    firestore,
+    bucket
   });
 }

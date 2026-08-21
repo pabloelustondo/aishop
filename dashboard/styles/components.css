@@ -22,3 +22,95 @@ fieldset { display: flex; flex-wrap: wrap; gap: 1rem; margin: 0; padding: 0; bor
 legend { margin-bottom: .6rem; font-weight: 650; }
 textarea { width: 100%; padding: .75rem; border: 1px solid #a9afa8; border-radius: .55rem; background: white; resize: vertical; }
 form .primary { justify-self: start; }
+
+/* VISTA package review: one row per capture, four accounts of it side by
+   side — the photograph, the device, server recognition, the reviewer. A run
+   carries several captures, unlike the single image an inspection holds, and
+   the columns only mean anything when they line up against the same photo. */
+.vista-gallery {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.1fr) repeat(3, minmax(190px, 1fr));
+  gap: 1px;
+  background: #dcd9cf;
+  border: 1px solid #dcd9cf;
+  border-radius: 8px;
+  overflow: hidden;
+  /* Four columns do not fit a phone; scrolling the grid keeps the page
+     itself from scrolling sideways. */
+  overflow-x: auto;
+}
+.cell-head {
+  background: #fff;
+  padding: .5rem .75rem;
+  color: #5e6b64;
+  font-size: .68rem;
+  letter-spacing: .09em;
+  text-transform: uppercase;
+}
+.cell {
+  background: #fff;
+  padding: .8rem .75rem;
+  min-width: 0;
+}
+.cell.photo img {
+  width: 100%;
+  display: block;
+  border-radius: 6px;
+  margin-bottom: .6rem;
+}
+.cell-none { margin: 0 0 .5rem; color: #8a5a12; font-size: .85rem; }
+.cell-hint { margin: 0; color: #5e6b64; font-size: .72rem; }
+.cell-warn { margin: .5rem 0 0; color: #8a5a12; font-size: .75rem; }
+.cell-rows {
+  margin: 0 0 .7rem;
+  padding-left: 1.05rem;
+  font-size: .85rem;
+  font-variant-numeric: tabular-nums;
+}
+.facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .15rem .6rem;
+  margin: 0;
+  font-size: .76rem;
+}
+.facts dt { color: #5e6b64; white-space: nowrap; }
+.facts dd {
+  margin: 0;
+  font-variant-numeric: tabular-nums;
+  word-break: break-word;
+}
+.cell-action {
+  margin-top: .4rem;
+  padding: .35rem .7rem;
+  font-size: .78rem;
+  border-radius: 999px;
+}
+.cell-action[disabled] { opacity: .55; cursor: default; }
+.cell-summary { margin: 0 0 .6rem; font-size: .85rem; }
+
+/* Catalog browser: the reference a run is counted against. */
+.product-grid {
+  display: grid;
+  grid-template-columns: minmax(200px, 300px) 1fr;
+  gap: 1.5rem;
+  align-items: start;
+}
+.product-shot { margin: 0; }
+.product-shot img {
+  width: 100%;
+  display: block;
+  background: #fff;
+  border: 1px solid #dcd9cf;
+  border-radius: 8px;
+}
+.product-shot figcaption {
+  margin-top: .5rem;
+  color: #5e6b64;
+  font-size: .72rem;
+}
+.scan-item.selected { border-color: #1d6b4b; }
+.header-link { color: #1d6b4b; font-size: .85rem; }
+@media (max-width: 720px) {
+  .product-grid { grid-template-columns: 1fr; }
+}

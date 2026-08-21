@@ -20,9 +20,25 @@
       <div class="aside-title"><h2>Inspections</h2><button id="refresh" aria-label="Refresh inspections">Refresh</button></div>
       <h3>Pending</h3><div id="pending-list" class="scan-list"></div>
       <h3>Recent</h3><div id="recent-list" class="scan-list"></div>
+      <h3>VISTA packages</h3><div id="vista-list" class="scan-list"></div>
+      <h3>Reference</h3><p><a href="/catalog.html" class="header-link">Browse the catalog</a></p>
     </aside>
     <article id="detail">
       <div id="empty-state"><p class="eyebrow">REVIEW QUEUE</p><h2>Select an inspection</h2><p>The original evidence and AI findings will stay side by side.</p></div>
+      <div id="vista-detail" hidden>
+        <div class="detail-heading">
+          <div><p id="vista-status" class="status"></p><h2 id="vista-title"></h2></div>
+          <p id="vista-meta"></p>
+        </div>
+        <section>
+          <h3>Terminal chain hash</h3>
+          <pre id="vista-chain"></pre>
+        </section>
+        <section>
+          <h3>Captures &amp; findings</h3>
+          <div id="vista-gallery" class="vista-gallery"></div>
+        </section>
+      </div>
       <div id="inspection" hidden>
         <div class="detail-heading"><div><p id="status" class="status"></p><h2 id="scan-title"></h2></div><p id="metadata"></p></div>
         <div class="evidence-grid"><figure><img id="evidence-image" alt="Original shelf inspection"><figcaption><a id="original-link" download="original.jpg">Open original image</a></figcaption></figure>

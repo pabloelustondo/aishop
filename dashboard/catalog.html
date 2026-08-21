@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>VISTA Catalog</title>
+  <link rel="stylesheet" href="/styles/base.css">
+  <link rel="stylesheet" href="/styles/layout.css">
+  <link rel="stylesheet" href="/styles/components.css">
+</head>
+<body>
+  <header>
+    <div><p class="eyebrow">VISTA · REFERENCE</p><h1 id="catalog-title">Catalog</h1></div>
+    <a href="/" class="header-link">Back to review</a>
+  </header>
+  <main id="dashboard">
+    <aside>
+      <div class="aside-title">
+        <h2>Products</h2>
+        <span id="catalog-count" class="eyebrow"></span>
+      </div>
+      <div id="product-list" class="scan-list"></div>
+    </aside>
+    <article id="detail">
+      <div id="empty-state">
+        <p class="eyebrow">CLOSED WORLD</p>
+        <h2>Select a product</h2>
+        <p>Every product a run may be counted against. Anything not here is UNKNOWN.</p>
+      </div>
+      <div id="product" hidden>
+        <div class="detail-heading">
+          <div>
+            <p id="product-brand" class="status"></p>
+            <h2 id="product-name"></h2>
+          </div>
+          <p id="product-id"></p>
+        </div>
+        <div class="product-grid">
+          <figure class="product-shot">
+            <img id="product-image" alt="">
+            <figcaption id="product-image-note"></figcaption>
+          </figure>
+          <div>
+            <section>
+              <h3>Description</h3>
+              <p id="product-description"></p>
+            </section>
+            <section>
+              <h3>Reference</h3>
+              <dl id="product-facts" class="facts"></dl>
+            </section>
+          </div>
+        </div>
+      </div>
+    </article>
+  </main>
+  <p id="message" role="status"></p>
+  <script type="module" src="/scripts/catalog.js"></script>
+</body>
+</html>

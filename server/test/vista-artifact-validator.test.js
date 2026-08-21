@@ -5,7 +5,7 @@ import { hash, request } from "../test-support/vista-package-fixture.js";
 import { readVistaPackageRequest } from "../src/vista-package-request.js";
 
 const limits = { manifestBytes: 262_144, auditBytes: 5_242_880,
-  jpegBytes: 5_242_880, packageBytes: 26_214_400, jpegAxis: 4_096,
+  jpegBytes: 5_242_880, packageBytes: 104_857_600, jpegAxis: 4_096,
   jpegPixels: 16_777_216, artifacts: 40, artifactParts: 40,
   multipartParts: 41 };
 

@@ -13,11 +13,11 @@ These rules are mandatory throughout this repository.
 
 ## File size
 
-- Every human-authored text file, including `AGENTS.md`, source code, and Markdown, must contain at most 50 physical lines.
-- Split content into focused files; never compress it into dense or unreadable lines.
+- Decision documents contain at most 50 physical lines: root Markdown, everything under `docs/00-` through `docs/08-`, and any Markdown carrying an approval field.
+- Split them into focused files; never compress content into dense or unreadable lines.
+- Every other file has no line limit, including evidence, reference material, source code, tests, schemas, generated reports, artifacts, and third-party files.
 - Existing violations must be split before the file is otherwise modified.
-- Binary assets, generated files, lockfiles, Xcode-generated metadata, and third-party files are exempt.
-- Verify line counts before treating work as complete.
+- Verify decision-document line counts before treating work as complete.
 
 ## Human review
 

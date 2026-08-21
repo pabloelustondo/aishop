@@ -9,7 +9,7 @@ test("exports the Firebase v2 HTTP function in Toronto with both secrets", () =>
   assert.equal(typeof api, "function");
   assert.deepEqual(api.__endpoint.region, ["northamerica-northeast2"]);
   assert.equal(api.__endpoint.platform, "gcfv2");
-  assert.equal(api.__endpoint.availableMemoryMb, 256);
+  assert.equal(api.__endpoint.availableMemoryMb, 1024);
   assert.equal(api.__endpoint.timeoutSeconds, 30);
   assert.equal(api.__endpoint.maxInstances, 1);
   assert.equal(api.__endpoint.concurrency, 1);

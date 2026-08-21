@@ -4,7 +4,7 @@ HumanReviewerInitials: PME
 
 ## Endpoint
 
-Production base URL: `https://northamerica-northeast2-aishop-99d36.cloudfunctions.net/api`
+Test base URL: `https://northamerica-northeast2-aishop-99d36.cloudfunctions.net/api`
 
 Submit with `POST /inspections`, `Content-Type: application/json`, and a Firebase bearer token. A direct browser GET correctly returns `401 Unauthorized` because it has no token.
 
