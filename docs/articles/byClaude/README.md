@@ -1,7 +1,5 @@
 # AI Shop, as Understood by Claude
 
-HumanReviewerInitials: PME
-
 This folder holds Claude's own explanation of the AI Shop project, written
 after reading the codebase and documentation directly rather than being
 told what to say. It is a companion read to the project's own
@@ -23,6 +21,5 @@ is, and what makes it unusual.
 
 These documents are Claude's interpretation, not project specification.
 They live under `docs/` and are governed like any other document here:
-unapproved until a listed human reviewer stages the exact reviewed text
-with initials in the root [README](../../../README.md). Treat disagreement
+unapproved until Pablo commits the exact reviewed text. Treat disagreement
 between this folder and the canonical docs as this folder being wrong.

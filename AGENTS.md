@@ -1,7 +1,5 @@
 # AI Shop Agent Rules
 
-HumanReviewerInitials:PME
-
 These rules are mandatory throughout this repository.
 
 ## Mandatory governance
@@ -21,30 +19,28 @@ These rules are mandatory throughout this repository.
 
 ## Human review
 
-- Every root-level Markdown file and every Markdown file under `docs/` must contain the standard `HumanReviewerInitials:` field.
-- Only a human may enter initials registered in the root `README.md`; a blank field means unapproved.
-- A changed governed Markdown file is approved only when it has registered initials and its exact reviewed contents are staged in Git.
-- Any unapproved or partially staged governed Markdown file found staged must be unstaged immediately.
-- Before any agent edit, unstage the file and clear its reviewer initials; even a one-character edit invalidates approval.
-- Never request approval for a proposed revision until its exact content exists unstaged with blank initials and the provided link opens that revision.
-- Never present an unchanged approved document as pending approval; identify the missing revision and create it first when authorized.
-- The agent leaves governed Markdown deletions unstaged; only a human approves a deletion by staging it during final Git review.
-- If any governed Markdown file is not human-approved, executable code changes and Git commits are blocked.
-- Never infer approval from praise, silence, or unrelated acceptance.
+- Approval is Pablo's commit of the exact reviewed contents. See [Document Review](docs/00-sdlc2-governance/document-review.md).
+- An agent writes, and may stage. An agent never commits, pushes, merges, rebases, or amends.
+- Uncommitted work, staged or not, is a proposal; a later edit is unapproved until its own commit.
+- An agent may delete a governed file and stage the deletion; Pablo's commit approves it.
+- `HumanReviewerInitials:` is retired. No new document carries one, and no agent writes initials into any file for any reason.
+- Surviving initials fields are historical record of approvals already given; remove one only when its document is next revised.
+- If a governed Markdown file the work depends on is uncommitted, executable code changes are blocked.
+- Never infer approval from praise, silence, or unrelated acceptance. An agent that believes a commit is needed says so and stops.
 
 ## Execution
 
-- No sprint coding may start until every governed Markdown file is human-approved and every changed governed Markdown file is fully staged.
+- No sprint coding may start until Pablo has committed every governed Markdown file the sprint depends on.
 - Every sprint requires an approved Sprint Plan followed by a separate approved Sprint Plan Tasks document before coding begins.
-- After both approvals, create and switch to a dedicated sprint branch before coding; merge it into `main` through the normal reviewed workflow.
+- After both commits, create and switch to a dedicated sprint branch before coding; Pablo merges it into `main` through the normal reviewed workflow.
 - Each implementation task names exactly one approved component and modifies only that component; split multi-component work into ordered tasks.
-- Sprint authorization covers its approved tasks, branch creation, routine changes, builds, tests, simulator checks, local commits, and pushing the sprint branch; proceed autonomously without intermediate permission.
+- Sprint authorization covers its approved tasks, branch creation, routine changes, builds, tests, and simulator checks; proceed autonomously without intermediate permission.
 - Do not ask between routine, reversible, in-scope steps or before advancing to the next approved task.
-- Ask only before changing approved scope, deploying to production, merging into `main`, releasing, or risking external data, secrets, money, security, or irreversible damage.
+- Ask only before changing approved scope, deploying to production, releasing, or risking external data, secrets, money, security, or irreversible damage.
 - Planning, implementation, validation, review, production deployment, merge, and release remain distinct states.
 
 ## Git and external systems
 
-- Never force-push, rewrite shared history, or delete shared branches without Pablo's explicit authorization.
+- Every Git act that publishes or rewrites — commit, push, merge, rebase, amend, branch deletion — is Pablo's alone.
 - Existing Firebase POC resources may be read, tested, updated, and deployed; ask before billing, deletion, destructive data, IAM, security, or secret changes.
 - Google Workspace may be read and summarized; ask before writing, deleting, sharing, or sending.
