@@ -18,3 +18,8 @@ ios/AIShop/AIShop.xcodeproj/project.xcworkspace/
 # Catalog bundles built for device import (regenerate with
 # server/scripts/build-cerave-ar-catalog.mjs; never a source of truth).
 dist/
+
+# Per-machine Claude Code state. Session-scoped and machine-specific, and its
+# permission allowlist is a standing pre-authorisation — the kind of thing
+# AGENTS.md says is Pablo's per act, never a committed default.
+.claude/settings.local.json
