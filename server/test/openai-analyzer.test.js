@@ -8,6 +8,7 @@ import {
   PRODUCT_INSTRUCTION
 } from "../src/openai-analyzer.js";
 import { ANALYSIS_CONTRACTS, ANALYSIS_MODES } from "../src/analysis-contracts.js";
+import { VISTA_CATALOG, catalogProductIds } from "../src/vista-catalog.js";
 
 const tinyJpegBase64 = readFileSync(
   new URL("../test-fixtures/tiny.jpg.base64", import.meta.url),
@@ -33,6 +34,7 @@ const areaReport = {
   summary: "Two products are clearly visible.",
   identifiedProducts: [{
     name: "Tomatoes",
+    count: 3,
     visibleEvidence: ["Red tomatoes in a produce bin"],
     confidence: "high"
   }],
@@ -111,9 +113,36 @@ test("maps non-success and empty provider responses to provider errors", async (
   }
 });
 
-test("rejects an area response with more than 12 identified products", async () => {
-  const tooManyProducts = Array.from({ length: 13 }, (_, index) => ({
+test("accepts a well-stocked shelf that the old 12-product gate would have refused", async () => {
+  // Regression: the response schema was raised to 40 while assertValidReport
+  // still said 12, so a 13-product answer passed the model and was then thrown
+  // out here as invalid-response — a 502 on exactly the shelves the raise was
+  // made for. 20 is a plausible CeraVe bay.
+  const wellStocked = Array.from({ length: 20 }, (_, index) => ({
     name: `Product ${index + 1}`,
+    count: index + 1,
+    visibleEvidence: ["Visible package"],
+    confidence: "high"
+  }));
+  const fetchImpl = async () => responseJson({
+    output_text: JSON.stringify({
+      summary: "A full bay.",
+      identifiedProducts: wellStocked,
+      uncertainItems: []
+    })
+  });
+  const analyze = createOpenAIAnalyzer({ apiKey: "test-api-key", fetchImpl });
+  const report = await analyze({ ...image, mode: ANALYSIS_MODES.areaScan });
+  assert.equal(report.identifiedProducts.length, 20);
+  assert.equal(report.identifiedProducts[19].count, 20);
+});
+
+test("rejects an area response with more than 40 identified products", async () => {
+  // 40 is the ceiling: above the full CeraVe Argentina range of 25, with room
+  // for a second brand in the same frame.
+  const tooManyProducts = Array.from({ length: 41 }, (_, index) => ({
+    name: `Product ${index + 1}`,
+    count: 1,
     visibleEvidence: ["Visible package"],
     confidence: "medium"
   }));
@@ -150,4 +179,56 @@ test("aborts a provider request after the configured timeout", async () => {
     analyze(image),
     (error) => error instanceof ProviderError && error.kind === "timeout"
   );
+});
+
+test("the closed-world contract can only name catalog products", () => {
+  const contract = ANALYSIS_CONTRACTS[ANALYSIS_MODES.areaScanCatalog];
+  const allowed = contract.schema.properties.identifiedProducts.items.properties.productId.enum;
+  // The enum IS the constraint. Open-world naming produced a plausible CeraVe
+  // cleanser that is neither on the shelf nor in the catalog; this makes that
+  // answer unrepresentable rather than merely discouraged.
+  assert.deepEqual(allowed.slice().sort(), catalogProductIds().slice().sort());
+  assert.ok(allowed.includes("UNKNOWN"), "refusal must remain expressible");
+  // Every catalog product must be nameable in the prompt, or the model cannot
+  // map a pack to the id it is required to answer with.
+  for (const product of VISTA_CATALOG.products) {
+    assert.ok(contract.instruction.includes(product.id), `roster omits ${product.id}`);
+  }
+});
+
+test("a closed-world answer outside the catalog is refused", async () => {
+  const outside = {
+    summary: "One product.",
+    identifiedProducts: [{
+      productId: "CER-CLE-ACNE-FOAMING",
+      readAs: "Acne Foaming Cream Cleanser",
+      count: 1,
+      visibleEvidence: ["Boxed product"],
+      confidence: "high"
+    }],
+    uncertainItems: []
+  };
+  const fetchImpl = async () => responseJson({ output_text: JSON.stringify(outside) });
+  const analyze = createOpenAIAnalyzer({ apiKey: "test-api-key", fetchImpl });
+  await assert.rejects(
+    analyze({ ...image, mode: ANALYSIS_MODES.areaScanCatalog }),
+    ProviderError
+  );
+});
+
+test("UNKNOWN carries its own facing count", async () => {
+  const report = {
+    summary: "Five units, two unmatched.",
+    identifiedProducts: [
+      { productId: "CER-MOI-CREAM-340", readAs: "Moisturising Cream",
+        count: 3, visibleEvidence: ["Tub"], confidence: "high" },
+      { productId: "UNKNOWN", readAs: "boxed product, label unreadable",
+        count: 2, visibleEvidence: ["Carton"], confidence: "low" }
+    ],
+    uncertainItems: []
+  };
+  const fetchImpl = async () => responseJson({ output_text: JSON.stringify(report) });
+  const analyze = createOpenAIAnalyzer({ apiKey: "test-api-key", fetchImpl });
+  const result = await analyze({ ...image, mode: ANALYSIS_MODES.areaScanCatalog });
+  assert.equal(result.identifiedProducts.reduce((n, p) => n + p.count, 0), 5);
 });

@@ -24,7 +24,7 @@ function validateCoordinate(value) {
 }
 
 function validateTargetPosition(mode, value) {
-  if (mode === ANALYSIS_MODES.areaScan) {
+  if (mode === ANALYSIS_MODES.areaScan || mode === ANALYSIS_MODES.areaScanCatalog) {
     if (value !== null) invalidRequest();
     return null;
   }

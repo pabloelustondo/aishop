@@ -14,3 +14,7 @@ ios/AIShop/AIShop/Support/GoogleService-Info.plist
 **/xcuserdata/
 **/*.xcuserstate
 ios/AIShop/AIShop.xcodeproj/project.xcworkspace/
+
+# Catalog bundles built for device import (regenerate with
+# server/scripts/build-cerave-ar-catalog.mjs; never a source of truth).
+dist/

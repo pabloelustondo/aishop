@@ -24,6 +24,7 @@ const areaReport = {
   summary: "One product is visible.",
   identifiedProducts: [{
     name: "Tomatoes",
+    count: 3,
     visibleEvidence: ["Red produce"],
     confidence: "medium"
   }],

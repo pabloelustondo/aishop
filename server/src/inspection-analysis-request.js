@@ -19,7 +19,12 @@ export function buildInspectionAnalysisRequest(submission, model) {
   return {
     model,
     store: false,
-    max_output_tokens: 1_200,
+    // Raised with the 40-product ceiling. A full shelf answer is roughly
+    // 45 tokens per product plus the summary and uncertain items, so 1,200
+    // truncated mid-JSON well before 40 products — and a truncated response
+    // fails strict schema validation, surfacing as a 502 rather than as a
+    // partial answer. 6,000 clears the worst case with margin.
+    max_output_tokens: 6_000,
     text: { format: {
       type: "json_schema",
       name: contract.schemaName,

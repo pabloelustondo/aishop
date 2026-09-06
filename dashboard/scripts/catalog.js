@@ -46,8 +46,14 @@ function show(product) {
   const image = byId("product-image");
   image.src = `/catalog/${product.local_image_file}`;
   image.alt = `${product.brand} ${product.canonical_name} packshot`;
+  // The note must describe what the bytes ARE. The demo catalog's references
+  // are photographs of the physical units, not manufacturer packshots, and
+  // calling them official would be a claim the file itself contradicts.
   byId("product-image-note").textContent =
-    "Official packshot. These exact bytes are what the device verifies on import.";
+    product.image_status === "photographed_demo_reference"
+      ? "Photograph of the physical unit used for the demo. These exact bytes "
+        + "are what the device verifies on import."
+      : "Official packshot. These exact bytes are what the device verifies on import.";
 
   byId("product-description").textContent =
     product.use_case || "No description published for this product.";

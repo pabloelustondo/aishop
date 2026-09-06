@@ -29,7 +29,10 @@ const vistaReadHandler = (request, response) => {
 export const api = onRequest({
   region: "northamerica-northeast2",
   secrets: [openAIAPIKey, aiShopClientToken],
-  timeoutSeconds: 30,
+  // Raised with max_output_tokens: a full 25-product shelf answer generates
+  // several thousand tokens, and 30 s left no margin over the provider call.
+  // A timeout discards a completed OpenAI charge and returns nothing.
+  timeoutSeconds: 120,
   memory: "1GiB",
   maxInstances: 1,
   concurrency: 1,
