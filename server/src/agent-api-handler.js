@@ -12,7 +12,7 @@ import {
 } from "./agent-evidence-store.js";
 import { AgentUploadError, readAgentUpload } from "./agent-upload-request.js";
 import { ProviderError } from "./errors.js";
-import { sendJson } from "./http-json.js";
+import { sendBytes, sendJson } from "./http-json.js";
 
 const BASE = "/v1/agent/analyses";
 
@@ -204,6 +204,21 @@ export function createAgentAPIHandler({
     return [200, { analysis: serialize(record) }];
   }
 
+  /**
+   * The photograph a report was derived from.
+   *
+   * The bytes were stored on upload and, until now, read only by the runner.
+   * A count is checkable only against the image it came from, so the page
+   * needs them; nothing else about the contract changes. Served, never
+   * redirected: the object is private to the function's service account and
+   * the browser never touches Cloud Storage.
+   */
+  async function source(ownerKey, analysisId, response) {
+    const evidence = await evidenceStore.readSource({ ownerKey, analysisId });
+    sendBytes(response, evidence);
+    return null;
+  }
+
   async function read(ownerKey, analysisId) {
     const record = await analysisStore.read({ ownerKey, analysisId });
     // A record belonging to someone else is not found, because under this
@@ -228,7 +243,8 @@ export function createAgentAPIHandler({
 
     const rest = path.slice(BASE.length + 1).split("/");
     const [analysisId, tail, ...extra] = rest;
-    if (extra.length > 0 || (tail !== undefined && tail !== "run")) {
+    if (extra.length > 0
+      || (tail !== undefined && tail !== "run" && tail !== "source")) {
       throw agentError("not_found");
     }
     // Checked before any lookup, so a crafted identifier is refused rather
@@ -238,6 +254,10 @@ export function createAgentAPIHandler({
     if (tail === "run") {
       if (method !== "POST") throw agentError("method_not_allowed");
       return { operation: "run", analysisId, route: `POST ${BASE}/{analysisId}/run` };
+    }
+    if (tail === "source") {
+      if (method !== "GET") throw agentError("method_not_allowed");
+      return { operation: "source", analysisId, route: `GET ${BASE}/{analysisId}/source` };
     }
     if (method !== "GET") throw agentError("method_not_allowed");
     return { operation: "read", analysisId, route: `GET ${BASE}/{analysisId}` };
@@ -254,6 +274,12 @@ export function createAgentAPIHandler({
       const { operation, analysisId, route: template } = route(request.method, path);
       matched = template;
       const ownerKey = await ownerKeyFor(request);
+      // The one operation that answers with bytes writes its own response;
+      // everything else hands back a status and a JSON body.
+      if (operation === "source") {
+        await source(ownerKey, analysisId, response);
+        return;
+      }
       const [status, body] = operation === "upload" ? await upload(request, ownerKey)
         : operation === "run" ? await run(request, ownerKey, analysisId)
           : operation === "read" ? await read(ownerKey, analysisId)

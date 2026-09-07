@@ -7,7 +7,7 @@
  *   - the first run fires automatically once the upload succeeds, because
  *     there is nothing a person could usefully add before seeing an answer;
  *   - a `failed` record offers Retry — the same request, worth making
- *     precisely because nothing was produced;
+ *     precisely because nothing was produced, and carrying that run's own note;
  *   - an `analyzed` record offers no bare re-run. The same image and the same
  *     prompt buy the same rows at full price. It offers Refine instead, which
  *     sends a note, and so asks a different question.
@@ -29,8 +29,9 @@ const view = {
   signedOut: element("signed-out"), main: element("agent"),
   signIn: element("sign-in"), signOut: element("sign-out"),
   form: element("upload-form"), file: element("file"), submit: element("submit"),
-  refresh: element("refresh"), list: element("analyses"),
-  empty: element("empty"), message: element("message")
+  uploadAnother: element("upload-another"), refresh: element("refresh"),
+  live: element("live"), liveText: element("live-text"),
+  list: element("analyses"), empty: element("empty"), message: element("message")
 };
 
 function say(text, isError = false) {
@@ -38,17 +39,21 @@ function say(text, isError = false) {
   view.message.dataset.tone = isError ? "error" : "info";
 }
 
+function busy(label) {
+  view.liveText.textContent = label;
+  view.live.dataset.busy = label === "Idle" ? "false" : "true";
+}
+
 /**
  * The agent endpoint answers `{ error: { code, message, retryable } }`, which
  * is not the shape `scripts/api.js` reads. Rather than widen that helper for
  * two different contracts, this page reads its own.
  */
-async function request(method, path, { body, json } = {}) {
+async function authorized(method, path, { body, json } = {}) {
   const user = firebase.auth().currentUser;
   if (!user) throw new Error("Sign in to continue.");
   const token = await user.getIdToken();
-
-  const response = await fetch(path, {
+  return fetch(path, {
     method,
     headers: {
       Authorization: `Bearer ${token}`,
@@ -58,7 +63,10 @@ async function request(method, path, { body, json } = {}) {
     },
     body: json ? JSON.stringify(json) : body
   });
+}
 
+async function request(method, path, options) {
+  const response = await authorized(method, path, options);
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
     const failure = new Error(payload?.error?.message ?? "The request failed.");
@@ -120,122 +128,254 @@ function textNode(tag, text, className) {
   return node;
 }
 
+const spacer = () => textNode("span", "", "spacer");
+
+/**
+ * Object URLs made for the images on screen.
+ *
+ * The source route needs an Authorization header, which an `<img src>` cannot
+ * send, so the bytes are fetched and wrapped in a blob URL. Every one is
+ * revoked before the list is redrawn; without that, each refresh would leak
+ * another copy of every photograph for the life of the tab.
+ */
+let objectURLs = [];
+function releaseImages() {
+  for (const url of objectURLs) URL.revokeObjectURL(url);
+  objectURLs = [];
+}
+
+async function sourceURL(analysisId) {
+  const response = await authorized("GET", `${BASE}/${analysisId}/source`);
+  if (!response.ok) return null;
+  const url = URL.createObjectURL(await response.blob());
+  objectURLs.push(url);
+  return url;
+}
+
+/** The image a count came from, loaded after the row it explains is on screen. */
+function evidenceImage(analysis) {
+  const figure = document.createElement("div");
+  figure.className = "evidence";
+
+  const image = document.createElement("img");
+  image.alt = `The photograph analysed as ${analysis.fileName ?? analysis.analysisId}`;
+  image.loading = "lazy";
+  figure.appendChild(image);
+  sourceURL(analysis.analysisId)
+    .then((url) => { if (url) image.src = url; })
+    .catch(() => { image.replaceWith(textNode("p", "The image could not be loaded.", "meta")); });
+
+  const dimensions = analysis.width && analysis.height
+    ? `${analysis.width} × ${analysis.height}` : null;
+  figure.appendChild(textNode("p",
+    [dimensions, "the image these counts came from"].filter(Boolean).join(" · "), "imgmeta"));
+
+  if (analysis.status === "analyzed" && analysis.report?.summary) {
+    figure.appendChild(textNode("p", analysis.report.summary, "summary"));
+  }
+  if (analysis.status === "failed") {
+    figure.appendChild(textNode("p",
+      REASON_LABEL[analysis.failureReason] ?? "The run failed.", "summary"));
+  }
+  return figure;
+}
+
+/**
+ * Three columns, and the confidence badge carries its own evidence.
+ *
+ * A fourth column, and then a marker column, were both tried and dropped: a
+ * column existing only to hold a hover target earns nothing. The badge already
+ * answers "how sure", so it answers "why" too. It stays visible rather than
+ * hiding behind that hover, because it is the signal a person scans for.
+ */
 function facingsTable(report) {
   const table = document.createElement("table");
   table.className = "facings";
-  const head = table.insertRow();
-  head.appendChild(textNode("th", "Product"));
-  const countHead = textNode("th", "Facings");
-  countHead.className = "count";
-  head.appendChild(countHead);
+
+  const head = table.createTHead().insertRow();
+  for (const [label, className] of [
+    ["Product", ""], ["Facings", "col-count"], ["Confidence", "col-conf"]
+  ]) {
+    const cell = textNode("th", label, className);
+    cell.scope = "col";
+    head.appendChild(cell);
+  }
+
+  const body = table.createTBody();
   for (const product of report.identifiedProducts ?? []) {
-    const row = table.insertRow();
+    const row = body.insertRow();
     row.appendChild(textNode("td", product.name));
-    const count = textNode("td", String(product.count));
-    count.className = "count";
-    row.appendChild(count);
+    row.appendChild(textNode("td", String(product.count), "col-count"));
+
+    const cell = textNode("td", "", "col-conf");
+    const evidence = (product.visibleEvidence ?? []).join("; ");
+    const badge = textNode("span", product.confidence ?? "unknown", "conf");
+    badge.dataset.level = product.confidence ?? "unknown";
+    if (evidence) {
+      badge.tabIndex = 0;
+      badge.setAttribute("role", "note");
+      badge.setAttribute("aria-label",
+        `Confidence ${product.confidence ?? "unknown"}. Visible evidence: ${evidence}`);
+      // The styled tooltip does the work; `title` is only the fallback under it.
+      badge.title = evidence;
+      badge.appendChild(textNode("span", evidence, "tip"));
+    }
+    cell.appendChild(badge);
+    row.appendChild(cell);
   }
   return table;
 }
 
-function refineControl(analysis) {
-  const form = document.createElement("form");
-  form.className = "refine";
+/** Listed with their reasons: a count of unidentified items is unactionable. */
+function uncertainStrip(report) {
+  const items = report.uncertainItems ?? [];
+  if (items.length === 0) return null;
 
-  const note = document.createElement("input");
-  note.type = "text";
-  note.maxLength = MAX_NOTE;
-  // `required` alone accepts a space, and a space is not an instruction.
-  note.required = true;
-  note.placeholder = "Ignore the top shelf; count the boxes behind the front row…";
-  note.setAttribute("aria-label", "What should the next run do differently?");
+  const strip = document.createElement("div");
+  strip.className = "strip tint";
+  strip.appendChild(textNode("h3",
+    `${items.length} item${items.length === 1 ? "" : "s"} the model could not identify`));
 
-  const button = textNode("button", "Refine");
-  button.type = "submit";
-
-  form.append(note, button);
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    const asked = refinementNote(note.value);
-    if (asked === null) {
-      // Refused here, before a provider call is spent on the same question.
-      say("A refinement needs a note saying what to do differently.", true);
-      note.focus();
-      return;
-    }
-    await run(analysis.analysisId, asked, button);
-  });
-  return form;
+  const list = document.createElement("ul");
+  for (const item of items) {
+    const entry = document.createElement("li");
+    entry.append(item.description ?? "Unidentified item");
+    if (item.reason) entry.append(" — ", textNode("span", item.reason, "why"));
+    list.appendChild(entry);
+  }
+  strip.appendChild(list);
+  return strip;
 }
 
-function actionsFor(analysis) {
-  const actions = document.createElement("div");
+/** Every run with the note that produced it, so an answer reads beside its question. */
+function runStrip(analysis) {
+  const runs = analysis.runs ?? [];
+  if (runs.length === 0) return null;
 
-  if (analysis.status === "failed") {
-    // The one place a repeat of the identical request is worth making — and
-    // identical includes the note the failed run carried.
-    const retry = textNode("button", "Retry");
-    retry.type = "button";
-    retry.addEventListener("click",
-      () => run(analysis.analysisId, retryContextOf(analysis), retry));
-    actions.appendChild(retry);
-    return actions;
-  }
-  if (analysis.status === "uploaded") {
-    // The automatic run never started — a dropped connection, a closed tab.
-    const analyse = textNode("button", "Analyse");
-    analyse.type = "button";
-    analyse.addEventListener("click", () => run(analysis.analysisId, null, analyse));
-    actions.appendChild(analyse);
-    return actions;
-  }
+  const strip = document.createElement("div");
+  strip.className = "strip";
+  strip.appendChild(textNode("h3", "Run history"));
+
+  runs.forEach((run, index) => {
+    const line = document.createElement("div");
+    line.className = "run-line";
+    line.appendChild(textNode("span", `Run ${run.runNumber ?? index + 1}`, "run-no"));
+    line.appendChild(run.context
+      ? textNode("span", `“${run.context}”`, "run-ctx")
+      : textNode("span", "no note — automatic on upload", "run-none"));
+    line.appendChild(spacer());
+    const outcome = [run.status, run.failureReason].filter(Boolean).join(" · ");
+    line.appendChild(textNode("span", outcome, "meta"));
+    strip.appendChild(line);
+  });
+  return strip;
+}
+
+function actionStrip(analysis) {
+  const strip = document.createElement("div");
+  strip.className = "strip tint";
+
   if (analysis.status === "analyzed") {
-    actions.appendChild(refineControl(analysis));
+    const form = document.createElement("form");
+    form.className = "refine";
+
+    const note = document.createElement("input");
+    note.type = "text";
+    note.maxLength = MAX_NOTE;
+    // `required` alone accepts a space, and a space is not an instruction.
+    note.required = true;
+    note.placeholder = "What should the next run do differently?";
+    note.setAttribute("aria-label", "What should the next run do differently?");
+
+    const button = textNode("button", "Refine");
+    button.type = "submit";
+    form.append(note, button);
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const asked = refinementNote(note.value);
+      if (asked === null) {
+        // Refused here, before a provider call is spent on the same question.
+        say("A refinement needs a note saying what to do differently.", true);
+        note.focus();
+        return;
+      }
+      await run(analysis.analysisId, asked, button);
+    });
+    strip.appendChild(form);
+    return strip;
   }
-  return actions;
+
+  const actions = document.createElement("div");
+  actions.className = "actions";
+  if (analysis.status === "failed" || analysis.status === "uploaded") {
+    // Retry repeats the failed run's input, note included. On `uploaded` the
+    // automatic run never started — a dropped connection, a closed tab.
+    const label = analysis.status === "failed" ? "Retry" : "Analyse";
+    const button = textNode("button", label);
+    button.type = "button";
+    button.addEventListener("click",
+      () => run(analysis.analysisId, retryContextOf(analysis), button));
+    actions.appendChild(button);
+  }
+  if (actions.childElementCount === 0) return null;
+  strip.appendChild(actions);
+  return strip;
 }
 
 function card(analysis) {
   const section = document.createElement("section");
   section.className = "analysis";
 
-  const heading = document.createElement("div");
-  heading.className = "analysis-heading";
-  const title = document.createElement("div");
-  title.append(
-    textNode("p", STATUS_LABEL[analysis.status] ?? analysis.status, "status"),
-    textNode("h3", analysis.fileName ?? analysis.analysisId)
-  );
+  const head = document.createElement("div");
+  head.className = "analysis-head";
+  const status = textNode("span", STATUS_LABEL[analysis.status] ?? analysis.status, "status");
+  status.dataset.state = analysis.status;
+  head.append(status, textNode("span", analysis.fileName ?? analysis.analysisId, "filename"), spacer());
   const runs = analysis.runCount === 1 ? "1 run" : `${analysis.runCount ?? 0} runs`;
-  heading.append(title, textNode("p", runs, "analysis-meta"));
-  section.appendChild(heading);
+  head.appendChild(textNode("p", [
+    runs,
+    analysis.byteLength ? `${Math.round(analysis.byteLength / 1024)} kB` : null,
+    analysis.model,
+    analysis.createdAt ? new Date(analysis.createdAt).toLocaleString() : null
+  ].filter(Boolean).join(" · "), "meta"));
+  section.appendChild(head);
 
-  if (analysis.status === "failed") {
-    section.appendChild(textNode("p",
-      REASON_LABEL[analysis.failureReason] ?? "The run failed.", "note"));
+  const body = document.createElement("div");
+  body.className = "analysis-body";
+  body.appendChild(evidenceImage(analysis));
+
+  const rows = document.createElement("div");
+  rows.className = "rows";
+  if (analysis.status === "analyzed" && analysis.report) {
+    rows.appendChild(facingsTable(analysis.report));
   }
+  body.appendChild(rows);
+  section.appendChild(body);
 
   if (analysis.status === "analyzed" && analysis.report) {
-    // The note that produced these rows belongs beside them; a refined answer
-    // read without its instruction is not the same claim.
-    const asked = analysis.runs?.at(-1)?.context;
-    if (asked) section.appendChild(textNode("p", `Asked: ${asked}`, "note"));
-    section.appendChild(textNode("p", analysis.report.summary ?? ""));
-    section.appendChild(facingsTable(analysis.report));
-    const uncertain = analysis.report.uncertainItems ?? [];
-    if (uncertain.length > 0) {
-      section.appendChild(textNode("p",
-        `${uncertain.length} item(s) the model could not identify.`, "uncertain"));
-    }
+    const uncertain = uncertainStrip(analysis.report);
+    if (uncertain) section.appendChild(uncertain);
   }
+  const runHistory = runStrip(analysis);
+  if (runHistory) section.appendChild(runHistory);
+  const actions = actionStrip(analysis);
+  if (actions) section.appendChild(actions);
 
-  section.appendChild(actionsFor(analysis));
   return section;
 }
 
+/**
+ * With nothing uploaded the upload control is the page; with anything on
+ * screen it collapses to a header button. Upload is an action, not a
+ * destination, which is why it is not a page of its own.
+ */
 function render(analyses) {
+  releaseImages();
   view.list.replaceChildren(...analyses.map(card));
-  view.empty.hidden = analyses.length > 0;
+  const nothing = analyses.length === 0;
+  view.empty.hidden = !nothing;
+  view.form.hidden = !nothing;
+  view.uploadAnother.hidden = nothing;
 }
 
 async function refresh() {
@@ -246,6 +386,7 @@ async function refresh() {
 async function run(analysisId, context, button) {
   const note = typeof context === "string" ? context.trim() : "";
   if (button) button.disabled = true;
+  busy(note ? "Refining" : "Analysing");
   say(note ? "Refining…" : "Analysing…");
   try {
     await request("POST", `${BASE}/${analysisId}/run`,
@@ -258,6 +399,7 @@ async function run(analysisId, context, button) {
     say(error.message, true);
   } finally {
     if (button) button.disabled = false;
+    busy("Idle");
     await refresh().catch(() => {});
   }
 }
@@ -265,17 +407,13 @@ async function run(analysisId, context, button) {
 async function upload(file) {
   const body = new FormData();
   body.append("file", file, file.name);
+  busy("Uploading");
   say("Uploading…");
   const created = await request("POST", BASE, { body });
   await refresh().catch(() => {});
   await run(created.analysis.analysisId, null, null);
 }
 
-/**
- * Wires the page up. Kept out of module scope so importing this file is
- * side-effect free: the decisions above can then be tested without a browser,
- * a DOM stub, or a Firebase global.
- */
 function start() {
   view.form.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -289,7 +427,13 @@ function start() {
       say(error.message, true);
     } finally {
       view.submit.disabled = false;
+      busy("Idle");
     }
+  });
+
+  view.uploadAnother.addEventListener("click", () => {
+    view.form.hidden = false;
+    view.file.focus();
   });
 
   view.refresh.addEventListener("click", () => {
@@ -304,12 +448,19 @@ function start() {
   view.signOut.addEventListener("click", () => firebase.auth().signOut());
 
   firebase.auth().onAuthStateChanged((user) => {
-    view.signedOut.hidden = Boolean(user);
-    view.main.hidden = !user;
-    view.signOut.hidden = !user;
+    const signedIn = Boolean(user);
+    view.signedOut.hidden = signedIn;
+    view.main.hidden = !signedIn;
+    for (const control of [view.signOut, view.refresh, view.live]) {
+      control.hidden = !signedIn;
+    }
     say("");
-    if (!user) {
+    busy("Idle");
+    if (!signedIn) {
+      releaseImages();
       view.list.replaceChildren();
+      view.form.hidden = true;
+      view.uploadAnother.hidden = true;
       return;
     }
     // The page opens showing history rather than an empty box.

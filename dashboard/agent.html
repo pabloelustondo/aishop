@@ -4,35 +4,22 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>AI Shop Agent</title>
+  <!-- base.css only, then this page's own layout. `layout.css` and
+       `components.css` describe the reviewer dashboard; loading them is what
+       trapped this page in a 25 rem column. -->
   <link rel="stylesheet" href="/styles/base.css">
-  <link rel="stylesheet" href="/styles/layout.css">
-  <link rel="stylesheet" href="/styles/components.css">
-  <style>
-    .agent-main { max-width: 60rem; margin: 0 auto; padding: 0 1rem 4rem; }
-    .upload-card { border: 1px solid currentColor; border-radius: 4px;
-      padding: 1rem 1.25rem; margin-bottom: 2rem; opacity: .95; }
-    .upload-card p { margin: .25rem 0 1rem; }
-    .analysis { border-top: 1px solid currentColor; padding: 1.25rem 0; }
-    .analysis-heading { display: flex; justify-content: space-between;
-      gap: 1rem; align-items: baseline; flex-wrap: wrap; }
-    .analysis h3 { margin: .25rem 0; font-size: 1rem; }
-    .analysis-meta { font-size: .8rem; opacity: .7; margin: 0; }
-    .facings { width: 100%; border-collapse: collapse; margin-top: .75rem; }
-    .facings th, .facings td { text-align: left; padding: .3rem .5rem .3rem 0;
-      border-bottom: 1px solid rgba(128, 128, 128, .3); font-size: .9rem; }
-    .facings td.count { text-align: right; font-variant-numeric: tabular-nums; width: 4rem; }
-    .refine { display: flex; gap: .5rem; margin-top: .75rem; flex-wrap: wrap; }
-    .refine input { flex: 1 1 20rem; padding: .4rem .5rem; }
-    .note { font-size: .85rem; opacity: .8; margin: .5rem 0 0; }
-    .uncertain { font-size: .85rem; opacity: .8; margin: .5rem 0 0; }
-  </style>
+  <link rel="stylesheet" href="/styles/agent.css">
 </head>
 <body>
-  <header>
+  <header class="agent-header">
     <div>
       <p class="eyebrow">AI SHOP · AGENT</p>
       <h1>Upload a photograph, count a shelf</h1>
     </div>
+    <span class="spacer"></span>
+    <span id="live" class="live" hidden><span class="dot"></span><span id="live-text">Idle</span></span>
+    <button id="upload-another" type="button" class="primary" hidden>Upload another</button>
+    <button id="refresh" type="button" hidden>Refresh</button>
     <button id="sign-out" type="button" hidden>Sign out</button>
   </header>
 
@@ -43,23 +30,21 @@
     <button id="sign-in" type="button" class="primary">Sign in with Google</button>
   </section>
 
-  <main id="agent" class="agent-main" hidden>
-    <section class="upload-card">
-      <h2>New analysis</h2>
-      <p>One JPEG, up to 5&nbsp;MB and 4,096&nbsp;px per side. It is analysed as
-        soon as it is stored.</p>
-      <form id="upload-form">
-        <input id="file" type="file" accept="image/jpeg" required>
-        <button id="submit" class="primary" type="submit">Upload and analyse</button>
-      </form>
-    </section>
+  <!-- Collapsed once anything exists; with an empty list it is the page. -->
+  <form id="upload-form" class="upload-open" hidden>
+    <input id="file" type="file" accept="image/jpeg" required>
+    <button id="submit" type="submit" class="primary">Upload and analyse</button>
+    <p class="hint">One JPEG, up to 5&nbsp;MB and 4,096&nbsp;px per side.
+      Analysed as soon as it is stored.</p>
+  </form>
 
-    <div class="aside-title">
-      <h2>Your analyses</h2>
-      <button id="refresh" type="button" aria-label="Refresh the list">Refresh</button>
-    </div>
+  <main id="agent" class="agent-main" hidden>
     <div id="analyses"></div>
-    <p id="empty" hidden>Nothing uploaded yet.</p>
+    <div id="empty" class="empty" hidden>
+      <h2>Nothing analysed yet</h2>
+      <p>Choose a photograph above. It is analysed as soon as it is stored, and the
+        result appears here with the image it came from.</p>
+    </div>
   </main>
 
   <p id="message" role="status" aria-live="polite"></p>

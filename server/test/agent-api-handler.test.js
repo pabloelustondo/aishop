@@ -352,3 +352,56 @@ test("logs the matched route, never the caller's own path", async () => {
   assert.ok(written.includes("unmatched"),
     "a request matching no route is logged as unmatched");
 });
+
+test("serves the caller's own stored image back, private and uncacheable", async () => {
+  const BYTES = Buffer.from([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9]);
+  const { handle, calls } = harness({
+    evidenceStore: {
+      readSource: async (input) => {
+        calls.push(["readSource", input]);
+        return { path: "p", bytes: BYTES, mediaType: "image/jpeg", sha256: "b".repeat(64) };
+      }
+    }
+  });
+
+  const response = responseDouble();
+  response.end = function (body) { this.sent.raw = body; };
+  await handle(jsonRequest("GET", `${BASE}/${ID}/source`), response);
+
+  assert.equal(response.sent.status, 200);
+  assert.equal(response.sent.headers["Content-Type"], "image/jpeg");
+  assert.equal(response.sent.headers["Cache-Control"], "private, no-store");
+  assert.ok(BYTES.equals(response.sent.raw), "the stored bytes are served unchanged");
+  const [, read] = calls.find(([kind]) => kind === "readSource");
+  assert.equal(read.ownerKey, OWNER, "the read is scoped to the caller");
+});
+
+test("another owner's image is simply not there", async () => {
+  const { handle, calls } = harness({
+    evidenceStore: {
+      readSource: async (input) => {
+        calls.push(["readSource", input]);
+        throw new AgentEvidenceUnavailableError(new Error("no such object"));
+      }
+    }
+  });
+
+  const sent = await send(handle, jsonRequest("GET", `${BASE}/${ID}/source`, undefined, "token-b"));
+
+  const [, read] = calls.find(([kind]) => kind === "readSource");
+  assert.equal(read.ownerKey, OTHER_OWNER, "a caller can only ever name their own key");
+  assert.equal(sent.status, 503);
+  assert.equal(sent.body.error.code, "storage_unavailable");
+});
+
+test("the source route refuses an unauthenticated caller and a wrong method", async () => {
+  const { handle, calls } = harness();
+
+  const anonymous = await send(handle, { method: "GET", url: `${BASE}/${ID}/source`, headers: {} });
+  assert.equal(anonymous.status, 401);
+
+  const wrongMethod = await send(handle, jsonRequest("DELETE", `${BASE}/${ID}/source`));
+  assert.equal(wrongMethod.status, 405);
+
+  assert.equal(calls.length, 0, "neither reaches storage");
+});
