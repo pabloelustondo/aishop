@@ -378,18 +378,21 @@ test("serves the caller's own stored image back, private and uncacheable", async
 
 test("another owner's image is simply not there", async () => {
   const { handle, calls } = harness({
-    evidenceStore: {
-      readSource: async (input) => {
-        calls.push(["readSource", input]);
-        throw new AgentEvidenceUnavailableError(new Error("no such object"));
-      }
-    }
+    analysisStore: { read: async ({ ownerKey }) => ownerKey === OWNER ? RECORD : null },
+    evidenceStore: { readSource: async () => { throw new Error("must not access storage"); } }
   });
-
   const sent = await send(handle, jsonRequest("GET", `${BASE}/${ID}/source`, undefined, "token-b"));
+  assert.equal(sent.status, 404);
+  assert.equal(sent.body.error.code, "analysis_not_found");
+});
 
-  const [, read] = calls.find(([kind]) => kind === "readSource");
-  assert.equal(read.ownerKey, OTHER_OWNER, "a caller can only ever name their own key");
+test("an existing analysis with unreadable source returns storage unavailable", async () => {
+  const { handle } = harness({
+    evidenceStore: { readSource: async () => {
+      throw new AgentEvidenceUnavailableError(new Error("unavailable"));
+    } }
+  });
+  const sent = await send(handle, jsonRequest("GET", `${BASE}/${ID}/source`));
   assert.equal(sent.status, 503);
   assert.equal(sent.body.error.code, "storage_unavailable");
 });

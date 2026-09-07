@@ -214,6 +214,8 @@ export function createAgentAPIHandler({
    * the browser never touches Cloud Storage.
    */
   async function source(ownerKey, analysisId, response) {
+    const record = await analysisStore.read({ ownerKey, analysisId });
+    if (!record) throw agentError("analysis_not_found");
     const evidence = await evidenceStore.readSource({ ownerKey, analysisId });
     sendBytes(response, evidence);
     return null;

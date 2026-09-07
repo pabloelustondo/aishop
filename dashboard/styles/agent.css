@@ -140,5 +140,4 @@
 @media (max-width: 900px) {
   .analysis-body { grid-template-columns: 1fr; }
   .evidence { border-right: 0; border-bottom: 1px solid #d2d4ce; }
-  .tip { right: auto; left: 0; }
 }
