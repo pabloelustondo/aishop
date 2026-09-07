@@ -22,6 +22,7 @@ const definitions = Object.freeze({
   file_too_large: [413, "The image is too large.", false],
   media_type_unsupported: [415, "The image media type is unsupported.", false],
   context_invalid: [400, "The analysis note is invalid.", false],
+  context_required: [400, "Re-analysing a completed analysis requires a note saying what to do differently.", false],
   analysis_not_found: [404, "The analysis does not exist.", false],
   analysis_state_invalid: [409, "The analysis is not in a state that allows that.", false],
   analysis_run_limit: [409, "The analysis has already been run the maximum number of times.", false],

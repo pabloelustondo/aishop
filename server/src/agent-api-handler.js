@@ -1,5 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import {
+  AgentAnalysisContextRequiredError,
   AgentAnalysisNotFoundError,
   AgentAnalysisRunLimitError,
   AgentAnalysisStateError
@@ -85,6 +86,12 @@ function toAgentError(error) {
   if (error instanceof AgentAPIError) return error;
   if (error instanceof AgentUploadError) return agentError(error.code, error);
   if (error instanceof AgentAnalysisNotFoundError) return agentError("analysis_not_found");
+  // Deliberately 400, not the 409 the other state refusals use: the record is
+  // not in the wrong state, the request is missing the thing that would make
+  // a second run worth its cost.
+  if (error instanceof AgentAnalysisContextRequiredError) {
+    return agentError("context_required");
+  }
   if (error instanceof AgentAnalysisRunLimitError) return agentError("analysis_run_limit");
   if (error instanceof AgentAnalysisStateError) return agentError("analysis_state_invalid");
   if (error instanceof AgentEvidenceAlreadyExistsError) return agentError("source_exists", error);
@@ -213,8 +220,8 @@ export function createAgentAPIHandler({
 
   function route(method, path) {
     if (path === BASE) {
-      if (method === "POST") return { operation: "upload" };
-      if (method === "GET") return { operation: "list" };
+      if (method === "POST") return { operation: "upload", route: `POST ${BASE}` };
+      if (method === "GET") return { operation: "list", route: `GET ${BASE}` };
       throw agentError("method_not_allowed");
     }
     if (!path.startsWith(`${BASE}/`)) throw agentError("not_found");
@@ -230,17 +237,22 @@ export function createAgentAPIHandler({
 
     if (tail === "run") {
       if (method !== "POST") throw agentError("method_not_allowed");
-      return { operation: "run", analysisId };
+      return { operation: "run", analysisId, route: `POST ${BASE}/{analysisId}/run` };
     }
     if (method !== "GET") throw agentError("method_not_allowed");
-    return { operation: "read", analysisId };
+    return { operation: "read", analysisId, route: `GET ${BASE}/{analysisId}` };
   }
 
   return async function handleAgentAPI(request, response) {
-    let path = "";
+    // The matched route template, never the caller's own path. A rejected URL
+    // is attacker-controlled text, and a log line is somewhere it must not
+    // reach; "unmatched" says all a reader needs about a request that fit no
+    // route.
+    let matched = "unmatched";
     try {
-      path = String(request.url ?? "").split("?")[0];
-      const { operation, analysisId } = route(request.method, path);
+      const path = String(request.url ?? "").split("?")[0];
+      const { operation, analysisId, route: template } = route(request.method, path);
+      matched = template;
       const ownerKey = await ownerKeyFor(request);
       const [status, body] = operation === "upload" ? await upload(request, ownerKey)
         : operation === "run" ? await run(request, ownerKey, analysisId)
@@ -252,7 +264,7 @@ export function createAgentAPIHandler({
       // Code, status and path only. A cause can carry a bucket name, a URL,
       // or a fragment of a credential, and none of that belongs in a log.
       logger.error("Agent analysis request refused.",
-        { code: safe.code, status: safe.status, path });
+        { code: safe.code, status: safe.status, route: matched });
       sendJson(response, safe.status, agentErrorBody(safe));
     }
   };

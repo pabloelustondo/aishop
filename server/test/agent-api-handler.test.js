@@ -4,6 +4,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import { createAgentAPIHandler } from "../src/agent-api-handler.js";
 import {
+  AgentAnalysisContextRequiredError,
   AgentAnalysisNotFoundError,
   AgentAnalysisRunLimitError,
   AgentAnalysisStateError
@@ -101,7 +102,7 @@ function harness(overrides = {}) {
     verifyIdToken: overrides.verifyIdToken
       ?? (async (token) => ({ uid: token === "token-b" ? "uid-b" : UID })),
     newAnalysisId: () => ID,
-    logger: { error: () => {}, warn: () => {}, info: () => {} }
+    logger: overrides.logger ?? { error: () => {}, warn: () => {}, info: () => {} }
   });
   return { handle, calls };
 }
@@ -321,4 +322,33 @@ test("an unexpected fault answers 500 without carrying its detail to the caller"
   assert.equal(sent.status, 500);
   assert.equal(sent.body.error.code, "unexpected_server_error");
   assert.ok(!JSON.stringify(sent.body).includes("SECRET"));
+});
+
+test("a refine with no note is the caller's mistake, not a conflict or a fault", async () => {
+  const { handle } = harness({
+    runner: { run: async () => { throw new AgentAnalysisContextRequiredError(); } }
+  });
+
+  const sent = await send(handle, jsonRequest("POST", `${BASE}/${ID}/run`));
+
+  assert.equal(sent.status, 400,
+    "409 would say the record is in the wrong state; the remedy is a note");
+  assert.equal(sent.body.error.code, "context_required");
+  assert.equal(sent.body.error.retryable, false);
+});
+
+test("logs the matched route, never the caller's own path", async () => {
+  const lines = [];
+  const logger = { error: (...args) => lines.push(args), warn: () => {}, info: () => {} };
+  const { handle } = harness({ logger });
+
+  await send(handle, jsonRequest("GET", `${BASE}/..%2Fetc-PRIVATE-MARKER`));
+  await send(handle, jsonRequest("GET", "/v1/agent/nope-PRIVATE-MARKER"));
+  await send(handle, { method: "GET", url: `${BASE}?t=PRIVATE-MARKER`, headers: {} });
+
+  const written = JSON.stringify(lines);
+  assert.ok(!written.includes("PRIVATE-MARKER"),
+    `caller-controlled path reached the log: ${written}`);
+  assert.ok(written.includes("unmatched"),
+    "a request matching no route is logged as unmatched");
 });
