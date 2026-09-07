@@ -1,6 +1,7 @@
 import { defineSecret } from "firebase-functions/params";
 import { onRequest } from "firebase-functions/v2/https";
 import { createFirebaseAgentHandler } from "./firebase-agent-handler.js";
+import { agentAPIKey } from "./firebase-agent-config.js";
 import { createFirebaseAPIRouter } from "./firebase-api-router.js";
 import { createFirebaseInspectionHandler } from "./firebase-inspection-handler.js";
 import { createFirebaseVistaPackageHandler } from "./firebase-vista-package-handler.js";
@@ -32,7 +33,8 @@ const agentHandler = (request, response) => {
   // Built on first request for the same reason as the VISTA reader: a
   // secret's value is only resolvable inside an invocation.
   cachedAgentHandler ??= createFirebaseAgentHandler({
-    apiKey: openAIAPIKey.value(), model: process.env.OPENAI_MODEL
+    apiKey: agentAPIKey(process.env, () => openAIAPIKey.value()),
+    model: process.env.OPENAI_MODEL
   });
   return cachedAgentHandler(request, response);
 };

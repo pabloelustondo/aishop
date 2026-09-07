@@ -1,47 +1,67 @@
 #!/bin/zsh
-# Runs the pure-HTTP server-side end-to-end suite against local
-# Firebase emulators only. The demo- project id keeps every emulator
-# fully offline; no real Firebase project is ever contacted.
+# Local demo integration gate. Nonempty placeholders prevent cloud secret
+# lookups; Firebase composition disables agent provider calls in this emulator.
 set -euo pipefail
 cd "${0:a:h}/../.."
+umask 077
 
-# The deployed function declares two secrets, OPENAI_API_KEY and
-# AI_SHOP_CLIENT_TOKEN. In the emulator, firebase-functions resolves a secret
-# from server/.secret.local and, failing that, asks Google Secret Manager —
-# which is a network call to a real Google project, and is why this suite was
-# not offline. Overriding one secret is not enough; the other still reaches
-# out.
-#
-# The values are deliberately EMPTY rather than dummy strings. A dummy key is
-# truthy, so the composition would build a real OpenAI analyzer and a run
-# would try to reach the provider. Empty keeps it on its unconfigured path:
-# no Secret Manager request, no provider call, and a run that settles `failed`
-# with a provider reason — which is what step-04 already asserts.
-#
-# Any existing server/.secret.local is a developer's own file and is put back
-# on every exit path, including a failed run or an interrupt.
 SECRETS="server/.secret.local"
-BACKUP="$(mktemp -t aishop-secret-local.XXXXXX)"
+LOCK="server/.secret.local.e2e-lock"
+# A concurrent run must not back up or restore another run's placeholders.
+mkdir "$LOCK" || { print -u2 "Emulator secrets already owned; inspect $LOCK."; exit 1; }
+BACKUP="$LOCK/original"
 HAD_SECRETS=0
+OVERRIDE_INSTALLED=0
+EMULATOR_PID=""
 
 restore() {
-  if (( HAD_SECRETS )); then
-    mv -f "$BACKUP" "$SECRETS"
-  else
-    rm -f "$SECRETS"
+  local result=$?
+  trap - EXIT INT TERM
+  if (( OVERRIDE_INSTALLED )); then
+    if (( HAD_SECRETS )); then
+      if ! mv -f "$BACKUP" "$SECRETS"; then
+        print -u2 "Restore failed; original preserved at $BACKUP."
+        exit 1
+      fi
+    else
+      rm -f "$SECRETS" || exit 1
+    fi
   fi
-  rm -f "$BACKUP"
+  rm -f "$BACKUP" "$LOCK/override"
+  rmdir "$LOCK"
+  exit "$result"
 }
-trap restore EXIT INT TERM
+interrupt() {
+  local result=$1
+  trap '' INT TERM
+  if [[ -n "$EMULATOR_PID" ]]; then
+    kill -TERM "$EMULATOR_PID" 2>/dev/null || true
+    wait "$EMULATOR_PID" 2>/dev/null || true
+  fi
+  exit "$result"
+}
+trap restore EXIT
+trap 'interrupt 130' INT
+trap 'interrupt 143' TERM
 
-if [[ -f "$SECRETS" ]]; then
-  cp -p "$SECRETS" "$BACKUP"
-  HAD_SECRETS=1
+if [[ -L "$SECRETS" || ( -e "$SECRETS" && ! -f "$SECRETS" ) ]]; then
+  print -u2 "Refusing unsupported secret-file type."
+  exit 1
 fi
-printf 'OPENAI_API_KEY=\nAI_SHOP_CLIENT_TOKEN=\n' > "$SECRETS"
+if [[ -f "$SECRETS" ]]; then
+  HAD_SECRETS=1
+  # Failure here leaves OVERRIDE_INSTALLED=0: cleanup never removes the original.
+  cp -p "$SECRETS" "$BACKUP"
+fi
+printf 'OPENAI_API_KEY=local-emulator-disabled\nAI_SHOP_CLIENT_TOKEN=local-emulator-disabled\n' > "$LOCK/override"
+# Set before atomic replacement so an interrupt cannot bypass restoration.
+OVERRIDE_INSTALLED=1
+mv -f "$LOCK/override" "$SECRETS"
 
 firebase emulators:exec \
   --config firebase.e2e.json \
   --project demo-aishop-e2e \
   --only auth,functions,firestore,storage \
-  "node e2e/server/step-01-golden-receipt.mjs && node e2e/server/step-02-manifest-conflict.mjs && node e2e/server/step-03-persisted-evidence.mjs && node e2e/server/step-04-agent-upload.mjs && node server/scripts/e2e-agent-refine-persistence.mjs"
+  "node e2e/server/step-01-golden-receipt.mjs && node e2e/server/step-02-manifest-conflict.mjs && node e2e/server/step-03-persisted-evidence.mjs && node e2e/server/step-04-agent-upload.mjs && node server/scripts/e2e-agent-refine-persistence.mjs" &
+EMULATOR_PID=$!
+wait "$EMULATOR_PID"
