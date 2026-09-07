@@ -47,6 +47,21 @@ export class AgentAnalysisStateError extends Error {
   }
 }
 
+/**
+ * A refine was asked for without saying what to refine.
+ *
+ * Enforced here rather than only in the page, because the page is not the
+ * enforcement point: reopening an `analyzed` record without a note would
+ * repeat an identical question at full price, and any caller can do that.
+ */
+export class AgentAnalysisContextRequiredError extends Error {
+  constructor() {
+    super("Re-analysing a completed analysis requires a note.");
+    this.name = "AgentAnalysisContextRequiredError";
+    this.code = "context_required";
+  }
+}
+
 export class AgentAnalysisRunLimitError extends Error {
   constructor(limit) {
     super(`An analysis may be run at most ${limit} times.`);
@@ -174,13 +189,23 @@ export function createAgentAnalysisStore({
      * analyzed record is worth its cost only because it does.
      *
      * The previous failure reason is cleared, not kept beside a running
-     * status: a record showing both would misreport the current attempt. A
-     * previous *report* is deliberately left in place, so a refine still has
-     * something to show while it runs; the run entries say which is which.
+     * status: a record showing both would misreport the current attempt. The
+     * previous *report* is left in place so the record keeps the last
+     * completed answer until a new one settles. The page does not currently
+     * render it during `analyzing`; showing prior rows while a refine runs is
+     * an open UI proposal, not a promise this store keeps.
      */
     markAnalyzing({ ownerKey, analysisId, context }) {
       return transition(ownerKey, analysisId, "analyzing", (data) => {
         const runs = runsOf(data);
+        const asked = note(context);
+        // Reopening from `analyzed` is a refine, and a refine earns its cost
+        // only because the input differs. From `uploaded` or `failed` nothing
+        // was produced, so the same input is worth sending and no note is
+        // required.
+        if (data.status === "analyzed" && asked === null) {
+          throw new AgentAnalysisContextRequiredError();
+        }
         if (runs.length >= MAX_ANALYSIS_RUNS) {
           throw new AgentAnalysisRunLimitError(MAX_ANALYSIS_RUNS);
         }
@@ -188,7 +213,7 @@ export function createAgentAnalysisStore({
           failureReason: null,
           runs: [...runs, {
             runNumber: runs.length + 1,
-            context: note(context),
+            context: asked,
             status: "analyzing",
             startedAt: clock(),
             endedAt: null,

@@ -11,6 +11,11 @@
  *   - an `analyzed` record offers no bare re-run. The same image and the same
  *     prompt buy the same rows at full price. It offers Refine instead, which
  *     sends a note, and so asks a different question.
+ *
+ * The two decisions that are easy to get silently wrong — what a Retry
+ * resends, and what counts as a refinement — are exported as pure functions
+ * so they can be tested without a browser. Nothing else in this file runs at
+ * import time; the page is wired up by `start()`.
  */
 
 const BASE = "/v1/agent/analyses";
@@ -18,7 +23,8 @@ const BASE = "/v1/agent/analyses";
 /** Mirrors the server's own ceiling, so the refusal happens before the call. */
 const MAX_NOTE = 500;
 
-const element = (id) => document.getElementById(id);
+const element = (id) => (typeof document === "undefined"
+  ? null : document.getElementById(id));
 const view = {
   signedOut: element("signed-out"), main: element("agent"),
   signIn: element("sign-in"), signOut: element("sign-out"),
@@ -61,6 +67,35 @@ async function request(method, path, { body, json } = {}) {
     throw failure;
   }
   return payload;
+}
+
+/**
+ * What a Retry resends.
+ *
+ * A retry exists because a run produced nothing, so it must repeat that run's
+ * *input* — including the note, when the failed run was a refinement. Sending
+ * null instead silently asks the original question and returns an answer to
+ * something nobody asked.
+ */
+export function retryContextOf(analysis) {
+  const runs = Array.isArray(analysis?.runs) ? analysis.runs : [];
+  return runs.length > 0 ? (runs[runs.length - 1].context ?? null) : null;
+}
+
+/**
+ * What counts as a refinement, decided before any call is spent.
+ *
+ * Whitespace satisfies the input's `required` attribute but is not an
+ * instruction, and a blank note would reach the server as a bodyless rerun —
+ * a second identical question at full price. Over the ceiling is refused
+ * rather than truncated: a silently shortened instruction produces an answer
+ * to a question nobody asked.
+ */
+export function refinementNote(value) {
+  if (typeof value !== "string") return null;
+  const note = value.trim();
+  if (note === "" || note.length > MAX_NOTE) return null;
+  return note;
 }
 
 const STATUS_LABEL = Object.freeze({
@@ -110,6 +145,7 @@ function refineControl(analysis) {
   const note = document.createElement("input");
   note.type = "text";
   note.maxLength = MAX_NOTE;
+  // `required` alone accepts a space, and a space is not an instruction.
   note.required = true;
   note.placeholder = "Ignore the top shelf; count the boxes behind the front row…";
   note.setAttribute("aria-label", "What should the next run do differently?");
@@ -120,7 +156,14 @@ function refineControl(analysis) {
   form.append(note, button);
   form.addEventListener("submit", async (event) => {
     event.preventDefault();
-    await run(analysis.analysisId, note.value, button);
+    const asked = refinementNote(note.value);
+    if (asked === null) {
+      // Refused here, before a provider call is spent on the same question.
+      say("A refinement needs a note saying what to do differently.", true);
+      note.focus();
+      return;
+    }
+    await run(analysis.analysisId, asked, button);
   });
   return form;
 }
@@ -129,10 +172,12 @@ function actionsFor(analysis) {
   const actions = document.createElement("div");
 
   if (analysis.status === "failed") {
-    // The one place a repeat of the identical request is worth making.
+    // The one place a repeat of the identical request is worth making — and
+    // identical includes the note the failed run carried.
     const retry = textNode("button", "Retry");
     retry.type = "button";
-    retry.addEventListener("click", () => run(analysis.analysisId, null, retry));
+    retry.addEventListener("click",
+      () => run(analysis.analysisId, retryContextOf(analysis), retry));
     actions.appendChild(retry);
     return actions;
   }
@@ -226,41 +271,50 @@ async function upload(file) {
   await run(created.analysis.analysisId, null, null);
 }
 
-view.form.addEventListener("submit", async (event) => {
-  event.preventDefault();
-  const [file] = view.file.files;
-  if (!file) return;
-  view.submit.disabled = true;
-  try {
-    await upload(file);
-    view.form.reset();
-  } catch (error) {
-    say(error.message, true);
-  } finally {
-    view.submit.disabled = false;
-  }
-});
+/**
+ * Wires the page up. Kept out of module scope so importing this file is
+ * side-effect free: the decisions above can then be tested without a browser,
+ * a DOM stub, or a Firebase global.
+ */
+function start() {
+  view.form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    const [file] = view.file.files;
+    if (!file) return;
+    view.submit.disabled = true;
+    try {
+      await upload(file);
+      view.form.reset();
+    } catch (error) {
+      say(error.message, true);
+    } finally {
+      view.submit.disabled = false;
+    }
+  });
 
-view.refresh.addEventListener("click", () => {
-  refresh().catch((error) => say(error.message, true));
-});
+  view.refresh.addEventListener("click", () => {
+    refresh().catch((error) => say(error.message, true));
+  });
 
-view.signIn.addEventListener("click", () => {
-  firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
-    .catch((error) => say(error.message, true));
-});
+  view.signIn.addEventListener("click", () => {
+    firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
+      .catch((error) => say(error.message, true));
+  });
 
-view.signOut.addEventListener("click", () => firebase.auth().signOut());
+  view.signOut.addEventListener("click", () => firebase.auth().signOut());
 
-firebase.auth().onAuthStateChanged((user) => {
-  view.signedOut.hidden = Boolean(user);
-  view.main.hidden = !user;
-  view.signOut.hidden = !user;
-  say("");
-  if (!user) {
-    view.list.replaceChildren();
-    return;
-  }
-  // The page opens showing history rather than an empty box.
-  refresh().catch((error) => say(error.message, true));
-});
+  firebase.auth().onAuthStateChanged((user) => {
+    view.signedOut.hidden = Boolean(user);
+    view.main.hidden = !user;
+    view.signOut.hidden = !user;
+    say("");
+    if (!user) {
+      view.list.replaceChildren();
+      return;
+    }
+    // The page opens showing history rather than an empty box.
+    refresh().catch((error) => say(error.message, true));
+  });
+}
+
+if (typeof document !== "undefined" && typeof firebase !== "undefined") start();

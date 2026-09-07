@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
+  AgentAnalysisContextRequiredError,
   AgentAnalysisNotFoundError,
   AgentAnalysisRunLimitError,
   AgentAnalysisStateError,
@@ -235,4 +236,46 @@ test("surfaces the run history and its count on a read", async () => {
   const record = await store.read({ ownerKey: OWNER, analysisId: ID });
   assert.equal(record.runCount, 1);
   assert.equal(record.runs[0].report.summary, "first");
+});
+
+test("refuses to reopen an analyzed record without a note", async () => {
+  const done = [{ runNumber: 1, context: null, status: "analyzed",
+    report: { summary: "first" } }];
+
+  for (const blank of [undefined, null, "", "   ", 42]) {
+    const { store, calls } = harness({ status: "analyzed", ownerKey: OWNER, runs: done });
+    await assert.rejects(
+      store.markAnalyzing({ ownerKey: OWNER, analysisId: ID, context: blank }),
+      AgentAnalysisContextRequiredError,
+      `${JSON.stringify(blank)} must not reopen an analysed record`
+    );
+    assert.ok(!calls.some(([kind]) => kind === "update"),
+      "a refused refine must not touch the record");
+  }
+});
+
+test("a note is required only where a run would otherwise repeat itself", async () => {
+  // Retry after failure needs no note: nothing was produced, so the same
+  // input is worth resending.
+  const failed = harness({ status: "failed", ownerKey: OWNER, runs: [
+    { runNumber: 1, context: null, status: "failed" }] });
+  await failed.store.markAnalyzing({ ownerKey: OWNER, analysisId: ID });
+  assert.ok(failed.calls.some(([kind]) => kind === "update"));
+
+  // A first run has produced nothing either.
+  const uploaded = harness({ status: "uploaded", ownerKey: OWNER, runs: [] });
+  await uploaded.store.markAnalyzing({ ownerKey: OWNER, analysisId: ID });
+  assert.ok(uploaded.calls.some(([kind]) => kind === "update"));
+});
+
+test("a refine with a real note still reopens an analyzed record", async () => {
+  const done = [{ runNumber: 1, context: null, status: "analyzed" }];
+  const { store, calls } = harness({ status: "analyzed", ownerKey: OWNER, runs: done });
+
+  await store.markAnalyzing({
+    ownerKey: OWNER, analysisId: ID, context: "  ignore the top shelf  "
+  });
+
+  const [, , patch] = calls.find(([kind]) => kind === "update");
+  assert.equal(patch.runs[1].context, "ignore the top shelf");
 });
