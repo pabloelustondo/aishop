@@ -40,13 +40,28 @@ export function createOpenAIAnalyzer({
   }
   const authorization = `Bearer ${apiKey.trim()}`;
 
+  /**
+   * `context` is an optional note from the person who asked for this run —
+   * "ignore the top shelf", "count the boxes behind the front row". It is
+   * appended after the contract's instruction, never in place of it, so the
+   * schema and the counting rules still govern the answer.
+   *
+   * It exists because re-running an unchanged image against an unchanged
+   * prompt buys the same rows at full price. A second run is worth its cost
+   * only when the input differs, and this is the cheap way for it to differ.
+   *
+   * Callers that pass nothing send exactly the request they sent before.
+   */
   return async function analyzeProduct({
     imageBase64,
     mediaType,
-    mode = ANALYSIS_MODES.targetProduct
+    mode = ANALYSIS_MODES.targetProduct,
+    context = null
   }) {
     const contract = ANALYSIS_CONTRACTS[mode];
     if (!contract) throw new ProviderError("invalid-mode");
+    const note = typeof context === "string" && context.trim() !== ""
+      ? context.trim() : null;
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
@@ -73,6 +88,10 @@ export function createOpenAIAnalyzer({
             role: "user",
             content: [
               { type: "input_text", text: contract.instruction },
+              ...(note ? [{
+                type: "input_text",
+                text: `Additional instruction from the person requesting this analysis: ${note}`
+              }] : []),
               {
                 type: "input_image",
                 image_url: `data:${mediaType};base64,${imageBase64}`,

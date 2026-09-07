@@ -2,6 +2,8 @@ import { getApps, initializeApp } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
+import { createAgentAnalysisStore } from "./agent-analysis-store.js";
+import { createAgentEvidenceStore } from "./agent-evidence-store.js";
 import { createEvidenceReader } from "./evidence-reader.js";
 import { createEvidenceStore } from "./evidence-store.js";
 import { createInspectionRecordReader } from "./inspection-record-reader.js";
@@ -43,5 +45,29 @@ export function createFirebaseVistaServices({ serverEnvironment, ingestVersion,
     verifyIdToken: createFirebaseVistaTokenVerifier(getAuth(app)),
     firestore,
     bucket
+  });
+}
+
+/**
+ * The agent upload path's own resources.
+ *
+ * Separate from the VISTA services deliberately: its own Firestore collection
+ * and its own Storage prefix, sharing only the Firebase app and the token
+ * verifier. Nothing here reads or writes a VISTA record or object.
+ *
+ * The store takes both a server timestamp and a clock because they are not
+ * interchangeable — Firestore refuses a server-timestamp sentinel written
+ * inside an array element, and the run history is an array.
+ */
+export function createFirebaseAgentServices() {
+  const { app, firestore, bucket } = firebaseResources();
+  return Object.freeze({
+    evidenceStore: createAgentEvidenceStore({ bucket }),
+    analysisStore: createAgentAnalysisStore({
+      firestore,
+      serverTimestamp: FieldValue.serverTimestamp,
+      clock: () => Timestamp.now().toDate()
+    }),
+    verifyIdToken: createFirebaseVistaTokenVerifier(getAuth(app))
   });
 }

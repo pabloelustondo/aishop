@@ -28,6 +28,13 @@
         }
       },
       {
+        "source": "/v1/agent/analyses{,/**}",
+        "function": {
+          "functionId": "api",
+          "region": "northamerica-northeast2"
+        }
+      },
+      {
         "source": "/inspections{,/**}",
         "function": {
           "functionId": "api",

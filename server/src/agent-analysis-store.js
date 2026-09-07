@@ -4,12 +4,27 @@ const OWNERS = "agentAnalyses";
 const ANALYSES = "analyses";
 
 /**
- * Which status may become which. A run may be retried after failing, so
- * `failed` reopens; `analyzed` is terminal, because a stored report is a
- * record of what the model said and is not edited in place.
+ * How many times one uploaded image may be analysed.
+ *
+ * The run history lives inside the record, and a Firestore document is capped
+ * at 1 MiB. A full 40-product report is a few kilobytes, so this ceiling sits
+ * far below the document limit while still refusing an unbounded loop with a
+ * stable code rather than an opaque provider or storage error.
+ */
+export const MAX_ANALYSIS_RUNS = 25;
+
+/**
+ * Which status may become which.
+ *
+ * `analyzing` reopens from every settled status, but for two different
+ * reasons. From `failed` it is a retry: the same input, justified because
+ * nothing was produced. From `analyzed` it is a refine, which only earns its
+ * cost because the input differs — a context note the caller supplies. The
+ * store does not enforce that distinction; it records which run carried what,
+ * so a report is always readable beside the instruction that produced it.
  */
 const ALLOWED = Object.freeze({
-  analyzing: ["uploaded", "failed"],
+  analyzing: ["uploaded", "failed", "analyzed"],
   analyzed: ["analyzing"],
   failed: ["analyzing"]
 });
@@ -32,6 +47,15 @@ export class AgentAnalysisStateError extends Error {
   }
 }
 
+export class AgentAnalysisRunLimitError extends Error {
+  constructor(limit) {
+    super(`An analysis may be run at most ${limit} times.`);
+    this.name = "AgentAnalysisRunLimitError";
+    this.code = "analysis_run_limit";
+    this.limit = limit;
+  }
+}
+
 function identity(ownerKey, analysisId) {
   if (typeof ownerKey !== "string" || !OWNER_KEY.test(ownerKey)) {
     throw new TypeError("A lowercase hex owner key is required.");
@@ -42,7 +66,15 @@ function identity(ownerKey, analysisId) {
   }
 }
 
+/** A note is an instruction or it is absent; whitespace is neither. */
+function note(context) {
+  return typeof context === "string" && context.trim() !== "" ? context.trim() : null;
+}
+
+const runsOf = (data) => (Array.isArray(data?.runs) ? data.runs : []);
+
 function summarize(id, data) {
+  const runs = runsOf(data);
   return Object.freeze({
     analysisId: id,
     status: data.status ?? null,
@@ -55,7 +87,11 @@ function summarize(id, data) {
     failureReason: data.failureReason ?? null,
     model: data.model ?? null,
     mode: data.mode ?? null,
-    report: data.report ?? null
+    // The most recent completed run's report, kept at the top level so the
+    // list has one field to render. `runs` is where the history is.
+    report: data.report ?? null,
+    runCount: runs.length,
+    runs: runs.map((run) => Object.freeze({ ...run }))
   });
 }
 
@@ -66,17 +102,43 @@ function summarize(id, data) {
  * Records are nested under their owner key rather than filtered by field, so
  * a query can only ever see one caller's analyses. Reaching another owner's
  * record requires naming their key, which a caller never learns.
+ *
+ * `serverTimestamp` and `clock` are both required because they are not
+ * interchangeable: Firestore rejects a server-timestamp sentinel written
+ * inside an array element, so the run entries carry a concrete time while the
+ * record's own timestamps stay server-authored.
  */
-export function createAgentAnalysisStore({ firestore, serverTimestamp } = {}) {
+export function createAgentAnalysisStore({
+  firestore, serverTimestamp, clock = () => new Date()
+} = {}) {
   if (!firestore || typeof firestore.collection !== "function") {
     throw new TypeError("A Firestore instance is required.");
   }
   if (typeof serverTimestamp !== "function") {
     throw new TypeError("A server timestamp function is required.");
   }
+  if (typeof clock !== "function") {
+    throw new TypeError("A clock is required.");
+  }
 
   const analyses = (ownerKey) => firestore.collection(OWNERS)
     .doc(ownerKey).collection(ANALYSES);
+
+  /**
+   * Closes the run that is currently open. A record that reached `analyzing`
+   * always has one, because that is the only transition that opens one; the
+   * empty case is covered rather than assumed so a settled outcome is never
+   * dropped on the floor.
+   */
+  function closeOpenRun(data, outcome) {
+    const runs = [...runsOf(data)];
+    const open = runs.length > 0
+      ? runs[runs.length - 1]
+      : { runNumber: 1, context: null, startedAt: null };
+    const closed = { ...open, ...outcome, endedAt: clock() };
+    if (runs.length > 0) runs[runs.length - 1] = closed; else runs.push(closed);
+    return runs;
+  }
 
   async function transition(ownerKey, analysisId, to, patch) {
     identity(ownerKey, analysisId);
@@ -84,9 +146,10 @@ export function createAgentAnalysisStore({ firestore, serverTimestamp } = {}) {
     await firestore.runTransaction(async (transaction) => {
       const snapshot = await transaction.get(reference);
       if (!snapshot.exists) throw new AgentAnalysisNotFoundError();
-      const from = snapshot.data()?.status ?? null;
+      const data = snapshot.data() ?? {};
+      const from = data.status ?? null;
       if (!ALLOWED[to].includes(from)) throw new AgentAnalysisStateError(from, to);
-      transaction.update(reference, { ...patch, status: to });
+      transaction.update(reference, { ...patch(data), status: to });
     });
   }
 
@@ -99,30 +162,59 @@ export function createAgentAnalysisStore({ firestore, serverTimestamp } = {}) {
         mediaType, sha256, byteLength,
         createdAt: serverTimestamp(),
         analyzedAt: null, failureReason: null,
-        model: null, mode: null, report: null
+        model: null, mode: null, report: null,
+        runs: []
       };
       await analyses(ownerKey).doc(analysisId).create(data);
       return Object.freeze(data);
     },
 
-    markAnalyzing({ ownerKey, analysisId }) {
-      // The previous failure reason is cleared, not kept beside a running
-      // status: a record showing both would misreport the current attempt.
-      return transition(ownerKey, analysisId, "analyzing", { failureReason: null });
+    /**
+     * Opens a run. A retry after failure carries no context; a refine of an
+     * analyzed record is worth its cost only because it does.
+     *
+     * The previous failure reason is cleared, not kept beside a running
+     * status: a record showing both would misreport the current attempt. A
+     * previous *report* is deliberately left in place, so a refine still has
+     * something to show while it runs; the run entries say which is which.
+     */
+    markAnalyzing({ ownerKey, analysisId, context }) {
+      return transition(ownerKey, analysisId, "analyzing", (data) => {
+        const runs = runsOf(data);
+        if (runs.length >= MAX_ANALYSIS_RUNS) {
+          throw new AgentAnalysisRunLimitError(MAX_ANALYSIS_RUNS);
+        }
+        return {
+          failureReason: null,
+          runs: [...runs, {
+            runNumber: runs.length + 1,
+            context: note(context),
+            status: "analyzing",
+            startedAt: clock(),
+            endedAt: null,
+            report: null, model: null, mode: null, failureReason: null
+          }]
+        };
+      });
     },
 
     markAnalyzed({ ownerKey, analysisId, report, model, mode }) {
-      return transition(ownerKey, analysisId, "analyzed", {
+      return transition(ownerKey, analysisId, "analyzed", (data) => ({
         report, model: model ?? null, mode: mode ?? null,
-        analyzedAt: serverTimestamp(), failureReason: null
-      });
+        analyzedAt: serverTimestamp(), failureReason: null,
+        runs: closeOpenRun(data, {
+          status: "analyzed", report,
+          model: model ?? null, mode: mode ?? null, failureReason: null
+        })
+      }));
     },
 
     markFailed({ ownerKey, analysisId, reason }) {
-      return transition(ownerKey, analysisId, "failed", {
-        failureReason: typeof reason === "string" ? reason : "unknown",
-        report: null, analyzedAt: serverTimestamp()
-      });
+      const failureReason = typeof reason === "string" ? reason : "unknown";
+      return transition(ownerKey, analysisId, "failed", (data) => ({
+        failureReason, report: null, analyzedAt: serverTimestamp(),
+        runs: closeOpenRun(data, { status: "failed", failureReason, report: null })
+      }));
     },
 
     async read({ ownerKey, analysisId }) {

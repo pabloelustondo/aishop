@@ -232,3 +232,59 @@ test("UNKNOWN carries its own facing count", async () => {
   const result = await analyze({ ...image, mode: ANALYSIS_MODES.areaScanCatalog });
   assert.equal(result.identifiedProducts.reduce((n, p) => n + p.count, 0), 5);
 });
+
+test("appends a caller's context as its own instruction after the contract's", async () => {
+  let request;
+  const fetchImpl = async (url, options) => {
+    request = { url, options };
+    return responseJson({
+      output: [{
+        type: "message",
+        content: [{ type: "output_text", text: JSON.stringify(areaReport) }]
+      }]
+    });
+  };
+  const analyze = createOpenAIAnalyzer({ apiKey: "k", fetchImpl });
+
+  await analyze({
+    ...image,
+    mode: ANALYSIS_MODES.areaScan,
+    context: "  Ignore the top shelf; it is a different bay.  "
+  });
+
+  const body = JSON.parse(request.options.body);
+  const texts = body.input[0].content
+    .filter((part) => part.type === "input_text")
+    .map((part) => part.text);
+  assert.equal(texts.length, 2, "the contract instruction is not replaced, only followed");
+  assert.equal(texts[0], ANALYSIS_CONTRACTS[ANALYSIS_MODES.areaScan].instruction);
+  assert.match(texts[1], /Ignore the top shelf; it is a different bay\.$/,
+    "the note is trimmed and sent as given");
+  assert.equal(body.input[0].content.at(-1).type, "input_image",
+    "the image stays last so both instructions precede it");
+});
+
+test("sends only the contract instruction when a caller passes no context", async () => {
+  const bodies = [];
+  const fetchImpl = async (url, options) => {
+    bodies.push(JSON.parse(options.body));
+    return responseJson({
+      output: [{
+        type: "message",
+        content: [{ type: "output_text", text: JSON.stringify(areaReport) }]
+      }]
+    });
+  };
+  const analyze = createOpenAIAnalyzer({ apiKey: "k", fetchImpl });
+
+  await analyze({ ...image, mode: ANALYSIS_MODES.areaScan });
+  await analyze({ ...image, mode: ANALYSIS_MODES.areaScan, context: "   " });
+  await analyze({ ...image, mode: ANALYSIS_MODES.areaScan, context: 42 });
+
+  for (const body of bodies) {
+    const texts = body.input[0].content.filter((part) => part.type === "input_text");
+    assert.equal(texts.length, 1,
+      "an absent, blank, or non-string note must not become an empty instruction");
+    assert.equal(texts[0].text, ANALYSIS_CONTRACTS[ANALYSIS_MODES.areaScan].instruction);
+  }
+});

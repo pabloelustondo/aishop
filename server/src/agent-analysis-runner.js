@@ -29,6 +29,11 @@ function failureReason(error) {
  *
  * The error is re-thrown after being recorded. The caller decides the HTTP
  * answer; this component only makes sure the record tells the truth first.
+ *
+ * A run may carry a `context` note. The first run never does — there is
+ * nothing for a person to add before seeing an answer. A later run against an
+ * already analysed image is worth its cost only because the note changes what
+ * is being asked, so the note travels with the run rather than beside it.
  */
 export function createAgentAnalysisRunner({
   evidenceStore, analysisStore, analyzeProduct, model = null
@@ -44,14 +49,15 @@ export function createAgentAnalysisRunner({
   }
 
   return Object.freeze({
-    async run({ ownerKey, analysisId }) {
-      await analysisStore.markAnalyzing({ ownerKey, analysisId });
+    async run({ ownerKey, analysisId, context = null }) {
+      await analysisStore.markAnalyzing({ ownerKey, analysisId, context });
       try {
         const source = await evidenceStore.readSource({ ownerKey, analysisId });
         const report = await analyzeProduct({
           imageBase64: source.bytes.toString("base64"),
           mediaType: source.mediaType ?? "image/jpeg",
-          mode: MODE
+          mode: MODE,
+          context
         });
         await analysisStore.markAnalyzed({
           ownerKey, analysisId, report, model, mode: MODE

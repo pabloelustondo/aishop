@@ -2,7 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import {
   AgentAnalysisNotFoundError,
+  AgentAnalysisRunLimitError,
   AgentAnalysisStateError,
+  MAX_ANALYSIS_RUNS,
   createAgentAnalysisStore
 } from "../src/agent-analysis-store.js";
 
@@ -36,7 +38,7 @@ function harness(existing = null) {
     })
   };
   const store = createAgentAnalysisStore({
-    firestore, serverTimestamp: () => "server-time"
+    firestore, serverTimestamp: () => "server-time", clock: () => "run-time"
   });
   return { store, calls, owners };
 }
@@ -133,4 +135,104 @@ test("reads and lists only within the caller's own owner key", async () => {
   const listed = await store.list({ ownerKey: OTHER });
   assert.equal(owners.ownerKey, OTHER);
   assert.equal(listed[0].analysisId, ID);
+});
+
+test("appends one run entry per attempt, carrying the context that produced it", async () => {
+  const { store, calls } = harness({ status: "uploaded", ownerKey: OWNER, runs: [] });
+
+  await store.markAnalyzing({
+    ownerKey: OWNER, analysisId: ID, context: "  ignore the top shelf  "
+  });
+
+  const [, , patch] = calls.find(([kind]) => kind === "update");
+  assert.equal(patch.runs.length, 1);
+  assert.equal(patch.runs[0].runNumber, 1);
+  assert.equal(patch.runs[0].context, "ignore the top shelf",
+    "the note is trimmed and kept beside the run it instructed");
+  assert.equal(patch.runs[0].status, "analyzing");
+  assert.equal(patch.runs[0].startedAt, "run-time");
+  assert.equal(patch.runs[0].report, null);
+});
+
+test("treats a blank or absent note as no context rather than an empty instruction", async () => {
+  const blank = harness({ status: "uploaded", ownerKey: OWNER, runs: [] });
+  await blank.store.markAnalyzing({ ownerKey: OWNER, analysisId: ID, context: "   " });
+  const [, , blankPatch] = blank.calls.find(([kind]) => kind === "update");
+  assert.equal(blankPatch.runs[0].context, null);
+
+  const absent = harness({ status: "uploaded", ownerKey: OWNER, runs: [] });
+  await absent.store.markAnalyzing({ ownerKey: OWNER, analysisId: ID });
+  const [, , absentPatch] = absent.calls.find(([kind]) => kind === "update");
+  assert.equal(absentPatch.runs[0].context, null);
+});
+
+test("closes the open run with its own report rather than only the record", async () => {
+  const open = [{ runNumber: 1, context: "count the boxes behind", status: "analyzing",
+    startedAt: "earlier", endedAt: null, report: null }];
+  const { store, calls } = harness({ status: "analyzing", ownerKey: OWNER, runs: open });
+
+  await store.markAnalyzed({
+    ownerKey: OWNER, analysisId: ID,
+    report: { summary: "two products" }, model: "gpt-x", mode: "areaScan"
+  });
+
+  const [, , patch] = calls.find(([kind]) => kind === "update");
+  assert.equal(patch.runs.length, 1, "a completed run closes its entry, it does not add one");
+  assert.equal(patch.runs[0].status, "analyzed");
+  assert.equal(patch.runs[0].report.summary, "two products");
+  assert.equal(patch.runs[0].model, "gpt-x");
+  assert.equal(patch.runs[0].context, "count the boxes behind",
+    "the instruction stays readable beside the report it produced");
+  assert.equal(patch.runs[0].endedAt, "run-time");
+  assert.equal(patch.report.summary, "two products", "the record still surfaces the latest report");
+});
+
+test("closes the open run with its failure reason", async () => {
+  const open = [{ runNumber: 1, context: null, status: "analyzing", startedAt: "earlier" }];
+  const { store, calls } = harness({ status: "analyzing", ownerKey: OWNER, runs: open });
+
+  await store.markFailed({ ownerKey: OWNER, analysisId: ID, reason: "provider_timeout" });
+
+  const [, , patch] = calls.find(([kind]) => kind === "update");
+  assert.equal(patch.runs[0].status, "failed");
+  assert.equal(patch.runs[0].failureReason, "provider_timeout");
+  assert.equal(patch.runs[0].report, null);
+});
+
+test("reopens an analyzed record so a refine can run, keeping the earlier run", async () => {
+  const done = [{ runNumber: 1, context: null, status: "analyzed",
+    startedAt: "earlier", endedAt: "earlier", report: { summary: "first" } }];
+  const { store, calls } = harness({ status: "analyzed", ownerKey: OWNER, runs: done });
+
+  await store.markAnalyzing({
+    ownerKey: OWNER, analysisId: ID, context: "this is the CeraVe bay"
+  });
+
+  const [, , patch] = calls.find(([kind]) => kind === "update");
+  assert.equal(patch.status, "analyzing");
+  assert.equal(patch.runs.length, 2);
+  assert.equal(patch.runs[0].report.summary, "first", "the earlier run is not overwritten");
+  assert.equal(patch.runs[1].runNumber, 2);
+  assert.equal(patch.runs[1].context, "this is the CeraVe bay");
+});
+
+test("refuses to reopen a record beyond the run ceiling instead of growing without bound", async () => {
+  const many = Array.from({ length: MAX_ANALYSIS_RUNS }, (_, index) => ({
+    runNumber: index + 1, context: null, status: "analyzed"
+  }));
+  const { store } = harness({ status: "analyzed", ownerKey: OWNER, runs: many });
+
+  await assert.rejects(
+    store.markAnalyzing({ ownerKey: OWNER, analysisId: ID, context: "once more" }),
+    AgentAnalysisRunLimitError
+  );
+});
+
+test("surfaces the run history and its count on a read", async () => {
+  const runs = [{ runNumber: 1, context: null, status: "analyzed", report: { summary: "first" } }];
+  const { store } = harness({ status: "analyzed", ownerKey: OWNER, runs, report: { summary: "first" } });
+
+  const record = await store.read({ ownerKey: OWNER, analysisId: ID });
+  assert.equal(record.runCount, 1);
+  assert.equal(record.runs[0].report.summary, "first");
 });

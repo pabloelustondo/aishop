@@ -95,3 +95,33 @@ test("never spends a provider call before the run is marked started", async () =
 test("requires its collaborators", () => {
   assert.throws(() => createAgentAnalysisRunner({}), TypeError);
 });
+
+test("carries a refine note to the provider and onto the run it opened", async () => {
+  let seen;
+  const { runner, calls } = harness({
+    analyze: async (input) => { seen = input; return REPORT; }
+  });
+
+  await runner.run({
+    ownerKey: OWNER, analysisId: ID, context: "ignore the top shelf"
+  });
+
+  assert.equal(seen.context, "ignore the top shelf",
+    "the note must reach the model, or the endpoint accepting it is a lie");
+  const [, opened] = calls.find(([kind]) => kind === "analyzing");
+  assert.equal(opened.context, "ignore the top shelf",
+    "the run records the instruction that produced its report");
+});
+
+test("a run with no note asks exactly what it asked before", async () => {
+  let seen;
+  const { runner, calls } = harness({
+    analyze: async (input) => { seen = input; return REPORT; }
+  });
+
+  await runner.run({ ownerKey: OWNER, analysisId: ID });
+
+  assert.equal(seen.context ?? null, null);
+  const [, opened] = calls.find(([kind]) => kind === "analyzing");
+  assert.equal(opened.context ?? null, null);
+});
