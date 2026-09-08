@@ -26,6 +26,8 @@ Agent evaluation: [first-run review](uc-01-tabletop-and-video-scan/05-agent-firs
 product groups, 94 visible physical units across four shelf regions,
 with a numbered overlay tying every group back to a shelf position.
 
+Agent evaluation: [first-run review](uc-02-dense-pharmacy-shelf/05-agent-first-run-benchmark-review.md) and [independent visual read](uc-02-dense-pharmacy-shelf/06-independent-visual-read.md).
+
 ## What a use case is for
 
 To run the agent against one of these, give it the `-01-original` image
