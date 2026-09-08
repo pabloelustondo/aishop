@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+import { sanitizeDiagnostics } from "./agent-diagnostics.js";
 import { ProviderError } from "./errors.js";
 import {
   ANALYSIS_CONTRACTS,
@@ -6,7 +8,15 @@ import {
 } from "./analysis-contracts.js";
 
 const RESPONSES_URL = "https://api.openai.com/v1/responses";
+export const MAX_OUTPUT_TOKENS = 1_200;
 export const DEFAULT_MODEL = "gpt-5.4-mini";
+export function analyzerConfiguration(model = DEFAULT_MODEL, mode = "areaScan", timeoutMs = 20_000) {
+  const contract = ANALYSIS_CONTRACTS[mode];
+  return { requestedModel: model, mode, timeoutMs, maxOutputTokens: MAX_OUTPUT_TOKENS,
+    promptVersion: createHash("sha256").update(contract?.instruction ?? "").digest("hex"),
+    schemaVersion: createHash("sha256").update(JSON.stringify(contract?.schema ?? {})).digest("hex"),
+    preprocessingVersion: "original-image-auto-detail" };
+}
 export const PRODUCT_INSTRUCTION = ANALYSIS_CONTRACTS.targetProduct.instruction;
 
 function extractMessage(payload) {
@@ -56,7 +66,8 @@ export function createOpenAIAnalyzer({
     imageBase64,
     mediaType,
     mode = ANALYSIS_MODES.targetProduct,
-    context = null
+    context = null,
+    onDiagnostics = () => {}
   }) {
     const contract = ANALYSIS_CONTRACTS[mode];
     if (!contract) throw new ProviderError("invalid-mode");
@@ -65,6 +76,11 @@ export function createOpenAIAnalyzer({
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
 
+    const started = performance.now();
+    const diagnostics = analyzerConfiguration(model, mode, timeoutMs);
+    let failureClass;
+    let validationStarted;
+    const notify = () => { try { const pending = onDiagnostics(sanitizeDiagnostics(diagnostics)); pending?.catch?.(() => {}); } catch {} };
     try {
       const response = await fetchImpl(RESPONSES_URL, {
         method: "POST",
@@ -75,7 +91,7 @@ export function createOpenAIAnalyzer({
         body: JSON.stringify({
           model,
           store: false,
-          max_output_tokens: 1_200,
+          max_output_tokens: MAX_OUTPUT_TOKENS,
           text: {
             format: {
               type: "json_schema",
@@ -103,33 +119,59 @@ export function createOpenAIAnalyzer({
         signal: controller.signal
       });
 
-      if (!response.ok) {
-        throw new ProviderError("response");
-      }
-
+      diagnostics.providerStatus = response.status;
+      diagnostics.providerRequestId = response.headers?.get("x-request-id") ?? undefined;
+      const retryAfter = response.headers?.get("retry-after");
+      if (retryAfter && /^\d+$/.test(retryAfter)) diagnostics.retryAfterSeconds = Number(retryAfter);
       let payload;
-      try {
-        payload = await response.json();
-      } catch (error) {
-        const kind = error?.name === "AbortError" ? "timeout" : "invalid-response";
-        throw new ProviderError(kind);
+      try { payload = await response.json(); }
+      catch (error) {
+        failureClass = !response.ok ? "provider_http" : "provider_json";
+        if (error?.name === "AbortError") { failureClass = "provider_timeout"; throw new ProviderError("timeout"); }
+        throw new ProviderError(!response.ok ? "response" : "invalid-response");
       }
-
-      const message = extractMessage(payload);
-      if (!message) {
-        throw new ProviderError("empty-response");
+      diagnostics.responseStatus = payload?.status;
+      diagnostics.incompleteReason = payload?.incomplete_details?.reason;
+      diagnostics.returnedModel = payload?.model;
+      diagnostics.responseId = payload?.id;
+      diagnostics.providerCode = payload?.error?.code;
+      diagnostics.providerType = payload?.error?.type;
+      diagnostics.usage = payload?.usage ? {
+        inputTokens: payload?.usage?.input_tokens, outputTokens: payload?.usage?.output_tokens,
+        cachedTokens: payload?.usage?.input_tokens_details?.cached_tokens,
+        reasoningTokens: payload?.usage?.output_tokens_details?.reasoning_tokens
+      } : undefined;
+      diagnostics.durations = { provider_transport: performance.now() - started };
+      if (!response.ok || payload?.status === "failed") {
+        failureClass = "provider_http"; throw new ProviderError("response");
       }
-      let report;
-      try {
-        report = JSON.parse(message);
-      } catch {
+      if (payload?.status === "incomplete") {
+        failureClass = payload.incomplete_details?.reason === "max_output_tokens" ? "provider_output_limit" : "provider_incomplete";
         throw new ProviderError("invalid-response");
       }
-      return assertValidReport(mode, report);
+      failureClass = "provider_json";
+      if (payload?.output?.some(item => item?.content?.some(part => part?.type === "refusal"))) {
+        failureClass = "provider_refusal"; throw new ProviderError("invalid-response");
+      }
+      validationStarted = performance.now();
+      const message = extractMessage(payload);
+      if (!message) { failureClass = "provider_empty"; throw new ProviderError("empty-response"); }
+      let report;
+      try { report = JSON.parse(message); }
+      catch { failureClass = "provider_json"; throw new ProviderError("invalid-response"); }
+      try { assertValidReport(mode, report); }
+      catch { failureClass = "provider_schema"; throw new ProviderError("invalid-response"); }
+      diagnostics.durations.report_validation = performance.now() - validationStarted;
+      notify();
+      return report;
     } catch (error) {
-      if (error instanceof ProviderError) throw error;
-      const kind = error?.name === "AbortError" ? "timeout" : "network";
-      throw new ProviderError(kind);
+      const kind = error instanceof ProviderError ? error.kind : error?.name === "AbortError" ? "timeout" : "network";
+      diagnostics.failureClass = kind === "timeout" ? "provider_timeout" : failureClass ?? "provider_network";
+      diagnostics.durations ??= { provider_transport: performance.now() - started };
+      if (validationStarted !== undefined) diagnostics.durations.report_validation = performance.now() - validationStarted;
+      const safe = sanitizeDiagnostics(diagnostics);
+      notify();
+      throw new ProviderError(kind, safe);
     } finally {
       clearTimeout(timeout);
     }

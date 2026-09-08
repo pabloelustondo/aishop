@@ -33,6 +33,8 @@ const definitions = Object.freeze({
   unexpected_server_error: [500, "The request could not be completed.", true]
 });
 
+export const AGENT_API_ERROR_CODES = Object.freeze(Object.keys(definitions));
+
 export class AgentAPIError extends Error {
   constructor(code, cause) {
     // An unrecognised code is a bug in this server, not a fact about the

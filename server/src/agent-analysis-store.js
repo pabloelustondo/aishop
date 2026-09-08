@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+import { sanitizeDiagnostics } from "./agent-diagnostics.js";
 const OWNER_KEY = /^[0-9a-f]{64}$/;
 const ANALYSIS_ID = /^[0-9A-Za-z_-]{1,64}$/;
 const OWNERS = "agentAnalyses";
@@ -87,6 +89,11 @@ function note(context) {
 }
 
 const runsOf = (data) => (Array.isArray(data?.runs) ? data.runs : []);
+const diagnosticSummary = (value) => ({
+  returnedModel: null, usage: null, providerRequestId: null, responseId: null,
+  providerStatus: null, responseStatus: null, incompleteReason: null,
+  ...sanitizeDiagnostics(value)
+});
 
 function summarize(id, data) {
   const runs = runsOf(data);
@@ -106,7 +113,7 @@ function summarize(id, data) {
     // list has one field to render. `runs` is where the history is.
     report: data.report ?? null,
     runCount: runs.length,
-    runs: runs.map((run) => Object.freeze({ ...run }))
+    runs: runs.map((run) => Object.freeze({ ...run, diagnostics: run.diagnostics ? diagnosticSummary(run.diagnostics) : null }))
   });
 }
 
@@ -145,12 +152,13 @@ export function createAgentAnalysisStore({
    * empty case is covered rather than assumed so a settled outcome is never
    * dropped on the floor.
    */
-  function closeOpenRun(data, outcome) {
+  function closeOpenRun(data, outcome, runId) {
     const runs = [...runsOf(data)];
     const open = runs.length > 0
       ? runs[runs.length - 1]
       : { runNumber: 1, context: null, startedAt: null };
-    const closed = { ...open, ...outcome, endedAt: clock() };
+    if (runId && open.runId !== runId) throw new AgentAnalysisStateError("stale-run", "settled");
+    const closed = { ...open, ...outcome, diagnostics: diagnosticSummary({ ...open.diagnostics, ...outcome.diagnostics }), endedAt: clock() };
     if (runs.length > 0) runs[runs.length - 1] = closed; else runs.push(closed);
     return runs;
   }
@@ -158,13 +166,15 @@ export function createAgentAnalysisStore({
   async function transition(ownerKey, analysisId, to, patch) {
     identity(ownerKey, analysisId);
     const reference = analyses(ownerKey).doc(analysisId);
-    await firestore.runTransaction(async (transaction) => {
+    return firestore.runTransaction(async (transaction) => {
       const snapshot = await transaction.get(reference);
       if (!snapshot.exists) throw new AgentAnalysisNotFoundError();
       const data = snapshot.data() ?? {};
       const from = data.status ?? null;
       if (!ALLOWED[to].includes(from)) throw new AgentAnalysisStateError(from, to);
-      transaction.update(reference, { ...patch(data), status: to });
+      const update = patch(data);
+      transaction.update(reference, { ...update, status: to });
+      return update.runs?.at(-1);
     });
   }
 
@@ -195,7 +205,8 @@ export function createAgentAnalysisStore({
      * render it during `analyzing`; showing prior rows while a refine runs is
      * an open UI proposal, not a promise this store keeps.
      */
-    markAnalyzing({ ownerKey, analysisId, context }) {
+    markAnalyzing({ ownerKey, analysisId, context, diagnostics = {} }) {
+      const runId = randomUUID();
       return transition(ownerKey, analysisId, "analyzing", (data) => {
         const runs = runsOf(data);
         const asked = note(context);
@@ -212,6 +223,9 @@ export function createAgentAnalysisStore({
         return {
           failureReason: null,
           runs: [...runs, {
+            runId,
+            trigger: data.status === "uploaded" ? "initial" : data.status === "failed" ? "retry" : "refine",
+            diagnostics: diagnosticSummary(diagnostics),
             runNumber: runs.length + 1,
             context: asked,
             status: "analyzing",
@@ -223,22 +237,22 @@ export function createAgentAnalysisStore({
       });
     },
 
-    markAnalyzed({ ownerKey, analysisId, report, model, mode }) {
+    markAnalyzed({ ownerKey, analysisId, report, model, mode, runId, diagnostics = {} }) {
       return transition(ownerKey, analysisId, "analyzed", (data) => ({
         report, model: model ?? null, mode: mode ?? null,
         analyzedAt: serverTimestamp(), failureReason: null,
         runs: closeOpenRun(data, {
-          status: "analyzed", report,
+          status: "analyzed", report, diagnostics: diagnosticSummary(diagnostics),
           model: model ?? null, mode: mode ?? null, failureReason: null
-        })
+        }, runId)
       }));
     },
 
-    markFailed({ ownerKey, analysisId, reason }) {
+    markFailed({ ownerKey, analysisId, reason, runId, diagnostics = {} }) {
       const failureReason = typeof reason === "string" ? reason : "unknown";
       return transition(ownerKey, analysisId, "failed", (data) => ({
         failureReason, report: null, analyzedAt: serverTimestamp(),
-        runs: closeOpenRun(data, { status: "failed", failureReason, report: null })
+        runs: closeOpenRun(data, { status: "failed", failureReason, report: null, diagnostics: diagnosticSummary(diagnostics) }, runId)
       }));
     },
 

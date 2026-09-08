@@ -102,6 +102,7 @@ function harness(overrides = {}) {
     verifyIdToken: overrides.verifyIdToken
       ?? (async (token) => ({ uid: token === "token-b" ? "uid-b" : UID })),
     newAnalysisId: () => ID,
+    project: "demo-aishop-e2e",
     logger: overrides.logger ?? { error: () => {}, warn: () => {}, info: () => {} }
   });
   return { handle, calls };
@@ -407,4 +408,34 @@ test("the source route refuses an unauthenticated caller and a wrong method", as
   assert.equal(wrongMethod.status, 405);
 
   assert.equal(calls.length, 0, "neither reaches storage");
+});
+
+test('failure response has server request reference matching its header',async()=>{
+ const {handle}=harness();
+ const sent=await send(handle,{method:'GET',url:BASE,headers:{}});
+ const body=sent.body;
+ assert.ok(body.error.requestId);
+ assert.equal(body.error.requestId,sent.headers['X-Request-ID']);
+});
+
+
+test("maps valid trace context and ignores forged request references and malformed trace", async () => {
+  for (const header of ["a".repeat(32) + "/42;o=1", "PRIVATE-MARKER"]) {
+    const events = [];
+    const { handle } = harness({ logger: { error: event => events.push(event) } });
+    const sent = await send(handle, { method: "GET", url: BASE, headers: {
+      "x-cloud-trace-context": header, "x-request-id": "PRIVATE-MARKER"
+    } });
+    assert.notEqual(sent.body.error.requestId, "PRIVATE-MARKER");
+    assert.ok(!JSON.stringify(events).includes("PRIVATE-MARKER"));
+    const terminal = events.filter(event => event.event === "request.completed");
+    assert.equal(terminal.length, 1);
+    assert.equal(terminal[0].requestId, sent.body.error.requestId);
+    assert.equal(terminal[0].errorCode, "unauthorized");
+    assert.ok(!terminal[0].analysisId && !terminal[0].runId);
+    if (header.startsWith("aaaa")) {
+      assert.equal(terminal[0]["logging.googleapis.com/spanId"], "000000000000002a");
+      assert.ok(terminal[0]["logging.googleapis.com/trace"].endsWith("a".repeat(32)));
+    } else assert.ok(!terminal[0]["logging.googleapis.com/trace"]);
+  }
 });

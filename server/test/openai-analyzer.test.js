@@ -288,3 +288,46 @@ test("sends only the contract instruction when a caller passes no context", asyn
     assert.equal(texts[0].text, ANALYSIS_CONTRACTS[ANALYSIS_MODES.areaScan].instruction);
   }
 });
+
+test('output cap diagnostics survive partial JSON without retaining response text', async()=>{
+ const observed=[];
+ const analyze=createOpenAIAnalyzer({apiKey:'fixture',fetchImpl:async()=>new Response(JSON.stringify({status:'incomplete',incomplete_details:{reason:'max_output_tokens'},model:'gpt-5.4-mini',usage:{input_tokens:500,output_tokens:1200},output_text:'PRIVATE partial {'}),{status:200,headers:{'x-request-id':'req_fixture'}})});
+ await assert.rejects(analyze({...image,onDiagnostics:d=>observed.push(d)}),e=>e.diagnostics?.failureClass==='provider_output_limit' && e.diagnostics?.providerStatus===200);
+ assert.equal(observed.at(-1).usage.outputTokens,1200);
+ assert.equal(observed.at(-1).providerRequestId,'req_fixture');
+ assert.ok(!JSON.stringify(observed).includes('PRIVATE'));
+});
+
+for (const [label,payload,status,expected] of [
+ ['rate limit',{error:{code:'rate_limit_exceeded',message:'PRIVATE'}},429,'provider_http'],
+ ['provider outage',{error:{type:'server_error',message:'PRIVATE'}},503,'provider_http'],
+ ['refusal',{status:'completed',output:[{content:[{type:'refusal',refusal:'PRIVATE'}]}]},200,'provider_refusal'],
+ ['complete malformed JSON',{status:'completed',output_text:'PRIVATE {',usage:{output_tokens:1200}},200,'provider_json'],
+ ['complete invalid schema',{status:'completed',output_text:'{}'},200,'provider_schema'],
+ ['non-token incompleteness',{status:'incomplete',incomplete_details:{reason:'content_filter'}},200,'provider_incomplete']
+]) test(`diagnostics distinguish ${label}`,async()=>{
+ const analyze=createOpenAIAnalyzer({apiKey:'fixture',fetchImpl:async()=>responseJson(payload,status)});
+ await assert.rejects(analyze(image),e=>{assert.equal(e.diagnostics.failureClass,expected);assert.ok(!JSON.stringify(e.diagnostics).includes('PRIVATE'));return true});
+});
+test('successful report survives throwing and rejected diagnostic observers',async()=>{
+ const analyze=createOpenAIAnalyzer({apiKey:'fixture',fetchImpl:async()=>responseJson({output_text:JSON.stringify(targetReport)})});
+ for(const onDiagnostics of [()=>{throw Error('sink')},async()=>{throw Error('sink')}]) assert.deepEqual(await analyze({...image,onDiagnostics}),targetReport);
+});
+
+test('transport failure and timeout are distinct diagnostics',async()=>{
+ for(const [name,expected] of [['Error','provider_network'],['AbortError','provider_timeout']]) {
+  const analyze=createOpenAIAnalyzer({apiKey:'fixture',fetchImpl:async()=>{const e=Error('PRIVATE');e.name=name;throw e}});
+  await assert.rejects(analyze(image),e=>e.diagnostics.failureClass===expected && !JSON.stringify(e.diagnostics).includes('PRIVATE'));
+ }
+});
+
+test("reported output cap matches the request actually sent", async () => {
+  let sent;
+  let diagnostics;
+  const analyze = createOpenAIAnalyzer({ apiKey: "fixture", fetchImpl: async (_, options) => {
+    sent = JSON.parse(options.body);
+    return responseJson({ output_text: JSON.stringify(targetReport) });
+  } });
+  await analyze({ ...image, onDiagnostics: value => { diagnostics = value; } });
+  assert.equal(diagnostics.maxOutputTokens, sent.max_output_tokens);
+});

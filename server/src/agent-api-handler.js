@@ -1,3 +1,4 @@
+import { createDiagnostics } from "./agent-diagnostics.js";
 import { createHash, randomUUID } from "node:crypto";
 import {
   AgentAnalysisContextRequiredError,
@@ -140,7 +141,7 @@ function readContext(request) {
 export function createAgentAPIHandler({
   evidenceStore, analysisStore, runner, verifyIdToken,
   newAnalysisId = () => randomUUID().replaceAll("-", ""),
-  logger = console
+  logger = console, diagnostics = createDiagnostics(event => logger.error(event)), project = process.env.GCLOUD_PROJECT
 } = {}) {
   if (typeof evidenceStore?.storeSource !== "function") {
     throw new TypeError("An agent evidence store is required.");
@@ -175,18 +176,19 @@ export function createAgentAPIHandler({
     return createHash("sha256").update(identity.uid).digest("hex");
   }
 
-  async function upload(request, ownerKey) {
-    const file = await readAgentUpload(request);
+  async function upload(request, ownerKey, timed, diagnosticContext) {
+    const file = await timed("validation", () => readAgentUpload(request));
     const analysisId = newAnalysisId();
+    diagnosticContext.analysisId = analysisId;
     // Bytes first, record second: a record that points at nothing is worse
     // than an orphaned object nobody references.
-    const stored = await evidenceStore.storeSource({
+    const stored = await timed("source_write", () => evidenceStore.storeSource({
       ownerKey, analysisId, bytes: file.bytes, mediaType: file.mediaType
-    });
-    await analysisStore.create({
+    }));
+    await timed("record_create", () => analysisStore.create({
       ownerKey, analysisId, fileName: file.fileName, mediaType: file.mediaType,
       sha256: stored.sha256, byteLength: stored.byteLength
-    });
+    }));
     // Narrow and true: the bytes are durable and nobody has looked at them.
     // The record's own timestamps are server-authored and are read back, not
     // guessed at here.
@@ -198,9 +200,9 @@ export function createAgentAPIHandler({
     } }];
   }
 
-  async function run(request, ownerKey, analysisId) {
+  async function run(request, ownerKey, analysisId, diagnosticContext) {
     const context = readContext(request);
-    const record = await runner.run({ ownerKey, analysisId, context });
+    const record = await runner.run({ ownerKey, analysisId, context, diagnosticContext });
     return [200, { analysis: serialize(record) }];
   }
 
@@ -271,29 +273,53 @@ export function createAgentAPIHandler({
     // reach; "unmatched" says all a reader needs about a request that fit no
     // route.
     let matched = "unmatched";
+    const requestId = randomUUID();
+    const started = performance.now();
+    const diagnosticContext = { requestId, project };
+    const header = request.headers?.["x-cloud-trace-context"];
+    const trace = typeof header === "string" && /^([a-f0-9]{32})\/(\d{1,20})(?:;o=[01])?$/.exec(header);
+    if (trace && BigInt(trace[2]) <= 0xffffffffffffffffn) {
+      diagnosticContext.trace = trace[1]; diagnosticContext.span = BigInt(trace[2]).toString(16).padStart(16, "0");
+    }
+    const emit = (event, fields = {}) => { try { diagnostics(event, { ...diagnosticContext, route: matched, ...fields }); } catch {} };
+    let statusCode = 500;
+    let errorCode;
+    const writeHead = response.writeHead;
+    response.writeHead = function(status, headers) {
+      statusCode = status;
+      return writeHead.call(this, status, { ...headers, "X-Request-ID": requestId });
+    };
+    async function timed(stage, work) {
+      const start = performance.now(); emit("stage.started", { stage });
+      try { const result = await work(); emit("stage.completed", { stage, durationMs: performance.now()-start }); return result; }
+      catch (error) { emit("stage.failed", { stage, durationMs: performance.now()-start }); throw error; }
+    }
+    emit("request.started");
     try {
       const path = String(request.url ?? "").split("?")[0];
       const { operation, analysisId, route: template } = route(request.method, path);
       matched = template;
       const ownerKey = await ownerKeyFor(request);
+      if (analysisId) diagnosticContext.analysisId = analysisId;
       // The one operation that answers with bytes writes its own response;
       // everything else hands back a status and a JSON body.
       if (operation === "source") {
         await source(ownerKey, analysisId, response);
         return;
       }
-      const [status, body] = operation === "upload" ? await upload(request, ownerKey)
-        : operation === "run" ? await run(request, ownerKey, analysisId)
+      const [status, body] = operation === "upload" ? await upload(request, ownerKey, timed, diagnosticContext)
+        : operation === "run" ? await run(request, ownerKey, analysisId, diagnosticContext)
           : operation === "read" ? await read(ownerKey, analysisId)
             : await list(ownerKey);
       sendJson(response, status, body);
     } catch (error) {
       const safe = toAgentError(error);
-      // Code, status and path only. A cause can carry a bucket name, a URL,
-      // or a fragment of a credential, and none of that belongs in a log.
-      logger.error("Agent analysis request refused.",
-        { code: safe.code, status: safe.status, route: matched });
-      sendJson(response, safe.status, agentErrorBody(safe));
+      errorCode = safe.code;
+      sendJson(response, safe.status, { error: { ...agentErrorBody(safe).error, requestId } });
+    } finally {
+      emit("request.completed", { httpStatus: statusCode, errorCode, durationMs: performance.now() - started });
+      response.writeHead = writeHead;
+
     }
   };
 }

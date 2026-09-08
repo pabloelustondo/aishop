@@ -1,3 +1,4 @@
+import { sanitizeDiagnostics } from "./agent-diagnostics.js";
 import { ANALYSIS_MODES } from "./analysis-contracts.js";
 import { AgentEvidenceUnavailableError } from "./agent-evidence-store.js";
 import { ProviderError } from "./errors.js";
@@ -36,7 +37,7 @@ function failureReason(error) {
  * is being asked, so the note travels with the run rather than beside it.
  */
 export function createAgentAnalysisRunner({
-  evidenceStore, analysisStore, analyzeProduct, model = null
+  evidenceStore, analysisStore, analyzeProduct, model = null, diagnostics = () => {}, configuration = {}
 } = {}) {
   if (typeof evidenceStore?.readSource !== "function") {
     throw new TypeError("An agent evidence store is required.");
@@ -49,26 +50,61 @@ export function createAgentAnalysisRunner({
   }
 
   return Object.freeze({
-    async run({ ownerKey, analysisId, context = null }) {
-      await analysisStore.markAnalyzing({ ownerKey, analysisId, context });
+    async run({ ownerKey, analysisId, context = null, diagnosticContext = {} }) {
+      const started = performance.now();
+      const detail = sanitizeDiagnostics({ ...configuration, ...diagnosticContext, analysisId, attempt: 1 });
+      const correlation = { ...diagnosticContext, analysisId };
+      const durations = {};
+      const emit = (event, extra = {}) => { try { diagnostics(event, { ...correlation, ...detail, ...extra }); } catch {} };
+      async function stage(name, operation) {
+        const start = performance.now();
+        emit("stage.started", { stage: name });
+        try {
+          const value = await operation();
+          durations[name] = performance.now() - start;
+          emit("stage.completed", { stage: name, durationMs: durations[name] });
+          return value;
+        } catch (error) {
+          durations[name] = performance.now() - start;
+          emit("stage.failed", { stage: name, durationMs: durations[name] });
+          throw error;
+        }
+      }
+      const reserved = await stage("reservation", () => analysisStore.markAnalyzing({ ownerKey, analysisId, context, diagnostics: detail }));
+      Object.assign(detail, sanitizeDiagnostics({ runId: reserved?.runId, runNumber: reserved?.runNumber, trigger: reserved?.trigger }));
+      emit("run.started");
+      let stageName = "source_read";
       try {
-        const source = await evidenceStore.readSource({ ownerKey, analysisId });
-        const report = await analyzeProduct({
-          imageBase64: source.bytes.toString("base64"),
-          mediaType: source.mediaType ?? "image/jpeg",
-          mode: MODE,
-          context
-        });
-        await analysisStore.markAnalyzed({
-          ownerKey, analysisId, report, model, mode: MODE
-        });
+        const source = await stage(stageName, () => evidenceStore.readSource({ ownerKey, analysisId }));
+        stageName = "provider";
+        const report = await stage(stageName, () => analyzeProduct({
+          imageBase64: source.bytes.toString("base64"), mediaType: source.mediaType ?? "image/jpeg", mode: MODE, context,
+          onDiagnostics: metadata => Object.assign(detail, sanitizeDiagnostics(metadata))
+        }));
+        emit("provider.completed", { durationMs: durations.provider });
+        stageName = "settlement";
+        Object.assign(detail, { productRows: report.identifiedProducts?.length ?? 0,
+          facingTotal: report.identifiedProducts?.reduce((sum, row) => sum + row.count, 0) ?? 0,
+          uncertaintyCount: report.uncertainItems?.length ?? 0 });
+        await stage(stageName, () => analysisStore.markAnalyzed({ ownerKey, analysisId, runId: reserved?.runId, report, model, mode: MODE,
+          diagnostics: { ...detail, durations: { ...durations, ...detail.durations } } }));
+        emit("run.completed", { durationMs: performance.now() - started, durations: { ...durations, ...detail.durations } });
       } catch (error) {
-        await analysisStore.markFailed({
-          ownerKey, analysisId, reason: failureReason(error)
-        });
+        Object.assign(detail, sanitizeDiagnostics(error.diagnostics));
+        detail.failureClass ??= stageName === "settlement" ? "persistence_failed" : error instanceof AgentEvidenceUnavailableError ? "storage_unavailable"
+          : error instanceof ProviderError ? (error.kind === "timeout" ? "provider_timeout" : error.kind === "unconfigured" ? "provider_unconfigured" : "provider_network") : "unexpected_failure";
+        if (stageName === "provider") emit("provider.failed");
+        if (stageName === "settlement") emit("persistence.failed", { stage: "settlement" });
+        try {
+          await stage("settlement", () => analysisStore.markFailed({ ownerKey, analysisId, runId: reserved?.runId, reason: failureReason(error),
+            diagnostics: { ...detail, durations: { ...durations, ...detail.durations } } }));
+          emit("run.failed", { durationMs: performance.now() - started });
+        } catch {
+          emit("persistence.failed", { failureClass: "persistence_failed", stage: "settlement" });
+        }
         throw error;
       }
-      return analysisStore.read({ ownerKey, analysisId });
+      return stage("record_read", () => analysisStore.read({ ownerKey, analysisId }));
     }
   });
 }

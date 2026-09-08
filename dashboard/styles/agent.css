@@ -141,3 +141,10 @@
   .analysis-body { grid-template-columns: 1fr; }
   .evidence { border-right: 0; border-bottom: 1px solid #d2d4ce; }
 }
+
+/* Diagnostic text stays selectable and contained at both accepted widths. */
+.diagnostic-reference { display: inline-flex; flex-wrap: wrap; gap: .5rem; margin: .5rem; max-width: 100%; }
+.diagnostic-reference input { width: 22rem; max-width: 100%; min-width: 0; }
+.run-diagnostics { padding: .5rem 0; }
+.run-diagnostics summary { cursor: pointer; }
+.run-diagnostics pre { white-space: pre-wrap; overflow-wrap: anywhere; }

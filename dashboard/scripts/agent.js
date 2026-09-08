@@ -34,9 +34,10 @@ const view = {
   list: element("analyses"), empty: element("empty"), message: element("message")
 };
 
-function say(text, isError = false) {
+function say(text, isError = false, requestId = null) {
   view.message.textContent = text ?? "";
   view.message.dataset.tone = isError ? "error" : "info";
+  if (requestId) view.message.appendChild(diagnosticReference(requestId));
 }
 
 function busy(label) {
@@ -66,11 +67,17 @@ async function authorized(method, path, { body, json } = {}) {
 }
 
 async function request(method, path, options) {
-  const response = await authorized(method, path, options);
+  let response;
+  try { response = await authorized(method, path, options); }
+  catch (error) {
+    if (error instanceof TypeError) throw new Error("The request could not complete. No server diagnostic reference is available; check your connection.");
+    throw error;
+  }
   const payload = await response.json().catch(() => null);
   if (!response.ok) {
     const failure = new Error(payload?.error?.message ?? "The request failed.");
     failure.code = payload?.error?.code ?? "unknown";
+    failure.requestId = payload?.error?.requestId ?? response.headers.get("x-request-id");
     failure.retryable = payload?.error?.retryable ?? false;
     throw failure;
   }
@@ -116,7 +123,7 @@ const STATUS_LABEL = Object.freeze({
 /** Reasons a person can act on, in their own words rather than the code's. */
 const REASON_LABEL = Object.freeze({
   provider_timeout: "The model did not answer in time.",
-  provider_failed: "The model could not be reached.",
+  provider_failed: "The analysis provider failed or returned an unusable response.",
   storage_unavailable: "The stored image could not be read.",
   unexpected_failure: "The run failed for an unexpected reason."
 });
@@ -262,11 +269,19 @@ function runStrip(analysis) {
     line.appendChild(textNode("span", `Run ${run.runNumber ?? index + 1}`, "run-no"));
     line.appendChild(run.context
       ? textNode("span", `“${run.context}”`, "run-ctx")
-      : textNode("span", "no note — automatic on upload", "run-none"));
+      : textNode("span", `no note — ${run.trigger ?? (index === 0 ? "initial run" : "trigger unavailable")}`, "run-none"));
     line.appendChild(spacer());
     const outcome = [run.status, run.failureReason].filter(Boolean).join(" · ");
     line.appendChild(textNode("span", outcome, "meta"));
     strip.appendChild(line);
+    if (run.diagnostics) {
+      const details = document.createElement("details");
+      details.className = "run-diagnostics";
+      details.appendChild(textNode("summary", "Run diagnostics"));
+      if (run.diagnostics.requestId) details.appendChild(diagnosticReference(run.diagnostics.requestId));
+      details.appendChild(textNode("pre", JSON.stringify(run.diagnostics, null, 2)));
+      strip.appendChild(details);
+    }
   });
   return strip;
 }
@@ -396,7 +411,7 @@ async function run(analysisId, context, button) {
     // The record is already `failed` on the server, so the refreshed list
     // shows the failure and its Retry. Saying it here as well is what tells
     // the person the button they just pressed is the thing that failed.
-    say(error.message, true);
+    say(error.message, true, error.requestId);
   } finally {
     if (button) button.disabled = false;
     busy("Idle");
@@ -424,7 +439,7 @@ function start() {
       await upload(file);
       view.form.reset();
     } catch (error) {
-      say(error.message, true);
+      say(error.message, true, error.requestId);
     } finally {
       view.submit.disabled = false;
       busy("Idle");
@@ -469,3 +484,20 @@ function start() {
 }
 
 if (typeof document !== "undefined" && typeof firebase !== "undefined") start();
+
+function diagnosticReference(requestId) {
+  const wrap = document.createElement("span");
+  wrap.className = "diagnostic-reference";
+  const input = document.createElement("input");
+  input.readOnly = true;
+  input.value = requestId;
+  input.setAttribute("aria-label", "Diagnostic reference");
+  const button = textNode("button", "Copy reference", "secondary");
+  button.type = "button";
+  button.addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(requestId); button.textContent = "Copied"; }
+    catch { input.focus(); input.select(); button.textContent = "Select and copy reference"; }
+  });
+  wrap.append(input, button);
+  return wrap;
+}

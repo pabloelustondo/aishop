@@ -14,7 +14,7 @@ const REPORT = Object.freeze({
   uncertainItems: []
 });
 
-function harness({ analyze, read } = {}) {
+function harness({ analyze, read, diagnostics } = {}) {
   const calls = [];
   const analysisStore = {
     markAnalyzing: async (input) => { calls.push(["analyzing", input]); },
@@ -26,7 +26,7 @@ function harness({ analyze, read } = {}) {
     readSource: read ?? (async () => ({ bytes: BYTES, mediaType: "image/jpeg" }))
   };
   const runner = createAgentAnalysisRunner({
-    evidenceStore, analysisStore, model: "gpt-test",
+    evidenceStore, analysisStore, model: "gpt-test", diagnostics,
     analyzeProduct: analyze ?? (async () => REPORT)
   });
   return { runner, calls };
@@ -124,4 +124,31 @@ test("a run with no note asks exactly what it asked before", async () => {
   assert.equal(seen.context ?? null, null);
   const [, opened] = calls.find(([kind]) => kind === "analyzing");
   assert.equal(opened.context ?? null, null);
+});
+
+test('secondary persistence failure preserves original provider error and both diagnostics',async()=>{
+ const events=[]; const original=new ProviderError('invalid-response',{failureClass:'provider_output_limit'});
+ const runner=createAgentAnalysisRunner({diagnostics:(event,data)=>events.push({event,...data}),analysisStore:{markAnalyzing:async()=>({runId:'run1',runNumber:1,trigger:'initial'}),markFailed:async()=>{throw Error('PRIVATE')},read:async()=>null},evidenceStore:{readSource:async()=>({bytes:BYTES})},analyzeProduct:async()=>{throw original}});
+ await assert.rejects(runner.run({ownerKey:OWNER,analysisId:ID}),e=>e===original);
+ assert.ok(events.some(e=>e.event==='persistence.failed' && e.failureClass==='persistence_failed'));
+ assert.ok(events.some(e=>e.failureClass==='provider_output_limit'));
+ assert.ok(!events.some(e=>e.event==='run.failed'));
+});
+
+
+test("provider stage and adapter transport timings remain distinct in events and persistence", async () => {
+  const events = [];
+  const { runner, calls } = harness({
+    diagnostics: (event, fields) => events.push({ event, ...fields }),
+    analyze: async ({ onDiagnostics }) => {
+      onDiagnostics({ durations: { provider_transport: 2, report_validation: 1 } });
+      return REPORT;
+    }
+  });
+  await runner.run({ ownerKey: OWNER, analysisId: ID });
+  const stage = events.find(event => event.event === "stage.completed" && event.stage === "provider");
+  const stored = calls.find(([kind]) => kind === "analyzed")[1].diagnostics.durations;
+  assert.equal(stored.provider, stage.durationMs);
+  assert.equal(stored.provider_transport, 2);
+  assert.equal(stored.report_validation, 1);
 });

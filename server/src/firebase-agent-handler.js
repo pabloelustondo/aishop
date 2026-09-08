@@ -1,8 +1,11 @@
+import { agentReleaseMetadata } from "./firebase-agent-config.js";
+import * as firebaseLogger from "firebase-functions/logger";
+import { createDiagnostics } from "./agent-diagnostics.js";
 import { createAgentAnalysisRunner } from "./agent-analysis-runner.js";
 import { createAgentAPIHandler } from "./agent-api-handler.js";
 import { createFirebaseAgentServices } from "./firebase-services.js";
 import { ProviderError } from "./errors.js";
-import { createOpenAIAnalyzer, DEFAULT_MODEL } from "./openai-analyzer.js";
+import { createOpenAIAnalyzer, DEFAULT_MODEL, analyzerConfiguration } from "./openai-analyzer.js";
 
 /**
  * Without a key the endpoint still uploads, lists and reads; only a run
@@ -15,21 +18,34 @@ function unconfiguredAnalyzer() {
   return async () => { throw new ProviderError("unconfigured"); };
 }
 
-export function createFirebaseAgentHandler({ logger = console, apiKey = null, model } = {}) {
-  const services = createFirebaseAgentServices();
+export function createFirebaseAgentHandler({
+  logger = firebaseLogger, apiKey = null, model, fetchImpl, services: providedServices,
+  environment = process.env.FUNCTIONS_EMULATOR === "true" ? "emulator" : "test",
+  release, releaseKind
+} = {}) {
+  const releaseMetadata = release
+    ? { release, releaseKind: releaseKind ?? "override" }
+    : agentReleaseMetadata(process.env);
+  const services = providedServices ?? createFirebaseAgentServices();
+  const diagnostics = createDiagnostics(event => {
+    if (typeof logger.write === "function") return logger.write(event);
+    const write = event.severity === "ERROR" ? logger.error : logger.info;
+    return write.call(logger, event);
+  }, { environment, ...releaseMetadata });
   const runner = createAgentAnalysisRunner({
     evidenceStore: services.evidenceStore,
     analysisStore: services.analysisStore,
     analyzeProduct: apiKey
-      ? createOpenAIAnalyzer({ apiKey, model })
+      ? createOpenAIAnalyzer({ apiKey, model, fetchImpl })
       : unconfiguredAnalyzer(),
-    model: apiKey ? (model ?? DEFAULT_MODEL) : null
+    model: apiKey ? (model ?? DEFAULT_MODEL) : null,
+    diagnostics, configuration: { ...analyzerConfiguration(model ?? DEFAULT_MODEL), environment, ...releaseMetadata }
   });
   return createAgentAPIHandler({
     evidenceStore: services.evidenceStore,
     analysisStore: services.analysisStore,
     verifyIdToken: services.verifyIdToken,
     runner,
-    logger
+    logger, diagnostics
   });
 }

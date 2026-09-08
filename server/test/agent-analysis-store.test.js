@@ -279,3 +279,17 @@ test("a refine with a real note still reopens an analyzed record", async () => {
   const [, , patch] = calls.find(([kind]) => kind === "update");
   assert.equal(patch.runs[1].context, "ignore the top shelf");
 });
+
+test('reservation returns immutable identity and sanitizes diagnostics',async()=>{
+ const {store,calls}=harness({status:'uploaded'});
+ const run=await store.markAnalyzing({ownerKey:OWNER,analysisId:ID,diagnostics:{requestId:'req-1',maxOutputTokens:1200,note:'PRIVATE'}});
+ assert.ok(run.runId); assert.equal(run.trigger,'initial');
+ const patch=calls.find(c=>c[0]==='update')[2];
+ assert.equal(patch.runs[0].diagnostics.maxOutputTokens,1200);
+ assert.ok(!JSON.stringify(patch).includes('PRIVATE'));
+});
+
+test('a stale completion cannot close a different active run',async()=>{
+ const {store}=harness({status:'analyzing',runs:[{runId:'current-run',status:'analyzing'}]});
+ await assert.rejects(store.markFailed({ownerKey:OWNER,analysisId:ID,runId:'stale-run',reason:'provider_failed'}),AgentAnalysisStateError);
+});

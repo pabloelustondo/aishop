@@ -4,3 +4,16 @@ export function agentAPIKey(environment, readSecret) {
     && environment.GCLOUD_PROJECT === "demo-aishop-e2e") return null;
   return readSecret();
 }
+
+/** Preserve the distinction between an optional source commit and a runtime revision. */
+export function agentReleaseMetadata(environment) {
+  const commit = environment.AGENT_RELEASE_COMMIT;
+  if (typeof commit === "string" && /^[a-f0-9]{7,64}$/.test(commit)) {
+    return { release: commit, releaseKind: "commit" };
+  }
+  const revision = environment.K_REVISION;
+  if (typeof revision === "string" && /^[a-zA-Z0-9_-]{1,80}$/.test(revision)) {
+    return { release: revision, releaseKind: "revision" };
+  }
+  return { release: "unknown", releaseKind: "unknown" };
+}
