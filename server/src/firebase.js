@@ -1,7 +1,7 @@
 import { defineSecret } from "firebase-functions/params";
 import { onRequest } from "firebase-functions/v2/https";
 import { createFirebaseAgentHandler } from "./firebase-agent-handler.js";
-import { agentAPIKey } from "./firebase-agent-config.js";
+import { agentAPIKey, FUNCTION_MEMORY, API_PROCESS_CONTEXT, createProcessContext } from "./firebase-agent-config.js";
 import { createFirebaseAPIRouter } from "./firebase-api-router.js";
 import { createFirebaseInspectionHandler } from "./firebase-inspection-handler.js";
 import { createFirebaseVistaPackageHandler } from "./firebase-vista-package-handler.js";
@@ -12,6 +12,7 @@ import { readVistaStartupLimits } from "./vista-startup-limits.js";
 
 const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 const aiShopClientToken = defineSecret("AI_SHOP_CLIENT_TOKEN");
+const nextProcessContext = createProcessContext();
 const vistaLimits = readVistaStartupLimits();
 let cachedVistaHandler;
 const vistaHandler = (request, response) => {
@@ -46,11 +47,12 @@ export const api = onRequest({
   // several thousand tokens, and 30 s left no margin over the provider call.
   // A timeout discards a completed OpenAI charge and returns nothing.
   timeoutSeconds: 120,
-  memory: "1GiB",
+  memory: FUNCTION_MEMORY,
   maxInstances: 1,
   concurrency: 1,
   invoker: "public"
 }, async (request, response) => {
+  request[API_PROCESS_CONTEXT] = nextProcessContext();
   const inspectionHandler = (req, res) => createFirebaseInspectionHandler({
     apiKey: openAIAPIKey.value(), model: process.env.OPENAI_MODEL
   })(req, res);

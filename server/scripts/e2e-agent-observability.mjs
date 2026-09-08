@@ -1,4 +1,5 @@
 // Real agent composition, Auth/Storage/Firestore emulators and a fixture-only provider transport.
+import { API_PROCESS_CONTEXT, createProcessContext } from '../src/firebase-agent-config.js';
 import assert from 'node:assert/strict';
 import { createAgentAnalysisStore } from '../src/agent-analysis-store.js';
 import { FieldValue } from 'firebase-admin/firestore';
@@ -17,8 +18,11 @@ const events=[];
 let scenario='success';
 let faultReference;
 const report={summary:'fixture',identifiedProducts:[{name:'Fixture product',count:2,confidence:'high',visibleEvidence:['fixture']}],uncertainItems:[]};
-const handler=createFirebaseAgentHandler({apiKey:'offline-fixture-only',environment:'emulator',release:'fixture',logger:{info:e=>events.push(e),error:e=>events.push(e)},fetchImpl:async()=>{ if(scenario==='persistence') await faultReference.delete(); return new Response(JSON.stringify(scenario==='success'?{status:'completed',model:'gpt-5.4-mini',usage:{input_tokens:100,output_tokens:50},output_text:JSON.stringify(report)}:{status:'incomplete',incomplete_details:{reason:'max_output_tokens'},usage:{input_tokens:100,output_tokens:1200},output_text:'PRIVATE-MARKER {'}),{status:200,headers:{'x-request-id':'req_fixture'}}); }});
+const handler=createFirebaseAgentHandler({apiKey:'offline-fixture-only',environment:'emulator',release:'fixture',logger:{info:e=>events.push(e),error:e=>events.push(e)},fetchImpl:async()=>{ if(scenario==='persistence') await faultReference.delete(); return new Response(JSON.stringify(scenario==='success'?{status:'completed',model:'gpt-5.4-mini',usage:{input_tokens:100,output_tokens:50},output_text:JSON.stringify(report)}:{status:'incomplete',incomplete_details:{reason:'max_output_tokens'},usage:{input_tokens:100,output_tokens:1200},output_text:'PRIVATE-MARKER {'}),{status:200,headers:{'x-request-id':'req_fixture','x-ratelimit-limit-requests':'60','x-ratelimit-remaining-requests':'59','x-ratelimit-reset-requests':'1m2s','x-ratelimit-remaining-tokens':'1000'}}); }});
+const nextProcessContext=createProcessContext();
+nextProcessContext(); // A preceding non-agent invocation must consume the first-request marker.
 const server=createServer(async(req,res)=>{
+ req[API_PROCESS_CONTEXT]=nextProcessContext();
  try {const chunks=[];for await(const c of req) chunks.push(c);req.rawBody=Buffer.concat(chunks);await handler(req,res);}
  catch {res.writeHead(500);res.end();}
 });
@@ -53,6 +57,20 @@ try {
  assert.equal(diagnostic.failureClass,'provider_output_limit');assert.equal(diagnostic.usage.outputTokens,1200);
  assert.equal(diagnostic.requestId,reference);assert.equal(diagnostic.maxOutputTokens,1200);
  assert.equal(diagnostic.providerRequestId,'req_fixture');
+ for(const run of runs) {
+  const d=run.diagnostics;
+  assert.ok(d.imageWidth>0 && d.imageHeight>0 && d.imageByteLength>0);
+  assert.equal(d.imageWidth,record.analysis.width);
+  assert.equal(d.rateLimits.requests.remaining,59);
+  assert.equal(d.rateLimits.requests.resetMs,62000);
+  assert.equal(d.rateLimits.tokens.limit,null);
+  assert.ok(d.memory.baseline.rssBytes>0 && d.memory.sampledMax.rssBytes>=d.memory.baseline.rssBytes);
+  assert.ok(d.memory.sampleCount>=2);
+  assert.equal(d.memoryLimitBytes,1073741824);
+  assert.equal(d.firstRequestOnProcess,false);
+  assert.ok(d.invocationSequence>1 && d.processInstanceId);
+ }
+ assert.equal(runs[0].diagnostics.processInstanceId,runs[2].diagnostics.processInstanceId);
  assert.ok(events.some(e=>e.event==='provider.failed'&&e.requestId===reference&&e.runId===runs.at(-1).runId));
  assert.ok(events.some(e=>e.event==='run.failed'&&e.requestId===reference));
  assert.ok(!JSON.stringify(events).includes('PRIVATE-MARKER'));

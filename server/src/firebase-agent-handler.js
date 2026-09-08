@@ -1,4 +1,4 @@
-import { agentReleaseMetadata } from "./firebase-agent-config.js";
+import { agentReleaseMetadata, API_PROCESS_CONTEXT, FUNCTION_MEMORY_BYTES } from "./firebase-agent-config.js";
 import * as firebaseLogger from "firebase-functions/logger";
 import { createDiagnostics } from "./agent-diagnostics.js";
 import { createAgentAnalysisRunner } from "./agent-analysis-runner.js";
@@ -39,13 +39,14 @@ export function createFirebaseAgentHandler({
       ? createOpenAIAnalyzer({ apiKey, model, fetchImpl })
       : unconfiguredAnalyzer(),
     model: apiKey ? (model ?? DEFAULT_MODEL) : null,
-    diagnostics, configuration: { ...analyzerConfiguration(model ?? DEFAULT_MODEL), environment, ...releaseMetadata }
+    diagnostics, configuration: { memoryLimitBytes: FUNCTION_MEMORY_BYTES, ...analyzerConfiguration(model ?? DEFAULT_MODEL), environment, ...releaseMetadata }
   });
-  return createAgentAPIHandler({
+  const handler = createAgentAPIHandler({
     evidenceStore: services.evidenceStore,
     analysisStore: services.analysisStore,
     verifyIdToken: services.verifyIdToken,
     runner,
     logger, diagnostics
   });
+  return (request, response) => handler(request, response, request[API_PROCESS_CONTEXT]);
 }

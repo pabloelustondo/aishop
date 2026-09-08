@@ -293,3 +293,16 @@ test('a stale completion cannot close a different active run',async()=>{
  const {store}=harness({status:'analyzing',runs:[{runId:'current-run',status:'analyzing'}]});
  await assert.rejects(store.markFailed({ownerKey:OWNER,analysisId:ID,runId:'stale-run',reason:'provider_failed'}),AgentAnalysisStateError);
 });
+
+test("source dimensions survive reservation and legacy dimensions remain null", async () => {
+  const { store } = harness({ status: "uploaded", width: 1200, height: 900, byteLength: 500 });
+  const run = await store.markAnalyzing({ ownerKey: OWNER, analysisId: ID,
+    diagnostics: { imageWidth: 999, memory: { baseline: { rssBytes: 100, private: "PRIVATE" } } } });
+  assert.equal(run.diagnostics.imageWidth, 1200);
+  assert.equal(run.diagnostics.imageHeight, 900);
+  assert.equal(run.diagnostics.imageByteLength, 500);
+  assert.ok(!JSON.stringify(run.diagnostics).includes("PRIVATE"));
+  const legacy = await harness({ status: "uploaded" }).store.read({ ownerKey: OWNER, analysisId: ID });
+  assert.equal(legacy.width, null);
+  assert.equal(legacy.height, null);
+});

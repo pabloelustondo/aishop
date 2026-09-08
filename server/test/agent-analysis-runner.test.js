@@ -152,3 +152,47 @@ test("provider stage and adapter transport timings remain distinct in events and
   assert.equal(stored.provider_transport, 2);
   assert.equal(stored.report_validation, 1);
 });
+
+test("sampler records maxima without summing counters and cleans up on abort", async () => {
+  const { createRunMemorySampler } = await import("../src/agent-analysis-runner.js");
+  const cleared = [];
+  let tick, deadline;
+  let rss = 100;
+  const abort = new AbortController();
+  const sampler = createRunMemorySampler({
+    signal: abort.signal, readMemory: () => ({ rss: rss++, heapUsed: 20, external: 10, arrayBuffers: 8 }),
+    setIntervalImpl: (fn, ms) => { assert.equal(ms, 250); tick = fn; return 1; },
+    setTimeoutImpl: (fn, ms) => { assert.equal(ms, 120000); deadline = fn; return 2; },
+    clearIntervalImpl: id => cleared.push(id), clearTimeoutImpl: id => cleared.push(id)
+  });
+  tick(); tick();
+  assert.equal(sampler.summary().sampledMax.rssBytes, 102);
+  assert.equal(sampler.summary().sampledMax.externalBytes, 10);
+  abort.abort(); deadline(); sampler.stop();
+  assert.deepEqual(cleared, [1, 2]);
+});
+
+test("reservation failure clears memory timers even when sampling fails", async () => {
+  const cleared = [];
+  const runner = createAgentAnalysisRunner({
+    evidenceStore: { readSource: async () => null },
+    analysisStore: { markAnalyzing: async () => { throw new Error("reservation"); } },
+    analyzeProduct: async () => REPORT,
+    memorySampling: { readMemory: () => { throw Error("memory"); },
+      setIntervalImpl: () => 1, setTimeoutImpl: () => 2,
+      clearIntervalImpl: id => cleared.push(id), clearTimeoutImpl: id => cleared.push(id) }
+  });
+  await assert.rejects(runner.run({ ownerKey: OWNER, analysisId: ID }), /reservation/);
+  assert.deepEqual(cleared, [1, 2]);
+});
+
+test("sampler deadline independently stops periodic sampling", async () => {
+  const { createRunMemorySampler } = await import("../src/agent-analysis-runner.js");
+  let deadline;
+  const cleared = [];
+  const sampler = createRunMemorySampler({ readMemory: () => ({ rss: 100 }),
+    setIntervalImpl: () => 1, setTimeoutImpl: fn => { deadline = fn; return 2; },
+    clearIntervalImpl: id => cleared.push(id), clearTimeoutImpl: id => cleared.push(id) });
+  deadline(); sampler.stop();
+  assert.deepEqual(cleared, [1, 2]);
+});

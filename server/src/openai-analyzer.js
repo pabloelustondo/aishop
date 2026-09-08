@@ -19,6 +19,31 @@ export function analyzerConfiguration(model = DEFAULT_MODEL, mode = "areaScan", 
 }
 export const PRODUCT_INSTRUCTION = ANALYSIS_CONTRACTS.targetProduct.instruction;
 
+function limitCount(value) {
+  if (typeof value !== "string" || !/^\d{1,16}$/.test(value)) return null;
+  const count = Number(value);
+  return Number.isSafeInteger(count) ? count : null;
+}
+
+export function rateResetMs(value) {
+  if (typeof value !== "string" || value.length > 80) return null;
+  const parts = [...value.matchAll(/(\d+(?:\.\d+)?)(ms|s|m|h|d)/g)];
+  if (!parts.length || parts.map(part => part[0]).join("") !== value) return null;
+  const units = { ms: 1, s: 1000, m: 60000, h: 3600000, d: 86400000 };
+  const total = parts.reduce((sum, part) => sum + Number(part[1]) * units[part[2]], 0);
+  return Number.isFinite(total) && total <= 365 * units.d ? total : null;
+}
+
+function providerLimits(headers) {
+  return Object.fromEntries([
+    ["requests", "requests"], ["tokens", "tokens"], ["projectTokens", "project-tokens"]
+  ].map(([name, suffix]) => [name, {
+    limit: limitCount(headers?.get(`x-ratelimit-limit-${suffix}`)),
+    remaining: limitCount(headers?.get(`x-ratelimit-remaining-${suffix}`)),
+    resetMs: rateResetMs(headers?.get(`x-ratelimit-reset-${suffix}`))
+  }]));
+}
+
 function extractMessage(payload) {
   if (typeof payload?.output_text === "string") {
     return payload.output_text.replace(/\s+/g, " ").trim();
@@ -120,6 +145,8 @@ export function createOpenAIAnalyzer({
       });
 
       diagnostics.providerStatus = response.status;
+      diagnostics.providerObservedAt = new Date().toISOString();
+      diagnostics.rateLimits = providerLimits(response.headers);
       diagnostics.providerRequestId = response.headers?.get("x-request-id") ?? undefined;
       const retryAfter = response.headers?.get("retry-after");
       if (retryAfter && /^\d+$/.test(retryAfter)) diagnostics.retryAfterSeconds = Number(retryAfter);

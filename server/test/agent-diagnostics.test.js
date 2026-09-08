@@ -33,3 +33,20 @@ test("every public API error code is retained and no additional code is allowed"
     assert.equal(sanitizeDiagnostics({ errorCode }).errorCode, errorCode);
   }
 });
+
+test("capacity fields are bounded and nested private data cannot pass", () => {
+  const clean = sanitizeDiagnostics({
+    firstRequestOnProcess: true, processInstanceId: "instance-1", invocationSequence: 2,
+    imageWidth: 1200, imageHeight: -1,
+    memorySnapshot: { rssBytes: 100, heapUsedBytes: 50, private: "PRIVATE" },
+    memory: { baseline: { rssBytes: 100 }, sampledMax: { rssBytes: 130 }, sampleCount: 2, note: "PRIVATE" },
+    rateLimits: { requests: { limit: 60, remaining: 0, resetMs: -1, raw: "PRIVATE" }, tokens: { limit: Infinity } }
+  });
+  assert.equal(clean.firstRequestOnProcess, true);
+  assert.equal(clean.memorySnapshot.rssBytes, 100);
+  assert.equal(clean.rateLimits.requests.remaining, 0);
+  assert.equal(clean.rateLimits.requests.resetMs, null);
+  assert.equal(clean.rateLimits.tokens.limit, null);
+  assert.ok(!JSON.stringify(clean).includes("PRIVATE"));
+  assert.ok(!clean.imageHeight);
+});

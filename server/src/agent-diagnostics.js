@@ -37,11 +37,12 @@ const choices = {
 export const DIAGNOSTIC_ERROR_CODES = Object.freeze(choices.errorCode);
 
 const ids = new Set([
-  "requestId", "runId", "analysisId", "providerRequestId", "responseId"
+  "requestId", "runId", "analysisId", "providerRequestId", "responseId", "processInstanceId"
 ]);
 const numbers = new Set([
   "httpStatus", "providerStatus", "durationMs", "runNumber", "attempt", "timeoutMs",
-  "maxOutputTokens", "retryAfterSeconds", "productRows", "facingTotal", "uncertaintyCount"
+  "maxOutputTokens", "retryAfterSeconds", "productRows", "facingTotal", "uncertaintyCount",
+  "memoryLimitBytes", "invocationSequence", "processUptimeMs", "imageWidth", "imageHeight", "imageByteLength"
 ]);
 const versions = new Set([
   "requestedModel", "returnedModel", "promptVersion", "schemaVersion",
@@ -52,17 +53,48 @@ const usageFields = ["inputTokens", "outputTokens", "cachedTokens", "reasoningTo
 // through response-body decoding, excluding report parsing and validation.
 const durationFields = [...choices.stage, "provider_transport"];
 
+const memoryFields = ["rssBytes", "heapUsedBytes", "heapTotalBytes", "externalBytes", "arrayBuffersBytes"];
+const safeNumber = value => Number.isFinite(value) && value >= 0 && value <= Number.MAX_SAFE_INTEGER;
+function numericFields(value, fields) {
+  return Object.fromEntries(fields.map(field => [field, safeNumber(value?.[field]) ? value[field] : null]));
+}
+function memorySummary(value) {
+  return {
+    baseline: numericFields(value?.baseline, memoryFields),
+    final: numericFields(value?.final, memoryFields),
+    sampledMax: numericFields(value?.sampledMax, memoryFields),
+    ...numericFields(value, ["sampleCount", "sampleIntervalMs", "samplingFailures"])
+  };
+}
+function rateLimits(value) {
+  return Object.fromEntries(["requests", "tokens", "projectTokens"].map(kind => [
+    kind, numericFields(value?.[kind], ["limit", "remaining", "resetMs"])
+  ]));
+}
+
 export function sanitizeDiagnostics(input = {}) {
   const out = {};
   for (const [key, value] of Object.entries(input ?? {})) {
-    if (key === "trace" && typeof value === "string" && /^[a-f0-9]{32}$/.test(value)) {
+    if (key === "memorySnapshot" && value && typeof value === "object") {
+      out[key] = numericFields(value, memoryFields);
+    } else if (key === "memory" && value && typeof value === "object") {
+      out[key] = memorySummary(value);
+    } else if (key === "rateLimits" && value && typeof value === "object") {
+      out[key] = rateLimits(value);
+    } else if (key === "firstRequestOnProcess" && typeof value === "boolean") {
+      out[key] = value;
+    } else if (key === "providerObservedAt" && typeof value === "string"
+      && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(value)
+      && Number.isFinite(Date.parse(value))) {
+      out[key] = value;
+    } else if (key === "trace" && typeof value === "string" && /^[a-f0-9]{32}$/.test(value)) {
       out[key] = value;
     } else if (choices[key]?.includes(value)) {
       out[key] = value;
     } else if (ids.has(key) && typeof value === "string"
       && /^[a-zA-Z0-9_-]{1,128}$/.test(value)) {
       out[key] = value;
-    } else if (numbers.has(key) && Number.isFinite(value) && value >= 0) {
+    } else if (numbers.has(key) && safeNumber(value)) {
       out[key] = value;
     } else if (versions.has(key) && typeof value === "string"
       && /^[a-zA-Z0-9._-]{1,80}$/.test(value)) {

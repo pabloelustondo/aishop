@@ -331,3 +331,31 @@ test("reported output cap matches the request actually sent", async () => {
   await analyze({ ...image, onDiagnostics: value => { diagnostics = value; } });
   assert.equal(diagnostics.maxOutputTokens, sent.max_output_tokens);
 });
+
+test("rate headers survive unreadable error bodies and preserve missing limits as null", async () => {
+  const analyze = createOpenAIAnalyzer({ apiKey: "fixture", fetchImpl: async () => new Response("PRIVATE not JSON", {
+    status: 429, headers: {
+      "x-ratelimit-limit-requests": "60", "x-ratelimit-remaining-requests": "0",
+      "x-ratelimit-reset-requests": "1m2.5s", "x-ratelimit-reset-tokens": "PRIVATE",
+      "x-ratelimit-remaining-project-tokens": "42"
+    }
+  }) });
+  await assert.rejects(analyze(image), error => {
+    assert.equal(error.diagnostics.rateLimits.requests.resetMs, 62500);
+    assert.equal(error.diagnostics.rateLimits.requests.remaining, 0);
+    assert.equal(error.diagnostics.rateLimits.tokens.resetMs, null);
+    assert.equal(error.diagnostics.rateLimits.projectTokens.remaining, 42);
+    assert.ok(error.diagnostics.providerObservedAt);
+    assert.ok(!JSON.stringify(error.diagnostics).includes("PRIVATE"));
+    return true;
+  });
+});
+
+test("reset durations reject malformed or unbounded values", async () => {
+  const { rateResetMs } = await import("../src/openai-analyzer.js");
+  assert.equal(rateResetMs("2h3m4s5ms"), 7384005);
+  assert.equal(rateResetMs("0s"), 0);
+  for (const invalid of [null, "", "-1s", "PRIVATE", "1sPRIVATE", "9".repeat(100) + "s", "1000d"]) {
+    assert.equal(rateResetMs(invalid), null);
+  }
+});

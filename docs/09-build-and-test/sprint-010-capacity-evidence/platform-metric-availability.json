@@ -1,0 +1,77 @@
+{
+  "project": "aishop-99d36",
+  "revision": "api-00021-kil",
+  "start": "2026-09-01T14:57:05.327515+00:00",
+  "end": "2026-09-08T14:57:05.327515+00:00",
+  "metrics": [
+    {
+      "type": "run.googleapis.com/request_latency/pending",
+      "descriptorAvailable": true,
+      "descriptorError": null,
+      "unit": "ms",
+      "seriesAvailable": true,
+      "seriesError": null,
+      "newestPoint": {
+        "startTime": "2026-09-08T04:03:00.001Z",
+        "endTime": "2026-09-08T04:04:00Z"
+      }
+    },
+    {
+      "type": "run.googleapis.com/container/startup_latencies",
+      "descriptorAvailable": true,
+      "descriptorError": null,
+      "unit": "ms",
+      "seriesAvailable": true,
+      "seriesError": null,
+      "newestPoint": {
+        "startTime": "2026-09-08T04:03:00.001Z",
+        "endTime": "2026-09-08T04:04:00Z"
+      }
+    },
+    {
+      "type": "run.googleapis.com/container/memory/bytes_used",
+      "descriptorAvailable": false,
+      "descriptorError": null,
+      "unit": null,
+      "seriesAvailable": false,
+      "seriesError": 404,
+      "newestPoint": null
+    },
+    {
+      "type": "run.googleapis.com/container/memory/utilizations",
+      "descriptorAvailable": true,
+      "descriptorError": null,
+      "unit": "10^2.%",
+      "seriesAvailable": true,
+      "seriesError": null,
+      "newestPoint": {
+        "startTime": "2026-09-08T04:03:00.001Z",
+        "endTime": "2026-09-08T04:04:00Z"
+      }
+    },
+    {
+      "type": "run.googleapis.com/container/max_request_concurrencies",
+      "descriptorAvailable": true,
+      "descriptorError": null,
+      "unit": "1",
+      "seriesAvailable": true,
+      "seriesError": null,
+      "newestPoint": {
+        "startTime": "2026-09-08T04:03:00.001Z",
+        "endTime": "2026-09-08T04:04:00Z"
+      }
+    },
+    {
+      "type": "run.googleapis.com/request_count",
+      "descriptorAvailable": true,
+      "descriptorError": null,
+      "unit": "1",
+      "seriesAvailable": true,
+      "seriesError": null,
+      "newestPoint": {
+        "startTime": "2026-09-08T04:03:00.001Z",
+        "endTime": "2026-09-08T04:04:00Z"
+      }
+    }
+  ]
+}

@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { sanitizeDiagnostics } from "./agent-diagnostics.js";
 const OWNER_KEY = /^[0-9a-f]{64}$/;
 const ANALYSIS_ID = /^[0-9A-Za-z_-]{1,64}$/;
+const dimension = value => Number.isInteger(value) && value > 0 && value <= 4096 ? value : null;
 const OWNERS = "agentAnalyses";
 const ANALYSES = "analyses";
 
@@ -90,6 +91,7 @@ function note(context) {
 
 const runsOf = (data) => (Array.isArray(data?.runs) ? data.runs : []);
 const diagnosticSummary = (value) => ({
+  imageWidth: null, imageHeight: null, imageByteLength: null,
   returnedModel: null, usage: null, providerRequestId: null, responseId: null,
   providerStatus: null, responseStatus: null, incompleteReason: null,
   ...sanitizeDiagnostics(value)
@@ -104,6 +106,7 @@ function summarize(id, data) {
     mediaType: data.mediaType ?? null,
     sha256: data.sha256 ?? null,
     byteLength: data.byteLength ?? null,
+    width: dimension(data.width), height: dimension(data.height),
     createdAt: data.createdAt ?? null,
     analyzedAt: data.analyzedAt ?? null,
     failureReason: data.failureReason ?? null,
@@ -179,12 +182,12 @@ export function createAgentAnalysisStore({
   }
 
   return Object.freeze({
-    async create({ ownerKey, analysisId, fileName, mediaType, sha256, byteLength }) {
+    async create({ ownerKey, analysisId, fileName, mediaType, sha256, byteLength, width, height }) {
       identity(ownerKey, analysisId);
       const data = {
         analysisId, ownerKey, status: "uploaded",
         fileName: typeof fileName === "string" ? fileName : null,
-        mediaType, sha256, byteLength,
+        mediaType, sha256, byteLength, width: dimension(width), height: dimension(height),
         createdAt: serverTimestamp(),
         analyzedAt: null, failureReason: null,
         model: null, mode: null, report: null,
@@ -225,7 +228,10 @@ export function createAgentAnalysisStore({
           runs: [...runs, {
             runId,
             trigger: data.status === "uploaded" ? "initial" : data.status === "failed" ? "retry" : "refine",
-            diagnostics: diagnosticSummary(diagnostics),
+            diagnostics: diagnosticSummary({ ...diagnostics,
+              imageWidth: dimension(data.width), imageHeight: dimension(data.height),
+              imageByteLength: data.byteLength ?? null
+            }),
             runNumber: runs.length + 1,
             context: asked,
             status: "analyzing",

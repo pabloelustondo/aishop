@@ -1,4 +1,4 @@
-import { createDiagnostics } from "./agent-diagnostics.js";
+import { createDiagnostics, sanitizeDiagnostics } from "./agent-diagnostics.js";
 import { createHash, randomUUID } from "node:crypto";
 import {
   AgentAnalysisContextRequiredError,
@@ -141,7 +141,8 @@ function readContext(request) {
 export function createAgentAPIHandler({
   evidenceStore, analysisStore, runner, verifyIdToken,
   newAnalysisId = () => randomUUID().replaceAll("-", ""),
-  logger = console, diagnostics = createDiagnostics(event => logger.error(event)), project = process.env.GCLOUD_PROJECT
+  logger = console, diagnostics = createDiagnostics(event => logger.error(event)), project = process.env.GCLOUD_PROJECT,
+  readMemory = () => process.memoryUsage()
 } = {}) {
   if (typeof evidenceStore?.storeSource !== "function") {
     throw new TypeError("An agent evidence store is required.");
@@ -187,7 +188,7 @@ export function createAgentAPIHandler({
     }));
     await timed("record_create", () => analysisStore.create({
       ownerKey, analysisId, fileName: file.fileName, mediaType: file.mediaType,
-      sha256: stored.sha256, byteLength: stored.byteLength
+      sha256: stored.sha256, byteLength: stored.byteLength, width: file.width, height: file.height
     }));
     // Narrow and true: the bytes are durable and nobody has looked at them.
     // The record's own timestamps are server-authored and are read back, not
@@ -200,9 +201,9 @@ export function createAgentAPIHandler({
     } }];
   }
 
-  async function run(request, ownerKey, analysisId, diagnosticContext) {
+  async function run(request, ownerKey, analysisId, diagnosticContext, signal) {
     const context = readContext(request);
-    const record = await runner.run({ ownerKey, analysisId, context, diagnosticContext });
+    const record = await runner.run({ ownerKey, analysisId, context, diagnosticContext, signal });
     return [200, { analysis: serialize(record) }];
   }
 
@@ -267,7 +268,7 @@ export function createAgentAPIHandler({
     return { operation: "read", analysisId, route: `GET ${BASE}/{analysisId}` };
   }
 
-  return async function handleAgentAPI(request, response) {
+  return async function handleAgentAPI(request, response, processContext = {}) {
     // The matched route template, never the caller's own path. A rejected URL
     // is attacker-controlled text, and a log line is somewhere it must not
     // reach; "unmatched" says all a reader needs about a request that fit no
@@ -275,13 +276,26 @@ export function createAgentAPIHandler({
     let matched = "unmatched";
     const requestId = randomUUID();
     const started = performance.now();
-    const diagnosticContext = { requestId, project };
+    const diagnosticContext = { ...sanitizeDiagnostics(processContext), requestId, project };
+    const cancellation = new AbortController();
+    const onAbort = () => cancellation.abort();
+    const onClose = () => { if (!response.writableEnded) onAbort(); };
+    request.once?.("aborted", onAbort);
+    response.once?.("close", onClose);
     const header = request.headers?.["x-cloud-trace-context"];
     const trace = typeof header === "string" && /^([a-f0-9]{32})\/(\d{1,20})(?:;o=[01])?$/.exec(header);
     if (trace && BigInt(trace[2]) <= 0xffffffffffffffffn) {
       diagnosticContext.trace = trace[1]; diagnosticContext.span = BigInt(trace[2]).toString(16).padStart(16, "0");
     }
-    const emit = (event, fields = {}) => { try { diagnostics(event, { ...diagnosticContext, route: matched, ...fields }); } catch {} };
+    const emit = (event, fields = {}) => {
+      let memorySnapshot = null;
+      try {
+        const memory = readMemory();
+        memorySnapshot = { rssBytes: memory.rss, heapUsedBytes: memory.heapUsed,
+          heapTotalBytes: memory.heapTotal, externalBytes: memory.external, arrayBuffersBytes: memory.arrayBuffers };
+      } catch {}
+      try { diagnostics(event, { ...diagnosticContext, route: matched, ...fields, memorySnapshot }); } catch {}
+    };
     let statusCode = 500;
     let errorCode;
     const writeHead = response.writeHead;
@@ -308,7 +322,7 @@ export function createAgentAPIHandler({
         return;
       }
       const [status, body] = operation === "upload" ? await upload(request, ownerKey, timed, diagnosticContext)
-        : operation === "run" ? await run(request, ownerKey, analysisId, diagnosticContext)
+        : operation === "run" ? await run(request, ownerKey, analysisId, diagnosticContext, cancellation.signal)
           : operation === "read" ? await read(ownerKey, analysisId)
             : await list(ownerKey);
       sendJson(response, status, body);
@@ -319,6 +333,8 @@ export function createAgentAPIHandler({
     } finally {
       emit("request.completed", { httpStatus: statusCode, errorCode, durationMs: performance.now() - started });
       response.writeHead = writeHead;
+      request.removeListener?.("aborted", onAbort);
+      response.removeListener?.("close", onClose);
 
     }
   };

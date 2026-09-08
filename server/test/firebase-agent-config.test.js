@@ -33,3 +33,17 @@ test("release uses a valid source commit or the automatic revision without confu
   }
   assert.deepEqual(agentReleaseMetadata({}), { release: "unknown", releaseKind: "unknown" });
 });
+
+test("shared invocation sequence includes non-agent traffic and uses deployed memory setting", async () => {
+  const { createProcessContext, FUNCTION_MEMORY, FUNCTION_MEMORY_BYTES } = await import("../src/firebase-agent-config.js");
+  const next = createProcessContext({ instanceId: "process-1", uptime: () => 2 });
+  const nonAgent = next();
+  const agent = next();
+  assert.equal(nonAgent.firstRequestOnProcess, true);
+  assert.equal(agent.firstRequestOnProcess, false);
+  assert.equal(agent.invocationSequence, 2);
+  assert.equal(agent.processInstanceId, nonAgent.processInstanceId);
+  assert.equal(agent.processUptimeMs, 2000);
+  assert.equal(FUNCTION_MEMORY, "1GiB");
+  assert.equal(FUNCTION_MEMORY_BYTES, 1073741824);
+});
