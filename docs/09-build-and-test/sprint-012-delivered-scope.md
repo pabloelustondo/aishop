@@ -1,6 +1,6 @@
 # Sprint 012 — Implementation and Local Validation
 
-Date: 2026-09-11. Branch: `main`. Plan, decisions, tasks and rules drafted and implemented in the same session
+Date: 2026-09-11. Branch: `codex/sprint-010-agent-observability`. Plan, decisions, tasks and rules drafted and implemented in the same session
 on Pablo's verbal authorization of 2026-09-11; his commit of the sprint folder is the approval. Uncommitted,
 not deployed. Same sandbox limits as Sprint 011: unit suites ran, the emulator suite did not.
 

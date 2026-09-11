@@ -1,6 +1,6 @@
 # Sprint 011 — Implementation and Local Validation
 
-Date: 2026-09-11. Branch: `main`. Approved baseline: `8b814a0` (plan, decisions, contract, tasks committed
+Date: 2026-09-11. Branch: `codex/sprint-010-agent-observability`. Approved baseline: `8b814a0` (plan, decisions, contract, tasks committed
 2026-09-08). Implementation is uncommitted and not deployed. Implemented by Claude in a Linux sandbox on
 Pablo's Mac; the emulator suite could not run there (no Firebase CLI reachable) — see Not verified here.
 
