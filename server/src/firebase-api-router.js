@@ -1,11 +1,17 @@
 const VISTA_PACKAGE_PATH = "/v1/vista/inspection-packages";
 const AGENT_PATH = "/v1/agent";
+const ADMIN_PATH = "/v1/admin";
 
 /** The namespace, not a prefix: `/v1/agentine` is somebody else's path. */
-const isAgentPath = (url) => url === AGENT_PATH || url.startsWith(`${AGENT_PATH}/`);
+const inNamespace = (url, namespace) => {
+  const path = String(url ?? "").split("?")[0];
+  return path === namespace || path.startsWith(`${namespace}/`);
+};
+const isAgentPath = (url) => inNamespace(url, AGENT_PATH);
+const isAdminPath = (url) => inNamespace(url, ADMIN_PATH);
 
 export function createFirebaseAPIRouter({
-  vistaHandler, vistaReadHandler, agentHandler, inspectionHandler, legacyHandler
+  vistaHandler, vistaReadHandler, agentHandler, adminHandler, inspectionHandler, legacyHandler
 }) {
   return async function routeFirebaseAPI(request, response) {
     if (request.method === "POST" && request.url === VISTA_PACKAGE_PATH) {
@@ -20,6 +26,9 @@ export function createFirebaseAPIRouter({
       && request.url.startsWith(VISTA_PACKAGE_PATH)
     ) {
       await vistaReadHandler(request, response);
+    } else if (adminHandler && isAdminPath(request.url)) {
+      // Sprint 012: the All-runs namespace, read-only, its own error shape.
+      await adminHandler(request, response);
     } else if (agentHandler && isAgentPath(request.url)) {
       // Every method and every sub-path, including the ones it does not
       // serve. A caller inside this namespace gets the agent handler's own

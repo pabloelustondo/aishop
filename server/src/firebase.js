@@ -1,5 +1,6 @@
 import { defineSecret } from "firebase-functions/params";
 import { onRequest } from "firebase-functions/v2/https";
+import { createFirebaseAdminHandler } from "./firebase-admin-handler.js";
 import { createFirebaseAgentHandler } from "./firebase-agent-handler.js";
 import { agentAPIKey, FUNCTION_MEMORY, API_PROCESS_CONTEXT, createProcessContext } from "./firebase-agent-config.js";
 import { createFirebaseAPIRouter } from "./firebase-api-router.js";
@@ -40,6 +41,12 @@ const agentHandler = (request, response) => {
   return cachedAgentHandler(request, response);
 };
 
+let cachedAdminHandler;
+const adminHandler = (request, response) => {
+  cachedAdminHandler ??= createFirebaseAdminHandler();
+  return cachedAdminHandler(request, response);
+};
+
 export const api = onRequest({
   region: "northamerica-northeast2",
   secrets: [openAIAPIKey, aiShopClientToken],
@@ -61,6 +68,6 @@ export const api = onRequest({
       model: process.env.OPENAI_MODEL }), clientToken: aiShopClientToken.value()
   })(req, res);
   await createFirebaseAPIRouter({
-    vistaHandler, vistaReadHandler, agentHandler, inspectionHandler, legacyHandler
+    vistaHandler, vistaReadHandler, agentHandler, adminHandler, inspectionHandler, legacyHandler
   })(request, response);
 });

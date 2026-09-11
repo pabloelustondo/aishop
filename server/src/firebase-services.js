@@ -4,6 +4,8 @@ import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { createAgentAnalysisStore } from "./agent-analysis-store.js";
 import { createAgentEvidenceStore } from "./agent-evidence-store.js";
+import { createAdminAnalysisReader } from "./admin-analysis-reader.js";
+import { createOwnerIdentityResolver } from "./admin-owner-identity.js";
 import { createEvidenceReader } from "./evidence-reader.js";
 import { createEvidenceStore } from "./evidence-store.js";
 import { createInspectionRecordReader } from "./inspection-record-reader.js";
@@ -68,6 +70,22 @@ export function createFirebaseAgentServices() {
       serverTimestamp: FieldValue.serverTimestamp,
       clock: () => Timestamp.now().toDate()
     }),
+    verifyIdToken: createFirebaseVistaTokenVerifier(getAuth(app))
+  });
+}
+
+/**
+ * The All-runs read side (Sprint 012). It shares the agent's evidence
+ * bucket and token verifier, reads the same Firestore records across owners,
+ * and adds the Auth directory walk that turns an owner key into a label. No
+ * write capability is composed here: there is no analysis store and no runner.
+ */
+export function createFirebaseAdminServices() {
+  const { app, firestore, bucket } = firebaseResources();
+  return Object.freeze({
+    reader: createAdminAnalysisReader({ firestore }),
+    identity: createOwnerIdentityResolver({ auth: getAuth(app) }),
+    evidenceStore: createAgentEvidenceStore({ bucket }),
     verifyIdToken: createFirebaseVistaTokenVerifier(getAuth(app))
   });
 }

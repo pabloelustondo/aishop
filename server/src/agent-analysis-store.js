@@ -5,6 +5,8 @@ const ANALYSIS_ID = /^[0-9A-Za-z_-]{1,64}$/;
 const dimension = value => Number.isInteger(value) && value > 0 && value <= 4096 ? value : null;
 const OWNERS = "agentAnalyses";
 const ANALYSES = "analyses";
+/** Where the records live, for the one reader that spans owners (Sprint 012). */
+export const ANALYSIS_COLLECTIONS = Object.freeze({ owners: OWNERS, analyses: ANALYSES });
 
 /**
  * How many times one uploaded image may be analysed.
@@ -96,6 +98,9 @@ const diagnosticSummary = (value) => ({
   providerStatus: null, responseStatus: null, incompleteReason: null,
   ...sanitizeDiagnostics(value)
 });
+
+/** The record as every reader answers it; exported so the admin reader answers identically. */
+export function summarizeAnalysis(id, data) { return summarize(id, data); }
 
 function summarize(id, data) {
   const runs = runsOf(data);

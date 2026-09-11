@@ -1,7 +1,7 @@
 /** A closed diagnostic schema shared by logging and durable run summaries. */
 const choices = {
   errorCode: [
-    "unauthorized", "not_found", "method_not_allowed", "multipart_invalid",
+    "unauthorized", "forbidden", "not_found", "method_not_allowed", "multipart_invalid",
     "file_missing", "file_count_invalid", "file_not_jpeg", "file_dimensions_invalid",
     "file_too_large", "media_type_unsupported", "context_invalid", "context_required",
     "analysis_not_found", "analysis_state_invalid", "analysis_run_limit", "source_exists",
@@ -31,13 +31,23 @@ const choices = {
   mode: ["areaScan", "targetProduct"],
   reasoning: ["none", "minimal", "low", "medium", "high", "xhigh"],
   environment: ["test", "emulator", "unknown"],
-  releaseKind: ["commit", "revision", "override", "unknown"]
+  releaseKind: ["commit", "revision", "override", "unknown"],
+  // Sprint 012: what an administrator did, never what they saw.
+  operation: ["admin.list", "admin.read", "admin.source"],
+  accessErrorCode: [
+    "unauthorized", "forbidden", "not_found", "method_not_allowed", "cursor_invalid",
+    "filter_invalid", "analysis_not_found", "storage_unavailable", "index_unavailable",
+    "unexpected_server_error"
+  ]
 };
 
 export const DIAGNOSTIC_ERROR_CODES = Object.freeze(choices.errorCode);
+export const DIAGNOSTIC_ACCESS_ERROR_CODES = Object.freeze(choices.accessErrorCode);
 
 const ids = new Set([
-  "requestId", "runId", "analysisId", "providerRequestId", "responseId", "processInstanceId"
+  "requestId", "runId", "analysisId", "providerRequestId", "responseId", "processInstanceId",
+  // Hashes of uids: a reference an operator can correlate, not an identity.
+  "actorKey", "targetOwnerKey"
 ]);
 const numbers = new Set([
   "httpStatus", "providerStatus", "durationMs", "runNumber", "attempt", "timeoutMs",
@@ -121,9 +131,9 @@ export function sanitizeDiagnostics(input = {}) {
 const events = new Set([
   "request.started", "request.completed", "run.started", "run.completed", "run.failed",
   "stage.started", "stage.completed", "stage.failed", "provider.completed",
-  "provider.failed", "persistence.failed"
+  "provider.failed", "persistence.failed", "access.completed"
 ]);
-const routes = /^(GET|POST) \/v1\/agent\/analyses(?:\/\{analysisId\}(?:\/(?:run|source))?)?$/;
+const routes = /^(?:(GET|POST) \/v1\/agent\/analyses(?:\/\{analysisId\}(?:\/(?:run|source))?)?|GET \/v1\/admin\/analyses(?:\/\{ownerKey\}\/\{analysisId\}(?:\/source)?)?)$/;
 
 export function createDiagnostics(sink = () => {}, defaults = {}) {
   return (event, fields = {}) => {
@@ -135,7 +145,7 @@ export function createDiagnostics(sink = () => {}, defaults = {}) {
         event,
         eventVersion: 1,
         timestamp: new Date().toISOString(),
-        service: "agent",
+        service: event === "access.completed" ? "admin" : "agent",
         severity: event.endsWith("failed") || data.httpStatus >= 500 ? "ERROR" : "INFO"
       };
       if (data.route === "unmatched" || routes.test(data.route)) envelope.route = data.route;

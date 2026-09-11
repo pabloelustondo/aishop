@@ -11,7 +11,7 @@ import {
   AgentEvidenceAlreadyExistsError,
   AgentEvidenceUnavailableError
 } from "./agent-evidence-store.js";
-import { AgentUploadError, readAgentUpload } from "./agent-upload-request.js";
+import { AgentUploadError, MAX_CONTEXT_CHARS, readAgentUpload } from "./agent-upload-request.js";
 import { ProviderError } from "./errors.js";
 import { sendBytes, sendJson } from "./http-json.js";
 
@@ -23,9 +23,10 @@ const ANALYSIS_ID = /^[0-9A-Za-z_-]{1,64}$/;
 /**
  * A note is an instruction to a model, not a document. The ceiling is small
  * on purpose: a long note is a sign that the person wants a different image,
- * not a different sentence.
+ * not a different sentence. One number serves the JSON run route and the
+ * multipart field alike; the reader owns it.
  */
-export const MAX_CONTEXT_CHARS = 500;
+export { MAX_CONTEXT_CHARS };
 const MAX_CONTEXT_REQUEST_BYTES = 8 * 1024;
 
 /**
@@ -70,6 +71,8 @@ function classifyVerifierFailure(error) {
  * serialises to its internal seconds and nanoseconds, which no page should
  * have to know about.
  */
+export function serializeRecord(value) { return serialize(value); }
+
 function serialize(value) {
   if (value === null || value === undefined) return null;
   if (value instanceof Date) return value.toISOString();
@@ -172,13 +175,17 @@ export function createAgentAPIHandler({
     if (typeof identity?.uid !== "string" || identity.uid.length === 0) {
       throw agentError("unauthorized");
     }
+    // Authorization is a custom claim Pablo sets on the account, the same
+    // shape the review queue uses. It is read as the literal `true`: a claim
+    // tool that wrote the string "true" would otherwise open the door.
+    if (identity.agent !== true) throw agentError("forbidden");
     // The uid never becomes a path segment. A hash is a stable identity that
     // reveals nothing about the account it belongs to.
     return createHash("sha256").update(identity.uid).digest("hex");
   }
 
-  async function upload(request, ownerKey, timed, diagnosticContext) {
-    const file = await timed("validation", () => readAgentUpload(request));
+  async function upload(request, ownerKey, timed, diagnosticContext, signal) {
+    const { file, run: requested, context } = await timed("validation", () => readAgentUpload(request));
     const analysisId = newAnalysisId();
     diagnosticContext.analysisId = analysisId;
     // Bytes first, record second: a record that points at nothing is worse
@@ -190,6 +197,17 @@ export function createAgentAPIHandler({
       ownerKey, analysisId, fileName: file.fileName, mediaType: file.mediaType,
       sha256: stored.sha256, byteLength: stored.byteLength, width: file.width, height: file.height
     }));
+    // The single call: the same run the page would press next, under the
+    // same request. From here on the upload has succeeded, so a failure is
+    // the run's failure and says which record to retry against.
+    if (requested) {
+      try {
+        const record = await runner.run({ ownerKey, analysisId, context, diagnosticContext, signal });
+        return [201, { analysis: serialize(record) }];
+      } catch (error) {
+        throw Object.assign(toAgentError(error), { analysisId });
+      }
+    }
     // Narrow and true: the bytes are durable and nobody has looked at them.
     // The record's own timestamps are server-authored and are read back, not
     // guessed at here.
@@ -321,7 +339,7 @@ export function createAgentAPIHandler({
         await source(ownerKey, analysisId, response);
         return;
       }
-      const [status, body] = operation === "upload" ? await upload(request, ownerKey, timed, diagnosticContext)
+      const [status, body] = operation === "upload" ? await upload(request, ownerKey, timed, diagnosticContext, cancellation.signal)
         : operation === "run" ? await run(request, ownerKey, analysisId, diagnosticContext, cancellation.signal)
           : operation === "read" ? await read(ownerKey, analysisId)
             : await list(ownerKey);
@@ -329,7 +347,10 @@ export function createAgentAPIHandler({
     } catch (error) {
       const safe = toAgentError(error);
       errorCode = safe.code;
-      sendJson(response, safe.status, { error: { ...agentErrorBody(safe).error, requestId } });
+      // `analysisId` is present only when an upload succeeded and its run did
+      // not: the one case where the caller must not upload again.
+      const named = ANALYSIS_ID.test(safe.analysisId) ? { analysisId: safe.analysisId } : {};
+      sendJson(response, safe.status, { error: { ...agentErrorBody(safe).error, requestId, ...named } });
     } finally {
       emit("request.completed", { httpStatus: statusCode, errorCode, durationMs: performance.now() - started });
       response.writeHead = writeHead;

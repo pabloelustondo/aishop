@@ -1,9 +1,10 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import {
-  createDiagnostics, sanitizeDiagnostics, DIAGNOSTIC_ERROR_CODES
+  createDiagnostics, sanitizeDiagnostics, DIAGNOSTIC_ERROR_CODES, DIAGNOSTIC_ACCESS_ERROR_CODES
 } from "../src/agent-diagnostics.js";
 import { AGENT_API_ERROR_CODES } from "../src/agent-api-error.js";
+import { ADMIN_API_ERROR_CODES } from "../src/admin-api-error.js";
 
 test("diagnostic boundary excludes private fields and maps trace severity", () => {
   const events = [];
@@ -49,4 +50,28 @@ test("capacity fields are bounded and nested private data cannot pass", () => {
   assert.equal(clean.rateLimits.tokens.limit, null);
   assert.ok(!JSON.stringify(clean).includes("PRIVATE"));
   assert.ok(!clean.imageHeight);
+});
+
+test("every admin API error code is retained under its own key and no additional code is allowed", () => {
+  assert.deepEqual(new Set(DIAGNOSTIC_ACCESS_ERROR_CODES), new Set(ADMIN_API_ERROR_CODES));
+  for (const accessErrorCode of ADMIN_API_ERROR_CODES) {
+    assert.equal(sanitizeDiagnostics({ accessErrorCode }).accessErrorCode, accessErrorCode);
+  }
+  assert.equal(sanitizeDiagnostics({ accessErrorCode: "file_missing" }).accessErrorCode, undefined,
+    "an upload code is not an access outcome");
+});
+
+test("an access event carries hashed references and its admin route, and nothing about the person", () => {
+  const events = [];
+  const emit = createDiagnostics(event => events.push(event));
+  emit("access.completed", {
+    requestId: "r-1", operation: "admin.read", actorKey: "a".repeat(64), targetOwnerKey: "b".repeat(64),
+    analysisId: "c".repeat(32), httpStatus: 200, route: "GET /v1/admin/analyses/{ownerKey}/{analysisId}",
+    email: "PRIVATE@example.com", label: "PRIVATE", cursor: "PRIVATE", owner: "PRIVATE"
+  });
+  assert.equal(events[0].service, "admin");
+  assert.equal(events[0].operation, "admin.read");
+  assert.equal(events[0].actorKey, "a".repeat(64));
+  assert.equal(events[0].route, "GET /v1/admin/analyses/{ownerKey}/{analysisId}");
+  assert.ok(!JSON.stringify(events).includes("PRIVATE"));
 });

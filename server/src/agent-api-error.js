@@ -12,6 +12,10 @@
  */
 const definitions = Object.freeze({
   unauthorized: [401, "Authentication is required.", false],
+  // A verified account that Pablo has not authorized for the agent. Distinct
+  // from `unauthorized`: the caller's credential is fine, the account is not
+  // on the list, and repeating the request changes nothing.
+  forbidden: [403, "The account is not authorized for the agent.", false],
   not_found: [404, "The requested endpoint does not exist.", false],
   method_not_allowed: [405, "That method is not supported on this path.", false],
   multipart_invalid: [400, "The upload could not be read.", false],

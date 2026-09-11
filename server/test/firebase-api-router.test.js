@@ -90,3 +90,30 @@ test("falls through to legacy when no agent handler is composed", async () => {
   await route({ method: "POST", url: "/v1/agent/analyses" }, {});
   assert.deepEqual(calls, ["legacy"]);
 });
+
+test("routes the admin namespace to the admin handler and nowhere else", async () => {
+  const calls = [];
+  const handler = (name) => async () => { calls.push(name); };
+  const route = createFirebaseAPIRouter({
+    vistaHandler: handler("vista"), vistaReadHandler: handler("read"),
+    agentHandler: handler("agent"), adminHandler: handler("admin"),
+    inspectionHandler: handler("inspection"), legacyHandler: handler("legacy")
+  });
+  await route({ method: "GET", url: "/v1/admin/analyses?limit=5" }, {});
+  await route({ method: "GET", url: "/v1/admin/analyses/abc/def/source" }, {});
+  await route({ method: "POST", url: "/v1/admin/analyses" }, {});
+  await route({ method: "GET", url: "/v1/administrators" }, {});
+  await route({ method: "GET", url: "/v1/agent/analyses" }, {});
+  assert.deepEqual(calls, ["admin", "admin", "admin", "legacy", "agent"]);
+});
+
+test("without an admin handler the admin namespace falls through as before", async () => {
+  const calls = [];
+  const handler = (name) => async () => { calls.push(name); };
+  const route = createFirebaseAPIRouter({
+    vistaHandler: handler("vista"), vistaReadHandler: handler("read"),
+    agentHandler: handler("agent"), inspectionHandler: handler("inspection"), legacyHandler: handler("legacy")
+  });
+  await route({ method: "GET", url: "/v1/admin/analyses" }, {});
+  assert.deepEqual(calls, ["legacy"]);
+});

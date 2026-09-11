@@ -28,6 +28,9 @@ const element = (id) => (typeof document === "undefined"
 const view = {
   signedOut: element("signed-out"), main: element("agent"),
   signIn: element("sign-in"), signOut: element("sign-out"),
+  emailForm: element("email-form"), email: element("email"), password: element("password"),
+  emailSignIn: element("email-sign-in"), forgot: element("forgot"),
+  notAuthorized: element("not-authorized"), allRuns: element("all-runs"),
   form: element("upload-form"), file: element("file"), submit: element("submit"),
   uploadAnother: element("upload-another"), refresh: element("refresh"),
   live: element("live"), liveText: element("live-text"),
@@ -82,6 +85,49 @@ async function request(method, path, options) {
     throw failure;
   }
   return payload;
+}
+
+/**
+ * Firebase's error codes, said plainly. The page never shows a code: a
+ * person at a sign-in form needs to know what to do next, and with
+ * email-enumeration protection on, a wrong address and a wrong password are
+ * deliberately the same answer.
+ */
+export function signInErrorMessage(code) {
+  switch (code) {
+    case "auth/invalid-email":
+    case "auth/missing-email":
+      return "Enter the email address of your account.";
+    case "auth/missing-password":
+      return "Enter your password.";
+    case "auth/user-not-found":
+    case "auth/wrong-password":
+    case "auth/invalid-credential":
+    case "auth/invalid-login-credentials":
+      return "The email or password is not right.";
+    case "auth/too-many-requests":
+      return "Too many attempts. Wait a few minutes, then try again.";
+    case "auth/user-disabled":
+      return "This account has been disabled.";
+    case "auth/network-request-failed":
+      return "The sign-in service could not be reached. Check your connection.";
+    case "auth/popup-closed-by-user":
+    case "auth/cancelled-popup-request":
+      return "The sign-in window was closed before finishing.";
+    default:
+      return "Sign-in did not complete. Try again.";
+  }
+}
+
+/**
+ * A popup that never opened, or closed before it finished, is a browser
+ * decision, not a credential problem; the redirect path asks the same
+ * question without a popup. Every other failure is answered where it is.
+ */
+export function shouldFallBackToRedirect(code) {
+  return code === "auth/popup-blocked"
+    || code === "auth/popup-closed-by-user"
+    || code === "auth/cancelled-popup-request";
 }
 
 /**
@@ -393,9 +439,31 @@ function render(analyses) {
   view.uploadAnother.hidden = nothing;
 }
 
+/**
+ * A signed-in account without the agent authorization is refused with 403
+ * by every route. That is a state of the page, not a message: the list is
+ * not empty, it is unavailable, and saying "nothing analysed yet" would be
+ * a lie about why.
+ */
+function showNotAuthorized(refused) {
+  view.notAuthorized.hidden = !refused;
+  view.main.hidden = refused;
+  if (refused) {
+    view.form.hidden = true;
+    view.uploadAnother.hidden = true;
+    view.refresh.hidden = true;
+  }
+}
+
 async function refresh() {
-  const payload = await request("GET", BASE);
-  render(payload.analyses ?? []);
+  try {
+    const payload = await request("GET", BASE);
+    showNotAuthorized(false);
+    render(payload.analyses ?? []);
+  } catch (error) {
+    if (error.code === "forbidden") { showNotAuthorized(true); return; }
+    throw error;
+  }
 }
 
 async function run(analysisId, context, button) {
@@ -455,9 +523,52 @@ function start() {
     refresh().catch((error) => say(error.message, true));
   });
 
-  view.signIn.addEventListener("click", () => {
-    firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider())
-      .catch((error) => say(error.message, true));
+  view.signIn.addEventListener("click", async () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    try {
+      await firebase.auth().signInWithPopup(provider);
+    } catch (error) {
+      if (shouldFallBackToRedirect(error?.code)) {
+        say("Continuing without a popup…");
+        firebase.auth().signInWithRedirect(provider)
+          .catch((redirectError) => say(signInErrorMessage(redirectError?.code), true));
+        return;
+      }
+      say(signInErrorMessage(error?.code), true);
+    }
+  });
+
+  // The redirect path lands back here; its failure, if any, is the only
+  // thing left to say. A success is reported by onAuthStateChanged as usual.
+  firebase.auth().getRedirectResult()
+    .catch((error) => say(signInErrorMessage(error?.code), true));
+
+  view.emailForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    view.emailSignIn.disabled = true;
+    try {
+      await firebase.auth().signInWithEmailAndPassword(view.email.value.trim(), view.password.value);
+      view.password.value = "";
+    } catch (error) {
+      say(signInErrorMessage(error?.code), true);
+    } finally {
+      view.emailSignIn.disabled = false;
+    }
+  });
+
+  view.forgot.addEventListener("click", async () => {
+    const email = view.email.value.trim();
+    if (!email) { say(signInErrorMessage("auth/missing-email"), true); view.email.focus(); return; }
+    try {
+      await firebase.auth().sendPasswordResetEmail(email);
+      // The same sentence whether or not the address exists: the page does
+      // not confirm which addresses are accounts.
+      say("If that address has an account, a reset email is on its way.");
+    } catch (error) {
+      say(error?.code === "auth/invalid-email"
+        ? signInErrorMessage(error.code)
+        : "If that address has an account, a reset email is on its way.");
+    }
   });
 
   view.signOut.addEventListener("click", () => firebase.auth().signOut());
@@ -471,6 +582,8 @@ function start() {
     }
     say("");
     busy("Idle");
+    view.notAuthorized.hidden = true;
+    view.allRuns.hidden = true;
     if (!signedIn) {
       releaseImages();
       view.list.replaceChildren();
@@ -478,8 +591,12 @@ function start() {
       view.uploadAnother.hidden = true;
       return;
     }
-    // The page opens showing history rather than an empty box.
-    refresh().catch((error) => say(error.message, true));
+    // The All-runs link is shown to accounts whose token carries the admin
+    // role. It is a courtesy: the server refuses everyone else regardless.
+    user.getIdTokenResult().then(({ claims }) => { view.allRuns.hidden = claims?.admin !== true; }).catch(() => {});
+    // The page opens showing history rather than an empty box — or, for an
+    // account Pablo has not authorized, the one sentence that says so.
+    refresh().catch((error) => say(error.message, true, error.requestId));
   });
 }
 

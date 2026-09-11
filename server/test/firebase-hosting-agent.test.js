@@ -33,3 +33,33 @@ test("the agent page is served by hosting and never rewritten to the function", 
   const rewrites = configuration().hosting.rewrites.map(({ source }) => source);
   assert.ok(!rewrites.some((source) => source.startsWith("/agent.html")));
 });
+
+const ADMIN_SOURCE = "/v1/admin/analyses{,/**}";
+
+test("hosting rewrites the All-runs endpoint and its sub-paths to the same function", () => {
+  const rewrite = configuration().hosting.rewrites.find(({ source }) => source === ADMIN_SOURCE);
+  assert.deepEqual(rewrite, {
+    source: ADMIN_SOURCE,
+    function: { functionId: "api", region: "northamerica-northeast2" }
+  });
+  const admin = configuration().hosting.rewrites.filter(({ source }) => source.startsWith("/v1/admin"));
+  assert.deepEqual(admin.map(({ source }) => source), [ADMIN_SOURCE]);
+});
+
+test("the All-runs page is served by hosting, and the listing's indexes are declared for deployment", () => {
+  const config = configuration();
+  assert.ok(!config.hosting.rewrites.some(({ source }) => source.startsWith("/allruns.html")));
+  assert.equal(config.firestore.indexes, "firestore.indexes.json");
+  const indexes = JSON.parse(readFileSync(new URL("../../firestore.indexes.json", import.meta.url)));
+  // Every filter combination the reader can build has a collection-group
+  // index, ordered the way the reader orders. A missing one is a 503 on TEST.
+  const groups = indexes.indexes.filter((index) => index.collectionGroup === "analyses" && index.queryScope === "COLLECTION_GROUP")
+    .map((index) => index.fields.map((field) => `${field.fieldPath}:${field.order}`).join(","));
+  assert.deepEqual(new Set(groups), new Set([
+    "ownerKey:ASCENDING,createdAt:DESCENDING",
+    "status:ASCENDING,createdAt:DESCENDING",
+    "ownerKey:ASCENDING,status:ASCENDING,createdAt:DESCENDING"
+  ]));
+  const createdAt = indexes.fieldOverrides.find((override) => override.collectionGroup === "analyses" && override.fieldPath === "createdAt");
+  assert.ok(createdAt.indexes.some((index) => index.queryScope === "COLLECTION_GROUP" && index.order === "DESCENDING"));
+});

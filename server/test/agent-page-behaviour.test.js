@@ -9,7 +9,9 @@
  */
 import assert from "node:assert/strict";
 import test from "node:test";
-import { retryContextOf, refinementNote } from "../../dashboard/scripts/agent.js";
+import {
+  retryContextOf, refinementNote, signInErrorMessage, shouldFallBackToRedirect
+} from "../../dashboard/scripts/agent.js";
 
 test("retrying a failed refinement resends that run's own note", () => {
   const analysis = {
@@ -51,4 +53,24 @@ test("a real refinement note is trimmed and kept", () => {
 test("a note longer than the server ceiling is refused before the call", () => {
   assert.equal(refinementNote("x".repeat(501)), null);
   assert.equal(refinementNote("x".repeat(500)), "x".repeat(500));
+});
+
+test("a Firebase sign-in code never reaches the page; wrong email and wrong password read the same", () => {
+  const wrongEmail = signInErrorMessage("auth/user-not-found");
+  assert.equal(signInErrorMessage("auth/wrong-password"), wrongEmail);
+  assert.equal(signInErrorMessage("auth/invalid-credential"), wrongEmail);
+  for (const code of ["auth/invalid-email", "auth/too-many-requests", "auth/user-disabled",
+    "auth/network-request-failed", "auth/popup-closed-by-user", "auth/something-new", undefined]) {
+    const message = signInErrorMessage(code);
+    assert.ok(message.length > 0 && !message.includes("auth/"), `${code}: ${message}`);
+  }
+});
+
+test("only a popup that could not run falls back to the redirect path", () => {
+  assert.equal(shouldFallBackToRedirect("auth/popup-blocked"), true);
+  assert.equal(shouldFallBackToRedirect("auth/popup-closed-by-user"), true);
+  assert.equal(shouldFallBackToRedirect("auth/cancelled-popup-request"), true);
+  assert.equal(shouldFallBackToRedirect("auth/network-request-failed"), false);
+  assert.equal(shouldFallBackToRedirect("auth/user-disabled"), false);
+  assert.equal(shouldFallBackToRedirect(undefined), false);
 });

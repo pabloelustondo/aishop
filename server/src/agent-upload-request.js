@@ -8,6 +8,12 @@ export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 export const MAX_REQUEST_BYTES = MAX_FILE_BYTES + 64 * 1024;
 export const MAX_AXIS = 4_096;
 const ACCEPTED_MEDIA_TYPES = Object.freeze(["image/jpeg"]);
+/**
+ * The note ceiling is in characters, to match the JSON run route; Busboy's
+ * field ceiling is in bytes, so it is set to hold any 500-character string.
+ */
+export const MAX_CONTEXT_CHARS = 500;
+const MAX_FIELD_BYTES = MAX_CONTEXT_CHARS * 4;
 
 /** Stable codes; the handler maps them to statuses and messages. */
 export class AgentUploadError extends Error {
@@ -52,12 +58,19 @@ function parseParts(request) {
     try {
       parser = Busboy({
         headers: request.headers,
-        limits: { files: 3, parts: 6, fields: 3, fieldSize: 1024,
+        limits: { files: 3, parts: 8, fields: 4, fieldSize: MAX_FIELD_BYTES,
           fileSize: MAX_FILE_BYTES + 1 }
       });
     } catch (error) { fail("multipart_invalid", error); return; }
 
     const files = [];
+    const fields = {};
+    // A truncated field is one that was too long; it is reported as invalid
+    // rather than quietly shortened into a different instruction.
+    parser.on("field", (name, value, info) => {
+      if (info?.valueTruncated) fail("context_invalid");
+      else if (name === "run" || name === "context") fields[name] = value;
+    });
     parser.on("file", (name, stream, info) => {
       const chunks = [];
       stream.on("data", (chunk) => chunks.push(chunk));
@@ -71,13 +84,14 @@ function parseParts(request) {
     });
     parser.on("filesLimit", () => fail("file_count_invalid"));
     parser.on("error", (error) => fail("multipart_invalid", error));
-    parser.on("close", () => { if (!settled) { settled = true; resolve(files); } });
+    parser.on("close", () => { if (!settled) { settled = true; resolve({ files, fields }); } });
     parser.end(request.rawBody);
   });
 }
 
 /**
- * One uploaded still, verified before anything is stored or spent.
+ * One uploaded still, verified before anything is stored or spent, plus the
+ * two optional fields that ask for an analysis in the same call.
  *
  * The declared media type is checked and then disbelieved: a browser will say
  * whatever the file extension implies, so the bytes themselves decide whether
@@ -94,7 +108,7 @@ export async function readAgentUpload(request) {
     throw new AgentUploadError("file_too_large");
   }
 
-  const files = await parseParts(request);
+  const { files, fields } = await parseParts(request);
   if (files.length === 0) throw new AgentUploadError("file_missing");
   if (files.length > 1) throw new AgentUploadError("file_count_invalid");
 
@@ -112,12 +126,27 @@ export async function readAgentUpload(request) {
     throw new AgentUploadError("file_dimensions_invalid");
   }
 
+  // `run` is a switch, not a string: only the literal `true` turns it on, so
+  // a form that sends "on" or "1" by accident stores the image and spends
+  // nothing. `context` follows the run route's own rules exactly.
+  const run = fields.run === "true";
+  let context = null;
+  if (typeof fields.context === "string") {
+    const note = fields.context.trim();
+    if (note.length > MAX_CONTEXT_CHARS) throw new AgentUploadError("context_invalid");
+    context = note === "" ? null : note;
+  }
+
   return Object.freeze({
-    bytes: file.bytes,
-    mediaType: file.mediaType,
-    fileName: file.fileName,
-    sha256: createHash("sha256").update(file.bytes).digest("hex"),
-    width: dimensions.width,
-    height: dimensions.height
+    file: Object.freeze({
+      bytes: file.bytes,
+      mediaType: file.mediaType,
+      fileName: file.fileName,
+      sha256: createHash("sha256").update(file.bytes).digest("hex"),
+      width: dimensions.width,
+      height: dimensions.height
+    }),
+    run,
+    context
   });
 }

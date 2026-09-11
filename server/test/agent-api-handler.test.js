@@ -38,6 +38,22 @@ function multipart(parts) {
   return Buffer.concat(chunks);
 }
 
+const uploadWith = (fields, body = REAL_JPEG) => ({
+  method: "POST",
+  url: BASE,
+  headers: {
+    authorization: "Bearer token-a",
+    "content-type": `multipart/form-data; boundary=${BOUNDARY}`
+  },
+  rawBody: Buffer.concat([
+    multipart([{ name: "file", filename: "shelf.jpg", type: "image/jpeg", body }])
+      .subarray(0, -Buffer.byteLength(`--${BOUNDARY}--\r\n`)),
+    ...Object.entries(fields).map(([name, value]) => Buffer.from(
+      `--${BOUNDARY}\r\nContent-Disposition: form-data; name="${name}"\r\n\r\n${value}\r\n`)),
+    Buffer.from(`--${BOUNDARY}--\r\n`)
+  ])
+});
+
 const upload = (body = REAL_JPEG, type = "image/jpeg") => ({
   method: "POST",
   url: BASE,
@@ -99,8 +115,12 @@ function harness(overrides = {}) {
   };
   const handle = createAgentAPIHandler({
     evidenceStore, analysisStore, runner,
+    // Every fixture identity is a real signed-in account. Only `token-c`
+    // lacks the authorization, which is the one difference the gate reads.
     verifyIdToken: overrides.verifyIdToken
-      ?? (async (token) => ({ uid: token === "token-b" ? "uid-b" : UID })),
+      ?? (async (token) => (token === "token-c"
+        ? { uid: "uid-c" }
+        : { uid: token === "token-b" ? "uid-b" : UID, agent: true })),
     newAnalysisId: () => ID,
     project: "demo-aishop-e2e",
     logger: overrides.logger ?? { error: () => {}, warn: () => {}, info: () => {} }
@@ -134,6 +154,42 @@ test("a rejected token is unauthorized, not a server error", async () => {
   assert.equal(sent.body.error.code, "unauthorized");
 });
 
+test("a signed-in account without the agent authorization is forbidden on every route", async () => {
+  const { handle, calls } = harness();
+  const attempts = [
+    { method: "POST", url: BASE, headers: { authorization: "Bearer token-c",
+      "content-type": `multipart/form-data; boundary=${BOUNDARY}` },
+      rawBody: multipart([{ name: "file", filename: "shelf.jpg", type: "image/jpeg", body: REAL_JPEG }]) },
+    jsonRequest("GET", BASE, undefined, "token-c"),
+    jsonRequest("GET", `${BASE}/${ID}`, undefined, "token-c"),
+    jsonRequest("POST", `${BASE}/${ID}/run`, { context: "again" }, "token-c"),
+    jsonRequest("GET", `${BASE}/${ID}/source`, undefined, "token-c")
+  ];
+  for (const request of attempts) {
+    const sent = await send(handle, request);
+    assert.equal(sent.status, 403, `${request.method} ${request.url}`);
+    assert.deepEqual(sent.body.error, {
+      code: "forbidden", message: "The account is not authorized for the agent.",
+      retryable: false, requestId: sent.headers["X-Request-ID"]
+    });
+  }
+  assert.equal(calls.length, 0, "an unauthorized account costs no storage, no record and no run");
+});
+
+test("the authorization is the literal claim, not any truthy value", async () => {
+  for (const agent of ["true", 1, {}, "yes"]) {
+    const { handle } = harness({ verifyIdToken: async () => ({ uid: UID, agent }) });
+    const sent = await send(handle, jsonRequest("GET", BASE));
+    assert.equal(sent.status, 403, `agent=${JSON.stringify(agent)}`);
+  }
+});
+
+test("a missing token is still 401 before the authorization is consulted", async () => {
+  const { handle } = harness();
+  const sent = await send(handle, { method: "GET", url: BASE, headers: {} });
+  assert.equal(sent.status, 401);
+});
+
 test("stores the bytes before the record and answers 201 uploaded", async () => {
   const { handle, calls } = harness();
 
@@ -152,6 +208,61 @@ test("stores the bytes before the record and answers 201 uploaded", async () => 
   assert.equal(created.ownerKey, OWNER);
   assert.equal(created.fileName, "shelf.jpg");
   assert.ok(!Object.hasOwn(created, "bytes"), "bytes must not reach the record store");
+});
+
+test("the single call stores, creates, runs, and answers 201 with the settled record", async () => {
+  const { handle, calls } = harness();
+
+  const sent = await send(handle, uploadWith({ run: "true", context: "count the blue ones" }));
+
+  assert.equal(sent.status, 201);
+  assert.equal(sent.body.analysis.status, "analyzed");
+  assert.equal(sent.body.analysis.analysisId, ID);
+  assert.deepEqual(calls.map(([name]) => name), ["storeSource", "create", "run"]);
+  const [, runInput] = calls[2];
+  assert.equal(runInput.ownerKey, OWNER);
+  assert.equal(runInput.analysisId, ID);
+  assert.equal(runInput.context, "count the blue ones");
+  assert.equal(typeof runInput.diagnosticContext.requestId, "string");
+  assert.equal(runInput.diagnosticContext.requestId, sent.headers["X-Request-ID"],
+    "the upload and its run share one diagnostic reference");
+});
+
+test("a single call whose run fails answers the run's code and names the analysis", async () => {
+  const { handle, calls } = harness({
+    runner: { run: async () => { throw new ProviderError("http", "upstream said 500"); } }
+  });
+
+  const sent = await send(handle, uploadWith({ run: "true" }));
+
+  assert.equal(sent.status, 502);
+  assert.equal(sent.body.error.code, "provider_failed");
+  assert.equal(sent.body.error.retryable, true);
+  assert.equal(sent.body.error.analysisId, ID, "the caller retries the run, not the upload");
+  assert.equal(sent.body.error.requestId, sent.headers["X-Request-ID"]);
+  assert.ok(!JSON.stringify(sent.body).includes("upstream"));
+  // The overriding runner records nothing itself; the bytes and the record
+  // are what must already exist when the run fails.
+  assert.deepEqual(calls.map(([name]) => name), ["storeSource", "create"]);
+});
+
+test("without `run` the single-call fields change nothing about the upload answer", async () => {
+  const plain = harness();
+  const expected = await send(plain.handle, upload());
+  const fielded = harness();
+  const actual = await send(fielded.handle, uploadWith({ context: "ignored without run" }));
+
+  assert.deepEqual(actual.body, expected.body);
+  assert.equal(actual.status, expected.status);
+  assert.ok(!fielded.calls.some(([name]) => name === "run"));
+});
+
+test("an upload failure never carries an analysisId, because nothing was created", async () => {
+  const { handle } = harness();
+  const sent = await send(handle, uploadWith({ run: "true", context: "x".repeat(501) }));
+  assert.equal(sent.status, 400);
+  assert.equal(sent.body.error.code, "context_invalid");
+  assert.equal(sent.body.error.analysisId, undefined);
 });
 
 test("an upload the reader refuses costs no storage and keeps its own code", async () => {

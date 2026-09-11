@@ -46,13 +46,42 @@ async function codeOf(promise) {
 }
 
 test("accepts one real JPEG and reports its bytes, hash and dimensions", async () => {
-  const upload = await readAgentUpload(oneFile(REAL_JPEG));
+  const { file, run, context } = await readAgentUpload(oneFile(REAL_JPEG));
 
-  assert.deepEqual(upload.bytes, REAL_JPEG);
-  assert.equal(upload.mediaType, "image/jpeg");
-  assert.equal(upload.fileName, "shelf.jpg");
-  assert.equal(upload.sha256, createHash("sha256").update(REAL_JPEG).digest("hex"));
-  assert.ok(upload.width > 0 && upload.height > 0);
+  assert.deepEqual(file.bytes, REAL_JPEG);
+  assert.equal(file.mediaType, "image/jpeg");
+  assert.equal(file.fileName, "shelf.jpg");
+  assert.equal(file.sha256, createHash("sha256").update(REAL_JPEG).digest("hex"));
+  assert.ok(file.width > 0 && file.height > 0);
+  assert.equal(run, false, "a plain upload asks for nothing beyond storage");
+  assert.equal(context, null);
+});
+
+const withFields = (fields) => request(multipart([
+  { name: "file", filename: "shelf.jpg", type: "image/jpeg", body: REAL_JPEG },
+  ...Object.entries(fields).map(([name, body]) => ({ name, body }))
+]));
+
+test("`run` is true only for the literal string true", async () => {
+  assert.equal((await readAgentUpload(withFields({ run: "true" }))).run, true);
+  for (const value of ["TRUE", "yes", "1", "on", " true"]) {
+    assert.equal((await readAgentUpload(withFields({ run: value }))).run, false, value);
+  }
+});
+
+test("`context` is trimmed, empty is absent, and the ceiling is the server's own", async () => {
+  assert.equal((await readAgentUpload(withFields({ run: "true", context: "  count the blue ones  " }))).context,
+    "count the blue ones");
+  assert.equal((await readAgentUpload(withFields({ run: "true", context: "   " }))).context, null);
+  const atCeiling = "é".repeat(500);
+  assert.equal((await readAgentUpload(withFields({ run: "true", context: atCeiling }))).context, atCeiling);
+  assert.equal(await codeOf(readAgentUpload(withFields({ run: "true", context: "x".repeat(501) }))),
+    "context_invalid");
+});
+
+test("a field is not a file: the single-file rule still counts only file parts", async () => {
+  const { file } = await readAgentUpload(withFields({ run: "true", context: "a", ignored: "b" }));
+  assert.equal(file.fileName, "shelf.jpg");
 });
 
 test("rejects a file that only claims to be a JPEG", async () => {

@@ -23,6 +23,7 @@
 .agent-header h1 { font-size: 1.3rem; }
 .agent-header .spacer { flex: 1 1 auto; }
 .agent-header button { padding: .45rem .9rem; font-size: .88rem; }
+.agent-header .nav-link { color: #1d6b4b; font-size: .88rem; text-decoration: underline; padding: .45rem .6rem; }
 
 .live { display: inline-flex; align-items: center; gap: .4rem; color: #5e6b64; font-size: .8rem; }
 .live .dot { width: .5rem; height: .5rem; border-radius: 50%; background: #1d6b4b; }
@@ -45,6 +46,23 @@
   border: 1px solid #d2d4ce; border-radius: 1rem; background: #faf9f5;
   box-shadow: 0 24px 70px #26352d12;
 }
+
+/* Sprint 011: the sign-in card gained a form. Nothing else on the page moves. */
+.email-form { display: grid; gap: .35rem; margin: 1.25rem 0 .5rem; }
+.email-form label { font-size: .78rem; color: #5e6b64; letter-spacing: .04em; text-transform: uppercase; }
+.email-form input {
+  font: inherit; padding: .55rem .7rem; border: 1px solid #b9bcb4; border-radius: .5rem;
+  background: #fff; color: inherit; margin-bottom: .5rem;
+}
+.email-form input:focus-visible { outline: 2px solid #1d6b4b; outline-offset: 1px; }
+.email-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: .25rem; }
+.email-actions .link {
+  background: none; border: 0; padding: 0; color: #1d6b4b; text-decoration: underline;
+  font: inherit; font-size: .88rem; cursor: pointer;
+}
+.email-actions .link:focus-visible { outline: 2px solid #1d6b4b; outline-offset: 2px; }
+.or { display: flex; align-items: center; gap: .75rem; margin: 1rem 0; color: #5e6b64; font-size: .8rem; }
+.or::before, .or::after { content: ""; flex: 1 1 auto; border-top: 1px solid #d2d4ce; }
 
 .agent-main { padding: clamp(1rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2.5rem) 6rem; }
 

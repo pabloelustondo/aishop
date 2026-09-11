@@ -18,6 +18,7 @@
     </div>
     <span class="spacer"></span>
     <span id="live" class="live" hidden><span class="dot"></span><span id="live-text">Idle</span></span>
+    <a id="all-runs" class="nav-link" href="/allruns.html" hidden>All runs</a>
     <button id="upload-another" type="button" class="primary" hidden>Upload another</button>
     <button id="refresh" type="button" hidden>Refresh</button>
     <button id="sign-out" type="button" hidden>Sign out</button>
@@ -26,8 +27,28 @@
   <section id="signed-out" class="auth-card">
     <p class="eyebrow">SIGN IN</p>
     <h2>Your uploads, and only yours.</h2>
-    <p>Each analysis is stored under your account. Nobody else can list or read it.</p>
-    <button id="sign-in" type="button" class="primary">Sign in with Google</button>
+    <p>Each analysis is stored under your account. Nobody else can list or read it.
+      Accounts are created and authorized by the administrator; there is nothing to sign up for here.</p>
+    <form id="email-form" class="email-form" novalidate>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <div class="email-actions">
+        <button id="email-sign-in" type="submit" class="primary">Sign in</button>
+        <button id="forgot" type="button" class="link">Forgot password</button>
+      </div>
+    </form>
+    <p class="or"><span>or</span></p>
+    <button id="sign-in" type="button">Sign in with Google</button>
+  </section>
+
+  <!-- Signed in, and not on the list. One sentence; nothing to click. -->
+  <section id="not-authorized" class="auth-card" hidden>
+    <p class="eyebrow">NOT AUTHORIZED</p>
+    <h2>This account is signed in but not authorized for the agent.</h2>
+    <p>Access is granted by the administrator per account. If you were granted access just now,
+      sign out and back in so your session carries it.</p>
   </section>
 
   <!-- Collapsed once anything exists; with an empty list it is the page. -->
