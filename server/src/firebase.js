@@ -17,6 +17,7 @@ import { readVistaStartupLimits } from "./vista-startup-limits.js";
 
 const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 const aiShopClientToken = defineSecret("AI_SHOP_CLIENT_TOKEN");
+const agentTaskInvoker = "35745728095-compute@developer.gserviceaccount.com";
 const nextProcessContext = createProcessContext();
 const vistaLimits = readVistaStartupLimits();
 let cachedVistaHandler;
@@ -70,7 +71,7 @@ export const collectAgentAnalysis = onTaskDispatched({
   secrets: [openAIAPIKey],
   memory: FUNCTION_MEMORY,
   timeoutSeconds: 60,
-  invoker: "private",
+  invoker: agentTaskInvoker,
   retryConfig: { maxAttempts: 5, minBackoffSeconds: 15,
     maxBackoffSeconds: 60, maxRetrySeconds: 600 },
   rateLimits: { maxConcurrentDispatches: 1, maxDispatchesPerSecond: 1 }

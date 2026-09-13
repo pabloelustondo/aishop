@@ -31,7 +31,8 @@ test("exports a private bounded task queue collector in Montréal", () => {
     ["northamerica-northeast1"]);
   assert.equal(collectAgentAnalysis.__endpoint.platform, "gcfv2");
   assert.equal(collectAgentAnalysis.__endpoint.timeoutSeconds, 60);
-  assert.deepEqual(collectAgentAnalysis.__endpoint.taskQueueTrigger.invoker, ["private"]);
+  assert.deepEqual(collectAgentAnalysis.__endpoint.taskQueueTrigger.invoker,
+    ["35745728095-compute@developer.gserviceaccount.com"]);
   assert.equal(collectAgentAnalysis.__endpoint.taskQueueTrigger.rateLimits
     .maxConcurrentDispatches, 1);
   assert.equal(collectAgentAnalysis.__endpoint.taskQueueTrigger.retryConfig.maxAttempts, 5);
