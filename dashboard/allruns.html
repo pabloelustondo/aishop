@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Shop — All runs</title>
+  <!-- base.css, the agent page's row and table styles, then this page's own
+       filter bar and row layout. `layout.css` is not loaded for the reason
+       given at the top of agent.css. -->
+  <link rel="stylesheet" href="/styles/base.css">
+  <link rel="stylesheet" href="/styles/agent.css">
+  <link rel="stylesheet" href="/styles/allruns.css">
+</head>
+<body>
+  <header class="agent-header">
+    <div>
+      <p class="eyebrow">AI SHOP · ADMIN</p>
+      <h1>All runs</h1>
+    </div>
+    <span class="spacer"></span>
+    <a class="nav-link" href="/agent.html">My runs</a>
+    <button id="sign-out" type="button" hidden>Sign out</button>
+  </header>
+
+  <section id="signed-out" class="auth-card">
+    <p class="eyebrow">SIGN IN</p>
+    <h2>Every saved analysis, read-only.</h2>
+    <p>This page is for accounts the administrator has given the admin role. Nothing here changes a record.</p>
+    <form id="email-form" class="email-form" novalidate>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <div class="email-actions">
+        <button id="email-sign-in" type="submit" class="primary">Sign in</button>
+        <button id="forgot" type="button" class="link">Forgot password</button>
+      </div>
+    </form>
+    <p class="or"><span>or</span></p>
+    <button id="sign-in" type="button">Sign in with Google</button>
+  </section>
+
+  <section id="not-authorized" class="auth-card" hidden>
+    <p class="eyebrow">NOT AUTHORIZED</p>
+    <h2>This account is signed in but not authorized to view all runs.</h2>
+    <p>The admin role is granted per account by the administrator. If it was granted just now, sign out and back in.</p>
+  </section>
+
+  <main id="allruns" class="agent-main" hidden>
+    <form id="filters" class="filters">
+      <label>Owner key
+        <input id="owner" name="owner" type="text" inputmode="text" pattern="[a-f0-9]{64}" placeholder="64 hex characters, from a row" spellcheck="false">
+      </label>
+      <label>Current status
+        <select id="status" name="status"><option value="">any</option></select>
+      </label>
+      <label>Created from
+        <input id="from" name="from" type="date">
+      </label>
+      <label>Created to
+        <input id="to" name="to" type="date">
+      </label>
+      <label>Per page
+        <select id="limit" name="limit">
+          <option value="10">10</option><option value="25" selected>25</option><option value="50">50</option>
+        </select>
+      </label>
+      <div class="filter-actions">
+        <button type="submit" class="primary">Apply</button>
+        <button id="clear" type="button">Clear</button>
+      </div>
+    </form>
+
+    <div class="pager">
+      <button id="previous" type="button" disabled>Previous</button>
+      <span id="count" class="meta"></span>
+      <button id="next" type="button" disabled>Next</button>
+    </div>
+
+    <div id="rows"></div>
+    <div id="empty" class="empty" hidden>
+      <h2>No analyses match</h2>
+      <p>Widen the filters, or clear them to see the newest analyses from every owner.</p>
+    </div>
+  </main>
+
+  <p id="message" role="status" aria-live="polite"></p>
+
+  <script src="/__/firebase/8.10.1/firebase-app.js"></script>
+  <script src="/__/firebase/8.10.1/firebase-auth.js"></script>
+  <script src="/__/firebase/init.js"></script>
+  <script type="module" src="/scripts/allruns.js"></script>
+</body>
+</html>

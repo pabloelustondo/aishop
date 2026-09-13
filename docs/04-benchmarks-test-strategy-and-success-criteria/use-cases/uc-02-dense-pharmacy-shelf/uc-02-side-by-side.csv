@@ -1,0 +1,43 @@
+Ref ID,Region,"Reference identification (manual GPT, 2026-09-07)",Ref units,Ref confidence,"Agent row (gpt-5.4-mini, 2026-09-08)",Agent facings,Agent confidence,Claude facings,Claude units,Assessment
+1,Upper,"Unidentified clipped cartons ending ""…xia""",2,Low,—,,,1,1,"Missed; edge-clipped, reference itself low"
+2,Upper,"Herklin Spray Prevención, yellow",3,High,"Herklin boxed hair/scalp treatment products (white/blue boxes on top shelf) — covers IDs 2, 3, 5, 6",10,medium,4,4,Variants collapsed into a colour group; 10 vs 12 units
+3,Upper,"Herklin Gel Extra Fijación, yellow",2,High,↑ same agent row,,,0,0,Counted with ID 2 in the Claude read
+4,Upper,"Herklin Clásico, turquoise",6,High,Herklin green/teal boxed products (top shelf),4,medium,5,5,Claude splits 2 turquoise + 3 blue Clásico
+5,Upper,"Herklin Esencial, blue",5,High,↑ ID 2 agent row,,,4,4,
+6,Upper,"Herklin Kit Antipiojos, purple",2,High,↑ ID 2 agent row,,,2,2,
+7,Middle,Anlett Crema para Pieles Secas,4,Medium,—,,,1,1,MISSED with a readable front; clearest omission
+8,Middle,Medipiox solution for lice and nits,1,High,Medipiox blue/white boxes,1,high,1,1,Match
+9,Middle,Scabisan shampoo,1,High,Scabisan shampoo box,1,high,1,1,Match
+10,Middle,Coctelab Loción para Piojos,1,High,Cocteel Lab lice lotion box,1,high,1,1,"Match; box reads ""Cocteel Lab"""
+11,Middle,Coctelab Shampoo para Piojos,1,High,Cocteel Lab lice shampoo box,1,high,1,1,Match
+12,Middle,Herbacil Champiojo anti-lice shampoo,1,Medium,Herkaci shampoo box,1,high,1,1,Count matches; BRAND MISREAD at high confidence
+13,Middle,"Herbacil anti-lice gel (two fronts, three rear)",5,High,Small white-capped glass bottles with dark labels (middle shelf) + uncertain entry,4,low,2,2,Identity not recovered; 4 sits between 2 facings and 5 units
+14,Middle,"X-Termin Piojos, green/red label",2,High,"Pink 'X-Termin Piojos' bottles — covers IDs 14, 15",4,high,4,4,"Match; two designs merged, acceptable for facings"
+15,Middle,"X-Termin Piojos, red/gold label",2,High,↑ same agent row,,,0,0,Counted with ID 14
+16,Middle,Medicasp anti-dandruff shampoo,3,High,Medicasp green tube bottles,3,high,3,3,Match; one more clipped at right
+17,Lower,BTX-labelled hair cream or treatment,2,Medium,BTX cream bottle,2,medium,1,2,Match
+18,Lower,"Del Indio Papago Tepezcohuite, white/blue jars",7,Medium,"Tepezcohuite/Tepez product jars — covers IDs 18, 19",5,medium,2,6,Brand read; 5 is neither 4 facings nor 13 units
+19,Lower,"Del Indio Papago Tepezcohuite, dark/brown jars",6,Medium,↑ same agent row,,,2,6,
+20,Lower,Derman PS Calm cream tubs,3,High,Blue 'Berman' hair-care bottles/jars — covers IDs 20–25 + uncertain entry,9,medium,1,3,BRAND MISREAD; category wrong (skin care); 9 = tubs only
+21,Lower,Derman DB Calm cream tubs,3,High,↑ same agent row,,,1,3,
+22,Lower,Derman Atopi Calm cream tubs,3,High,↑ same agent row,,,1,3,
+23,Lower,Derman DB Calm emulsion,1,High,↑ same agent row,,,1,1,Pump bottles folded away by the agent
+24,Lower,Derman PS Calm emulsion,1,High,↑ same agent row,,,1,1,
+25,Lower,Derman Atopi Calm emulsion,1,High,↑ same agent row,,,1,1,
+26,Lower,Midai Minoxidil-line shampoo,2,Medium,Midal shampoo bottles,2,high,2,2,Match; spelling differs across all three sources
+27,Lower,Unidentified product at the right edge,1,Low,—,,,0,0,Abstention acceptable
+28,Bottom,Unidentified dark-purple/ribbed edge product,1,Low,—,,,0,0,Abstention acceptable
+29,Bottom,Unidentified pale-lavender bottle,1,Low,—,,,0,0,Abstention acceptable
+30,Bottom,Gel Térmico boxed product,1,Medium,—,,,1,1,"MISSED, readable"
+31,Bottom,Coctelab hair-loss treatment,1,Medium,—,,,1,1,"MISSED, readable"
+32,Bottom,Tress Fuerza y Espesor shampoo,1,High,Ercress hair-care boxes — covers IDs 32–34,4,high,1,1,"Brand garbled (Claude reads ""Adress""); one overcount"
+33,Bottom,Tress Control Caspa shampoo,1,High,↑ same agent row,,,1,1,
+34,Bottom,Tress Xpert Anticaída shampoo,1,High,↑ same agent row,,,1,1,
+35,Bottom,Tío Nacho Acondicionador Aclarante,1,High,Tío Nacho conditioner box,1,high,1,1,Match
+36,Bottom,Sistema GB Shampoo 1,1,High,"Sistema GB shampoo boxes — covers IDs 36, 37",2,high,1,1,Match
+37,Bottom,Sistema GB Shampoo 2,1,High,↑ same agent row,,,1,1,
+38,Bottom,Botika Grisi Anti-Caída,3,High,Botika Grisi anti-hair-loss box (2) + anti-hair-loss/repair box (1),3,high,2,2,Claude sees 2
+39,Bottom,Botika Grisi Engrosador,3,High,Botika Grisi thickening box (1) + anti-hair-loss/volumizing box (1),2,high,2,2,One short of the reference; Claude sees 2
+40,Bottom,Cre-C Hidratación,1,High,Cre-C hair product bottle,1,high,1,1,Match
+41,Bottom,"Cre-C second variant, label clipped",1,Low,—,,,0,0,Clipped; not counted by Claude either
+42,Carton,Unidentified black/purple tubs in open carton (excluded as stock),5,Low,Large cardboard box of assorted items + uncertain entry,1,high,0,0,CARDBOARD COUNTED AS A PRODUCT at high confidence; contents abstained

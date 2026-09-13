@@ -20,10 +20,11 @@ export class ClientError extends Error {
 }
 
 export class ProviderError extends Error {
-  constructor(kind) {
+  constructor(kind, diagnostics = undefined) {
     super("OpenAI request failed.");
     this.name = "ProviderError";
     this.kind = kind;
+    if (diagnostics) this.diagnostics = diagnostics;
   }
 }
 

@@ -1,5 +1,8 @@
 import { defineSecret } from "firebase-functions/params";
 import { onRequest } from "firebase-functions/v2/https";
+import { createFirebaseAdminHandler } from "./firebase-admin-handler.js";
+import { createFirebaseAgentHandler } from "./firebase-agent-handler.js";
+import { agentAPIKey, FUNCTION_MEMORY, API_PROCESS_CONTEXT, createProcessContext } from "./firebase-agent-config.js";
 import { createFirebaseAPIRouter } from "./firebase-api-router.js";
 import { createFirebaseInspectionHandler } from "./firebase-inspection-handler.js";
 import { createFirebaseVistaPackageHandler } from "./firebase-vista-package-handler.js";
@@ -10,6 +13,7 @@ import { readVistaStartupLimits } from "./vista-startup-limits.js";
 
 const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 const aiShopClientToken = defineSecret("AI_SHOP_CLIENT_TOKEN");
+const nextProcessContext = createProcessContext();
 const vistaLimits = readVistaStartupLimits();
 let cachedVistaHandler;
 const vistaHandler = (request, response) => {
@@ -26,6 +30,23 @@ const vistaReadHandler = (request, response) => {
   return cachedVistaReadHandler(request, response);
 };
 
+let cachedAgentHandler;
+const agentHandler = (request, response) => {
+  // Built on first request for the same reason as the VISTA reader: a
+  // secret's value is only resolvable inside an invocation.
+  cachedAgentHandler ??= createFirebaseAgentHandler({
+    apiKey: agentAPIKey(process.env, () => openAIAPIKey.value()),
+    model: process.env.OPENAI_MODEL
+  });
+  return cachedAgentHandler(request, response);
+};
+
+let cachedAdminHandler;
+const adminHandler = (request, response) => {
+  cachedAdminHandler ??= createFirebaseAdminHandler();
+  return cachedAdminHandler(request, response);
+};
+
 export const api = onRequest({
   region: "northamerica-northeast2",
   secrets: [openAIAPIKey, aiShopClientToken],
@@ -33,11 +54,12 @@ export const api = onRequest({
   // several thousand tokens, and 30 s left no margin over the provider call.
   // A timeout discards a completed OpenAI charge and returns nothing.
   timeoutSeconds: 120,
-  memory: "1GiB",
+  memory: FUNCTION_MEMORY,
   maxInstances: 1,
   concurrency: 1,
   invoker: "public"
 }, async (request, response) => {
+  request[API_PROCESS_CONTEXT] = nextProcessContext();
   const inspectionHandler = (req, res) => createFirebaseInspectionHandler({
     apiKey: openAIAPIKey.value(), model: process.env.OPENAI_MODEL
   })(req, res);
@@ -46,6 +68,6 @@ export const api = onRequest({
       model: process.env.OPENAI_MODEL }), clientToken: aiShopClientToken.value()
   })(req, res);
   await createFirebaseAPIRouter({
-    vistaHandler, vistaReadHandler, inspectionHandler, legacyHandler
+    vistaHandler, vistaReadHandler, agentHandler, adminHandler, inspectionHandler, legacyHandler
   })(request, response);
 });

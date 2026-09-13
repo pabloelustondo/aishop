@@ -12,6 +12,9 @@
       "firebase-debug.*.log"
     ]
   },
+  "firestore": {
+    "indexes": "firestore.indexes.json"
+  },
   "hosting": {
     "public": "dashboard",
     "ignore": [
@@ -22,6 +25,20 @@
     "rewrites": [
       {
         "source": "/v1/vista/inspection-packages{,/**}",
+        "function": {
+          "functionId": "api",
+          "region": "northamerica-northeast2"
+        }
+      },
+      {
+        "source": "/v1/agent/analyses{,/**}",
+        "function": {
+          "functionId": "api",
+          "region": "northamerica-northeast2"
+        }
+      },
+      {
+        "source": "/v1/admin/analyses{,/**}",
         "function": {
           "functionId": "api",
           "region": "northamerica-northeast2"

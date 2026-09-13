@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Shop Agent</title>
+  <!-- base.css only, then this page's own layout. `layout.css` and
+       `components.css` describe the reviewer dashboard; loading them is what
+       trapped this page in a 25 rem column. -->
+  <link rel="stylesheet" href="/styles/base.css">
+  <link rel="stylesheet" href="/styles/agent.css">
+</head>
+<body>
+  <header class="agent-header">
+    <div>
+      <p class="eyebrow">AI SHOP · AGENT</p>
+      <h1>Upload a photograph, count a shelf</h1>
+    </div>
+    <span class="spacer"></span>
+    <span id="live" class="live" hidden><span class="dot"></span><span id="live-text">Idle</span></span>
+    <a id="all-runs" class="nav-link" href="/allruns.html" hidden>All runs</a>
+    <button id="upload-another" type="button" class="primary" hidden>Upload another</button>
+    <button id="refresh" type="button" hidden>Refresh</button>
+    <button id="sign-out" type="button" hidden>Sign out</button>
+  </header>
+
+  <section id="signed-out" class="auth-card">
+    <p class="eyebrow">SIGN IN</p>
+    <h2>Your uploads, and only yours.</h2>
+    <p>Each analysis is stored under your account. Nobody else can list or read it.
+      Accounts are created and authorized by the administrator; there is nothing to sign up for here.</p>
+    <form id="email-form" class="email-form" novalidate>
+      <label for="email">Email</label>
+      <input id="email" name="email" type="email" autocomplete="username" required>
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <div class="email-actions">
+        <button id="email-sign-in" type="submit" class="primary">Sign in</button>
+        <button id="forgot" type="button" class="link">Forgot password</button>
+      </div>
+    </form>
+    <p class="or"><span>or</span></p>
+    <button id="sign-in" type="button">Sign in with Google</button>
+  </section>
+
+  <!-- Signed in, and not on the list. One sentence; nothing to click. -->
+  <section id="not-authorized" class="auth-card" hidden>
+    <p class="eyebrow">NOT AUTHORIZED</p>
+    <h2>This account is signed in but not authorized for the agent.</h2>
+    <p>Access is granted by the administrator per account. If you were granted access just now,
+      sign out and back in so your session carries it.</p>
+  </section>
+
+  <!-- Collapsed once anything exists; with an empty list it is the page. -->
+  <form id="upload-form" class="upload-open" hidden>
+    <input id="file" type="file" accept="image/jpeg" required>
+    <button id="submit" type="submit" class="primary">Upload and analyse</button>
+    <p class="hint">One JPEG, up to 5&nbsp;MB and 4,096&nbsp;px per side.
+      Analysed as soon as it is stored.</p>
+  </form>
+
+  <main id="agent" class="agent-main" hidden>
+    <div id="analyses"></div>
+    <div id="empty" class="empty" hidden>
+      <h2>Nothing analysed yet</h2>
+      <p>Choose a photograph above. It is analysed as soon as it is stored, and the
+        result appears here with the image it came from.</p>
+    </div>
+  </main>
+
+  <p id="message" role="status" aria-live="polite"></p>
+
+  <script src="/__/firebase/8.10.1/firebase-app.js"></script>
+  <script src="/__/firebase/8.10.1/firebase-auth.js"></script>
+  <script src="/__/firebase/init.js"></script>
+  <script type="module" src="/scripts/agent.js"></script>
+</body>
+</html>

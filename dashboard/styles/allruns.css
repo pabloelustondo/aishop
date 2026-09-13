@@ -1,0 +1,46 @@
+/*
+ * The All-runs page's own layout: a filter bar, a pager, and rows that open.
+ * Row internals — status pill, facings table, attempt lines — come from
+ * agent.css unchanged, so the two pages read the same record the same way.
+ */
+
+.filters {
+  display: flex; flex-wrap: wrap; gap: .9rem 1.2rem; align-items: end;
+  padding: .9rem 1.1rem; margin-bottom: 1rem;
+  border: 1px solid #d2d4ce; border-radius: .9rem; background: #f4f2ec;
+}
+.filters label {
+  display: grid; gap: .3rem; font-size: .72rem; color: #5e6b64;
+  letter-spacing: .05em; text-transform: uppercase;
+}
+.filters input, .filters select {
+  font: inherit; font-size: .9rem; text-transform: none; letter-spacing: normal;
+  padding: .45rem .6rem; border: 1px solid #b9bcb4; border-radius: .5rem; background: #fff; color: inherit;
+}
+.filters input:focus-visible, .filters select:focus-visible { outline: 2px solid #1d6b4b; outline-offset: 1px; }
+.filters #owner { width: 22rem; max-width: 100%; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .8rem; }
+.filter-actions { display: flex; gap: .6rem; margin-left: auto; }
+.filter-actions button { padding: .45rem .9rem; font-size: .88rem; }
+
+.pager { display: flex; align-items: center; gap: 1rem; margin: 0 0 1rem; }
+.pager button { padding: .4rem .8rem; font-size: .85rem; }
+.pager .meta { margin-left: auto; }
+
+/* A row is a <details>: closed it is one line, open it is the agent card. */
+.run-row > summary { list-style: none; cursor: pointer; }
+.run-row > summary::-webkit-details-marker { display: none; }
+.run-row > summary::before {
+  content: "▸"; color: #5e6b64; font-size: .8rem; margin-right: .2rem; transition: transform .12s;
+}
+.run-row[open] > summary::before { transform: rotate(90deg); }
+.run-row > summary:hover { background: #f6f5ef; }
+.run-row > summary:focus-visible { outline: 2px solid #1d6b4b; outline-offset: -2px; }
+.run-row .owner { font-weight: 600; font-size: .9rem; overflow-wrap: anywhere; }
+.run-row .keys { padding: .6rem 1.1rem; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .7rem; }
+.run-row .analysis-body { border-top: 0; }
+
+@media (max-width: 720px) {
+  .run-row .analysis-body { grid-template-columns: 1fr; }
+  .run-row .evidence { border-right: 0; border-bottom: 1px solid #d2d4ce; }
+  .filter-actions { margin-left: 0; }
+}

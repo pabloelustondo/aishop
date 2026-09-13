@@ -232,3 +232,130 @@ test("UNKNOWN carries its own facing count", async () => {
   const result = await analyze({ ...image, mode: ANALYSIS_MODES.areaScanCatalog });
   assert.equal(result.identifiedProducts.reduce((n, p) => n + p.count, 0), 5);
 });
+
+test("appends a caller's context as its own instruction after the contract's", async () => {
+  let request;
+  const fetchImpl = async (url, options) => {
+    request = { url, options };
+    return responseJson({
+      output: [{
+        type: "message",
+        content: [{ type: "output_text", text: JSON.stringify(areaReport) }]
+      }]
+    });
+  };
+  const analyze = createOpenAIAnalyzer({ apiKey: "k", fetchImpl });
+
+  await analyze({
+    ...image,
+    mode: ANALYSIS_MODES.areaScan,
+    context: "  Ignore the top shelf; it is a different bay.  "
+  });
+
+  const body = JSON.parse(request.options.body);
+  const texts = body.input[0].content
+    .filter((part) => part.type === "input_text")
+    .map((part) => part.text);
+  assert.equal(texts.length, 2, "the contract instruction is not replaced, only followed");
+  assert.equal(texts[0], ANALYSIS_CONTRACTS[ANALYSIS_MODES.areaScan].instruction);
+  assert.match(texts[1], /Ignore the top shelf; it is a different bay\.$/,
+    "the note is trimmed and sent as given");
+  assert.equal(body.input[0].content.at(-1).type, "input_image",
+    "the image stays last so both instructions precede it");
+});
+
+test("sends only the contract instruction when a caller passes no context", async () => {
+  const bodies = [];
+  const fetchImpl = async (url, options) => {
+    bodies.push(JSON.parse(options.body));
+    return responseJson({
+      output: [{
+        type: "message",
+        content: [{ type: "output_text", text: JSON.stringify(areaReport) }]
+      }]
+    });
+  };
+  const analyze = createOpenAIAnalyzer({ apiKey: "k", fetchImpl });
+
+  await analyze({ ...image, mode: ANALYSIS_MODES.areaScan });
+  await analyze({ ...image, mode: ANALYSIS_MODES.areaScan, context: "   " });
+  await analyze({ ...image, mode: ANALYSIS_MODES.areaScan, context: 42 });
+
+  for (const body of bodies) {
+    const texts = body.input[0].content.filter((part) => part.type === "input_text");
+    assert.equal(texts.length, 1,
+      "an absent, blank, or non-string note must not become an empty instruction");
+    assert.equal(texts[0].text, ANALYSIS_CONTRACTS[ANALYSIS_MODES.areaScan].instruction);
+  }
+});
+
+test('output cap diagnostics survive partial JSON without retaining response text', async()=>{
+ const observed=[];
+ const analyze=createOpenAIAnalyzer({apiKey:'fixture',fetchImpl:async()=>new Response(JSON.stringify({status:'incomplete',incomplete_details:{reason:'max_output_tokens'},model:'gpt-5.4-mini',usage:{input_tokens:500,output_tokens:1200},output_text:'PRIVATE partial {'}),{status:200,headers:{'x-request-id':'req_fixture'}})});
+ await assert.rejects(analyze({...image,onDiagnostics:d=>observed.push(d)}),e=>e.diagnostics?.failureClass==='provider_output_limit' && e.diagnostics?.providerStatus===200);
+ assert.equal(observed.at(-1).usage.outputTokens,1200);
+ assert.equal(observed.at(-1).providerRequestId,'req_fixture');
+ assert.ok(!JSON.stringify(observed).includes('PRIVATE'));
+});
+
+for (const [label,payload,status,expected] of [
+ ['rate limit',{error:{code:'rate_limit_exceeded',message:'PRIVATE'}},429,'provider_http'],
+ ['provider outage',{error:{type:'server_error',message:'PRIVATE'}},503,'provider_http'],
+ ['refusal',{status:'completed',output:[{content:[{type:'refusal',refusal:'PRIVATE'}]}]},200,'provider_refusal'],
+ ['complete malformed JSON',{status:'completed',output_text:'PRIVATE {',usage:{output_tokens:1200}},200,'provider_json'],
+ ['complete invalid schema',{status:'completed',output_text:'{}'},200,'provider_schema'],
+ ['non-token incompleteness',{status:'incomplete',incomplete_details:{reason:'content_filter'}},200,'provider_incomplete']
+]) test(`diagnostics distinguish ${label}`,async()=>{
+ const analyze=createOpenAIAnalyzer({apiKey:'fixture',fetchImpl:async()=>responseJson(payload,status)});
+ await assert.rejects(analyze(image),e=>{assert.equal(e.diagnostics.failureClass,expected);assert.ok(!JSON.stringify(e.diagnostics).includes('PRIVATE'));return true});
+});
+test('successful report survives throwing and rejected diagnostic observers',async()=>{
+ const analyze=createOpenAIAnalyzer({apiKey:'fixture',fetchImpl:async()=>responseJson({output_text:JSON.stringify(targetReport)})});
+ for(const onDiagnostics of [()=>{throw Error('sink')},async()=>{throw Error('sink')}]) assert.deepEqual(await analyze({...image,onDiagnostics}),targetReport);
+});
+
+test('transport failure and timeout are distinct diagnostics',async()=>{
+ for(const [name,expected] of [['Error','provider_network'],['AbortError','provider_timeout']]) {
+  const analyze=createOpenAIAnalyzer({apiKey:'fixture',fetchImpl:async()=>{const e=Error('PRIVATE');e.name=name;throw e}});
+  await assert.rejects(analyze(image),e=>e.diagnostics.failureClass===expected && !JSON.stringify(e.diagnostics).includes('PRIVATE'));
+ }
+});
+
+test("reported output cap matches the request actually sent", async () => {
+  let sent;
+  let diagnostics;
+  const analyze = createOpenAIAnalyzer({ apiKey: "fixture", fetchImpl: async (_, options) => {
+    sent = JSON.parse(options.body);
+    return responseJson({ output_text: JSON.stringify(targetReport) });
+  } });
+  await analyze({ ...image, onDiagnostics: value => { diagnostics = value; } });
+  assert.equal(diagnostics.maxOutputTokens, sent.max_output_tokens);
+});
+
+test("rate headers survive unreadable error bodies and preserve missing limits as null", async () => {
+  const analyze = createOpenAIAnalyzer({ apiKey: "fixture", fetchImpl: async () => new Response("PRIVATE not JSON", {
+    status: 429, headers: {
+      "x-ratelimit-limit-requests": "60", "x-ratelimit-remaining-requests": "0",
+      "x-ratelimit-reset-requests": "1m2.5s", "x-ratelimit-reset-tokens": "PRIVATE",
+      "x-ratelimit-remaining-project-tokens": "42"
+    }
+  }) });
+  await assert.rejects(analyze(image), error => {
+    assert.equal(error.diagnostics.rateLimits.requests.resetMs, 62500);
+    assert.equal(error.diagnostics.rateLimits.requests.remaining, 0);
+    assert.equal(error.diagnostics.rateLimits.tokens.resetMs, null);
+    assert.equal(error.diagnostics.rateLimits.projectTokens.remaining, 42);
+    assert.ok(error.diagnostics.providerObservedAt);
+    assert.ok(!JSON.stringify(error.diagnostics).includes("PRIVATE"));
+    return true;
+  });
+});
+
+test("reset durations reject malformed or unbounded values", async () => {
+  const { rateResetMs } = await import("../src/openai-analyzer.js");
+  assert.equal(rateResetMs("2h3m4s5ms"), 7384005);
+  assert.equal(rateResetMs("0s"), 0);
+  for (const invalid of [null, "", "-1s", "PRIVATE", "1sPRIVATE", "9".repeat(100) + "s", "1000d"]) {
+    assert.equal(rateResetMs(invalid), null);
+  }
+});

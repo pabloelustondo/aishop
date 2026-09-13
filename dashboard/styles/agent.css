@@ -1,0 +1,168 @@
+/*
+ * The agent page's own layout.
+ *
+ * It exists because `layout.css` sets a bare `main { display: grid;
+ * grid-template-columns: minmax(17rem, 25rem) 1fr; }` for the reviewer
+ * dashboard's aside-and-article split. This page loaded that file and its
+ * `<main>` silently became a two-column grid, trapping the whole page in a
+ * 25 rem column. Nothing here uses a bare element selector that another page
+ * could inherit by loading the same file.
+ *
+ * Pairs with `base.css` for type, colour, buttons and the message toast. It
+ * deliberately does not load `layout.css` or `components.css`; both describe
+ * the reviewer dashboard, and human review does not appear on this page.
+ */
+
+.agent-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: .7rem clamp(1rem, 3vw, 2.5rem);
+  border-bottom: 1px solid #d2d4ce;
+}
+.agent-header h1 { font-size: 1.3rem; }
+.agent-header .spacer { flex: 1 1 auto; }
+.agent-header button { padding: .45rem .9rem; font-size: .88rem; }
+.agent-header .nav-link { color: #1d6b4b; font-size: .88rem; text-decoration: underline; padding: .45rem .6rem; }
+
+.live { display: inline-flex; align-items: center; gap: .4rem; color: #5e6b64; font-size: .8rem; }
+.live .dot { width: .5rem; height: .5rem; border-radius: 50%; background: #1d6b4b; }
+.live[data-busy="true"] .dot { background: #8f5e0f; }
+
+/* Expanded only on request, or when there is nothing else on the page. */
+.upload-open {
+  display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
+  padding: .75rem clamp(1rem, 3vw, 2.5rem);
+  border-bottom: 1px solid #d2d4ce; background: #e9e8e1;
+}
+.upload-open .hint { margin: 0; color: #5e6b64; font-size: .78rem; }
+.upload-open button { padding: .45rem .9rem; font-size: .88rem; }
+
+/* Carried over from layout.css, which this page no longer loads. */
+.auth-card {
+  width: min(38rem, calc(100% - 2rem));
+  margin: clamp(3rem, 10vh, 8rem) auto;
+  padding: clamp(1.5rem, 5vw, 3.5rem);
+  border: 1px solid #d2d4ce; border-radius: 1rem; background: #faf9f5;
+  box-shadow: 0 24px 70px #26352d12;
+}
+
+/* Sprint 011: the sign-in card gained a form. Nothing else on the page moves. */
+.email-form { display: grid; gap: .35rem; margin: 1.25rem 0 .5rem; }
+.email-form label { font-size: .78rem; color: #5e6b64; letter-spacing: .04em; text-transform: uppercase; }
+.email-form input {
+  font: inherit; padding: .55rem .7rem; border: 1px solid #b9bcb4; border-radius: .5rem;
+  background: #fff; color: inherit; margin-bottom: .5rem;
+}
+.email-form input:focus-visible { outline: 2px solid #1d6b4b; outline-offset: 1px; }
+.email-actions { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin-top: .25rem; }
+.email-actions .link {
+  background: none; border: 0; padding: 0; color: #1d6b4b; text-decoration: underline;
+  font: inherit; font-size: .88rem; cursor: pointer;
+}
+.email-actions .link:focus-visible { outline: 2px solid #1d6b4b; outline-offset: 2px; }
+.or { display: flex; align-items: center; gap: .75rem; margin: 1rem 0; color: #5e6b64; font-size: .8rem; }
+.or::before, .or::after { content: ""; flex: 1 1 auto; border-top: 1px solid #d2d4ce; }
+
+.agent-main { padding: clamp(1rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2.5rem) 6rem; }
+
+.analysis {
+  border: 1px solid #d2d4ce; border-radius: .9rem; background: #faf9f5;
+  margin-bottom: 1.25rem;
+}
+.analysis-head {
+  display: flex; align-items: baseline; gap: .9rem; flex-wrap: wrap;
+  padding: .8rem 1.1rem; border-bottom: 1px solid #d2d4ce;
+}
+.analysis-head .spacer { flex: 1 1 auto; }
+.status {
+  padding: .2rem .5rem; border-radius: 999px; color: #16543b; background: #d7eadf;
+  font-size: .68rem; letter-spacing: .06em; text-transform: uppercase;
+}
+.status[data-state="failed"] { color: #7a2718; background: #f3ddd7; }
+.status[data-state="analyzing"] { color: #6b5613; background: #f1e7cd; }
+.filename { font-weight: 650; font-size: .95rem; overflow-wrap: anywhere; }
+.meta { margin: 0; color: #5e6b64; font-size: .78rem; }
+
+/* The evidence sits beside the claim: a count is checkable only against the
+   image it came from. */
+.analysis-body { display: grid; grid-template-columns: minmax(20rem, 34rem) 1fr; align-items: start; }
+.evidence { padding: 1.1rem; border-right: 1px solid #d2d4ce; }
+.evidence img { display: block; width: 100%; border-radius: .6rem; background: #20241f; }
+.evidence .imgmeta { margin: .5rem 0 0; color: #5e6b64; font-size: .74rem; }
+.evidence .summary { margin: .8rem 0 0; color: #2d3a33; font-size: .88rem; }
+.rows { min-width: 0; }
+
+.facings { width: 100%; border-collapse: collapse; }
+.facings thead th {
+  text-align: left; padding: .5rem 1.1rem; color: #5e6b64; font-size: .67rem;
+  font-weight: 600; letter-spacing: .08em; text-transform: uppercase;
+  background: #f4f2ec; border-bottom: 1px solid #d2d4ce;
+}
+.facings tbody td {
+  padding: .45rem 1.1rem; border-bottom: 1px solid #e6e5de;
+  vertical-align: middle; font-size: .89rem; position: relative;
+}
+.facings tbody tr:last-child td { border-bottom: 0; }
+.facings tbody tr:hover { background: #f6f5ef; }
+.col-count { width: 6rem; text-align: right; font-variant-numeric: tabular-nums; }
+.col-conf { width: 9rem; }
+
+/* The badge already answers "how sure", so it answers "why" too. A column
+   existing only to hold a hover target would earn nothing. */
+.conf {
+  position: relative; display: inline-block; padding: .1rem .4rem;
+  border-radius: .35rem; font-size: .7rem; text-transform: uppercase;
+  letter-spacing: .05em; cursor: help; outline: none;
+  text-decoration: underline dotted currentColor; text-underline-offset: .18em;
+  text-decoration-thickness: 1px;
+}
+.conf:hover, .conf:focus-visible { text-decoration-style: solid; }
+.conf:focus-visible { box-shadow: 0 0 0 2px #1d6b4b55; }
+.conf[data-level="high"] { color: #16543b; background: #dcece3; }
+.conf[data-level="medium"] { color: #6b5613; background: #f1e7cd; }
+.conf[data-level="low"] { color: #7a2718; background: #f3ddd7; }
+
+/* Hover and keyboard focus both; `title` is only the fallback underneath. */
+.tip {
+  position: absolute; right: 0; bottom: calc(100% + .45rem); z-index: 5;
+  width: max-content; max-width: 24rem; padding: .5rem .65rem; border-radius: .5rem;
+  color: #f2f0e9; background: #18211d; box-shadow: 0 10px 26px #0000002e;
+  font-size: .8rem; text-transform: none; letter-spacing: normal;
+  line-height: 1.35; text-align: left; opacity: 0; visibility: hidden;
+  transition: opacity .09s;
+}
+.conf:hover .tip, .conf:focus .tip, .conf:focus-visible .tip { opacity: 1; visibility: visible; }
+
+.strip { padding: .8rem 1.1rem; border-top: 1px solid #d2d4ce; }
+.strip.tint { background: #f4f2ec; }
+.strip h3 { margin: 0 0 .45rem; }
+.strip ul { margin: 0; padding-left: 1.1rem; }
+.strip li { font-size: .85rem; margin-bottom: .25rem; }
+.strip .why { color: #5e6b64; }
+.run-line { display: flex; gap: .6rem; align-items: baseline; font-size: .83rem; padding: .2rem 0; }
+.run-line .spacer { flex: 1 1 auto; }
+.run-no { color: #5e6b64; font-variant-numeric: tabular-nums; min-width: 3.2rem; }
+.run-ctx { font-style: italic; }
+.run-none { color: #5e6b64; }
+.refine { display: flex; gap: .6rem; }
+.refine input {
+  flex: 1 1 auto; padding: .45rem .7rem; border: 1px solid #a9afa8;
+  border-radius: .55rem; background: #fff;
+}
+.actions { display: flex; gap: .6rem; justify-content: flex-end; }
+
+.empty { max-width: 34rem; margin: 12vh auto; text-align: center; }
+.empty p { color: #5e6b64; font-size: .9rem; }
+
+@media (max-width: 900px) {
+  .analysis-body { grid-template-columns: 1fr; }
+  .evidence { border-right: 0; border-bottom: 1px solid #d2d4ce; }
+}
+
+/* Diagnostic text stays selectable and contained at both accepted widths. */
+.diagnostic-reference { display: inline-flex; flex-wrap: wrap; gap: .5rem; margin: .5rem; max-width: 100%; }
+.diagnostic-reference input { width: 22rem; max-width: 100%; min-width: 0; }
+.run-diagnostics { padding: .5rem 0; }
+.run-diagnostics summary { cursor: pointer; }
+.run-diagnostics pre { white-space: pre-wrap; overflow-wrap: anywhere; }
