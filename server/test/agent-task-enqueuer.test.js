@@ -1,12 +1,17 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { AGENT_TASK_DISPATCH_DEADLINE_SECONDS,
+import { AGENT_COLLECTION_FUNCTION, AGENT_TASK_DISPATCH_DEADLINE_SECONDS,
   createAgentTaskEnqueuer } from "../src/agent-task-enqueuer.js";
 
 const OWNER = "e".repeat(64);
 const ID = "01J8Z6M4QK7R9V2X5T3B0C1D2E";
 const RUN = "56fe7ad1-7a4f-4ba8-86a6-04cfd701de2b";
 const DUE = new Date("2026-09-13T15:00:15.000Z");
+
+test("targets the Montréal collector supported by Cloud Tasks", () => {
+  assert.equal(AGENT_COLLECTION_FUNCTION,
+    "locations/northamerica-northeast1/functions/collectAgentAnalysis");
+});
 
 function harness(enqueue = async () => {}) {
   const calls = [];

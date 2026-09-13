@@ -25,10 +25,10 @@ test("exports the Firebase v2 HTTP function in Toronto with both secrets", () =>
   );
 });
 
-test("exports a private bounded task queue collector in Toronto", () => {
+test("exports a private bounded task queue collector in Montréal", () => {
   assert.equal(typeof collectAgentAnalysis, "function");
   assert.deepEqual(collectAgentAnalysis.__endpoint.region,
-    ["northamerica-northeast2"]);
+    ["northamerica-northeast1"]);
   assert.equal(collectAgentAnalysis.__endpoint.platform, "gcfv2");
   assert.equal(collectAgentAnalysis.__endpoint.timeoutSeconds, 60);
   assert.deepEqual(collectAgentAnalysis.__endpoint.taskQueueTrigger.invoker, ["private"]);
@@ -42,7 +42,7 @@ test("exports a private bounded task queue collector in Toronto", () => {
 test("exports the one-minute reconciliation safety net", () => {
   assert.equal(typeof reconcileAgentAnalyses, "function");
   assert.deepEqual(reconcileAgentAnalyses.__endpoint.region,
-    ["northamerica-northeast2"]);
+    ["northamerica-northeast1"]);
   assert.equal(reconcileAgentAnalyses.__endpoint.scheduleTrigger.schedule,
     "every 1 minutes");
   assert.equal(reconcileAgentAnalyses.__endpoint.timeoutSeconds, 60);

@@ -66,7 +66,7 @@ const agentReconciler = () => {
 };
 
 export const collectAgentAnalysis = onTaskDispatched({
-  region: "northamerica-northeast2",
+  region: "northamerica-northeast1",
   secrets: [openAIAPIKey],
   memory: FUNCTION_MEMORY,
   timeoutSeconds: 60,
@@ -77,7 +77,7 @@ export const collectAgentAnalysis = onTaskDispatched({
 }, request => agentBackground().taskHandler(request));
 
 export const reconcileAgentAnalyses = onSchedule({
-  region: "northamerica-northeast2",
+  region: "northamerica-northeast1",
   schedule: "every 1 minutes",
   timeoutSeconds: 60,
   retryCount: 2,

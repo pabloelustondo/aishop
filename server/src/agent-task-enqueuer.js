@@ -6,7 +6,7 @@ const ANALYSIS_ID = /^[0-9A-Za-z_-]{1,64}$/;
 const RUN_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 export const AGENT_COLLECTION_FUNCTION =
-  "locations/northamerica-northeast2/functions/collectAgentAnalysis";
+  "locations/northamerica-northeast1/functions/collectAgentAnalysis";
 export const AGENT_TASK_DISPATCH_DEADLINE_SECONDS = 30;
 
 function scheduledDate(value) {
