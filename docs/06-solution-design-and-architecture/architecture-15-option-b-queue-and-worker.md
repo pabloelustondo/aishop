@@ -1,35 +1,38 @@
-# Option B — Queue and Worker
+# Option B — Server-Owned Cloud Tasks Collector
 
-**Status: DEFERRED.** Pablo selected Option A in
-[14](architecture-14-option-a-provider-background-mode.md) and may analyze this
-alternative in the future.
+**Status: SELECTED.** Pablo selected this design on 2026-09-13. It supersedes
+browser collection in [14](architecture-14-option-a-provider-background-mode.md).
 
-## The shape
+## Durable flow
 
-`run` enqueues a message and returns `analyzing`. A private worker calls the
-provider and settles the record. The worker is not behind Hosting and owns its
-runtime envelope. Provider application-state storage is unnecessary, although
-ordinary provider processing and abuse-monitoring rules still apply.
+1. The authenticated API reserves a run and starts one stored OpenAI background response.
+2. One Firestore transaction stores its opaque ID, `analyzing` state and next collection time.
+3. The API enqueues a private Cloud Task and returns the durable record promptly.
+4. The task claims a short Firestore lease and retrieves provider state.
+5. Intermediate state records the next collection time and schedules another task.
+6. Terminal state is validated and settled idempotently before best-effort provider deletion.
+7. A scheduled reconciler enqueues overdue records, repairing missed dispatches or crashes.
+8. Pages poll read-only owner/admin APIs or later subscribe; they never collect provider work.
 
-This is the topology the handoff proposed and
-[08](architecture-08-agent-ai-decision-and-topology.md) describes. Pub/Sub
-versus Cloud Tasks remains open in
-[12](architecture-12-agent-ai-open-decisions.md).
+## Invariants
 
-## Additional machinery
+- Firestore is authoritative for status, attempts, schedule, lease, report and diagnostics.
+- Task payload contains only owner key, analysis ID and run ID; provider ID stays in Firestore.
+- At-least-once delivery cannot create a second run or duplicate terminal settlement.
+- Lease and run identity make concurrent or stale task delivery a harmless no-op.
+- Reconciliation, not a browser session, guarantees another collection opportunity.
+- Cleanup follows durable settlement and never precedes it.
 
-- a worker function with its own composition and deploy target;
-- a queue created outside the repository;
-- service-account, enqueue and worker-invocation permissions;
-- retry, dead-letter and operational alerting policies;
-- idempotency against duplicate delivery and duplicate provider billing;
-- an end-to-end path that keeps the queue behavior continuously proven.
+## Infrastructure boundary
 
-## When to reconsider
+Use Firebase v2 `onTaskDispatched` in Toronto with bounded retries and rate
+limits, plus a scheduled reconciler in the same project. First deployment may
+create a Cloud Tasks queue and needs explicit billing/IAM/deployment approval.
+The existing Node runtime, OpenAI model, prompt, strict schema, authentication,
+Storage evidence and public deploy target remain unchanged.
 
-Analyze Option B if evidence shows that provider-stored response state is
-contractually unacceptable, client-driven collection is insufficient, or
-video and sustained workloads need independent compute and retry control.
+## Accepted residual risk
 
-Adoption would require its own approved architecture decision, Sprint Plan,
-component-scoped tasks, infrastructure authorization and cost review.
+OpenAI does not document an idempotency key for Responses creation. A transport
+failure after provider acceptance but before its ID is durably stored can still
+orphan one response. It must be diagnosed; it must never trigger automatic start.

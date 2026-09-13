@@ -1,50 +1,43 @@
-# Sprint 013 — Background Analysis
+# Sprint 013 — Server-Owned Background Analysis
 
-Date: 2026-09-12. Status: PROPOSED; approval requires Pablo's commit.
+Date: 2026-09-13. Status: PROPOSED revision; approval requires Pablo's commit.
+The previously approved browser-collection scope is rejected and authorizes no further code.
 
-## Problem and goal
+## Goal
 
-Dense-shelf responses reached AI Shop's 1,200-token cap. Removing that cap and
-the 20-second abort still leaves synchronous analysis exposed to HTTP and
-function deadlines. Implement selected
-[Option A](../../../06-solution-design-and-architecture/architecture-14-option-a-provider-background-mode.md)
-so long analysis starts and completes across separate short requests.
+Complete dense-shelf analysis beyond HTTP deadlines while Firestore and private
+server processes—not any browser—own progression and terminal state.
 
 ## Scope
 
-- Start Responses API work with `background: true`, `store: true`, and no
-  supplied `max_output_tokens`.
-- Give each short provider start, retrieve and delete call a 15-second transport
-  deadline; it does not limit the background analysis itself.
-- Store the opaque provider response ID and collect status server-side.
-- Preserve strict schemas and settle every terminal outcome idempotently.
-- Delete terminal provider responses after durable settlement, best-effort.
-- Poll the selected `analyzing` record every 15 seconds for at most 10 minutes;
-  stop on terminal state, deselection, hidden/unloaded page, or elapsed ceiling.
-- Preserve diagnostics, redaction, authorization and the existing deploy target.
+- Start one stored OpenAI background response without `max_output_tokens`.
+- Persist provider ID, run identity, status, lease and next collection time server-side.
+- Enqueue a private Firebase Cloud Task after provider-ID persistence.
+- Retrieve and settle through an idempotent task with 15-second provider-call deadlines.
+- Re-enqueue intermediate responses after 15 seconds; use bounded queue retry/rate limits.
+- Reconcile overdue `analyzing` records on a server schedule to repair dispatch gaps.
+- Delete provider responses best-effort only after durable terminal settlement.
+- Make My Runs and All Runs read durable state only; page refresh cannot advance work.
+- Preserve strict schemas, diagnostics, redaction, authorization and TEST target.
 
 ## Acceptance
 
-- Starting a run returns `analyzing` promptly and cannot duplicate on refresh.
-- Collection represents every intermediate and terminal state honestly.
-- Provider-control timeouts fail honestly and never trigger an automatic retry.
-- Polling stops under every declared condition and then offers manual refresh.
-- TEST verifies strict `json_schema` enforcement in background mode.
-- Provider cleanup follows durable settlement, never precedes it.
-- Unit and emulator E2E suites prove authorization and state transitions.
-- TEST completes Ignacio's original image and correlates IDs, usage and timing.
-- TEST records the effective Hosting rewrite deadline for synchronous routes.
+- Closing or refreshing every browser cannot stop or duplicate server progression.
+- Repeated, concurrent and stale task deliveries create no duplicate run or settlement.
+- A missed enqueue or crashed task is recovered by the reconciler without user action.
+- Pages show state loaded from owner/admin APIs and never call a provider-collection route.
+- Provider IDs and task internals never serialize publicly.
+- Emulator E2E proves start, intermediate, recovery, terminal, cleanup and authorization.
+- TEST completes Ignacio's image and correlates Firestore, task and provider diagnostics.
 
-## Accepted boundaries
+## Boundaries and authority
 
-No queue, worker, sweeper, new function, prompt/model/schema, authentication,
-VISTA, iOS, automatic retry or production deployment. If a timed-out start was
-accepted upstream, or nobody collects, a billed provider response may remain
-stored and its AI Shop run may remain `analyzing`. TEST accepts that orphan
-case. Option B remains deferred.
+No Python, Cloud Run, Pub/Sub, model/prompt/schema/auth, VISTA or iOS change.
+An uncertain provider start remains a diagnosed orphan and is never auto-retried.
+Cloud Tasks/Scheduler creation, IAM, billing and TEST deployment require separate approval.
 
-## Sequence
+## Gates
 
-Pablo commits this plan and its architecture dependencies first. Only then may
-the separate component-scoped tasks be drafted and committed. After both gates,
-create the Sprint 013 branch before coding. Pablo alone publishes or releases.
+After Pablo commits this revision, replace and approve the obsolete Sprint Plan
+Tasks in a separate commit. Only then resume coding on the Sprint 013 branch.
+Pablo alone commits, publishes, deploys, merges or releases.
