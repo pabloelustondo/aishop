@@ -1,7 +1,18 @@
 /** The All-runs page's decisions, tested as pure functions (see agent-page-behaviour.test.js). */
 import assert from "node:assert/strict";
 import test from "node:test";
-import { attemptLine, ownerText, queryString, signInErrorMessage } from "../../dashboard/scripts/allruns.js";
+import { attemptLine, OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS,
+  ownerText, queryString, shouldPollAnalyses,
+  signInErrorMessage } from "../../dashboard/scripts/allruns.js";
+
+test("All runs observes only pages containing active server records", () => {
+  assert.equal(OBSERVATION_INTERVAL_MS, 15_000);
+  assert.equal(shouldPollAnalyses([{ status: "analyzing" }]), true);
+  assert.equal(shouldPollAnalyses([{ status: "failed" }]), false);
+  assert.equal(shouldPollAnalyses([{ status: "analyzing" }], { visible: false }), false);
+  assert.equal(shouldPollAnalyses([{ status: "analyzing" }],
+    { elapsedMs: OBSERVATION_CEILING_MS }), false);
+});
 
 test("only filters with a value travel, trimmed, and the cursor rides with them", () => {
   assert.equal(queryString({}), "");

@@ -10,8 +10,19 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  retryContextOf, refinementNote, signInErrorMessage, shouldFallBackToRedirect
+  OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS, retryContextOf,
+  refinementNote, shouldPollAnalyses, signInErrorMessage, shouldFallBackToRedirect
 } from "../../dashboard/scripts/agent.js";
+
+test("My runs observes server state every 15 seconds without advancing it", () => {
+  assert.equal(OBSERVATION_INTERVAL_MS, 15_000);
+  assert.equal(shouldPollAnalyses([{ status: "analyzing" }]), true,
+    "a fresh page resumes observation from durable status");
+  assert.equal(shouldPollAnalyses([{ status: "analyzed" }]), false);
+  assert.equal(shouldPollAnalyses([{ status: "analyzing" }], { visible: false }), false);
+  assert.equal(shouldPollAnalyses([{ status: "analyzing" }],
+    { elapsedMs: OBSERVATION_CEILING_MS }), false);
+});
 
 test("retrying a failed refinement resends that run's own note", () => {
   const analysis = {

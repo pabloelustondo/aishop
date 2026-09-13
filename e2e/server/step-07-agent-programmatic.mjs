@@ -17,7 +17,9 @@ import { readFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { promisify } from "node:util";
 import { API_PROCESS_CONTEXT, createProcessContext } from "../../server/src/firebase-agent-config.js";
+import { createFirebaseAgentBackground } from "../../server/src/firebase-agent-background.js";
 import { createFirebaseAgentHandler } from "../../server/src/firebase-agent-handler.js";
+import { createFirebaseAgentServices } from "../../server/src/firebase-services.js";
 import { mintEmulatorPasswordUser, signInEmulatorPassword } from "./emulator-auth.mjs";
 
 for (const key of ["FIRESTORE_EMULATOR_HOST", "FIREBASE_AUTH_EMULATOR_HOST", "FIREBASE_STORAGE_EMULATOR_HOST"]) {
@@ -40,14 +42,27 @@ process.env.FIREBASE_CONFIG = JSON.stringify({ projectId: PROJECT, storageBucket
 const report = { summary: "fixture", identifiedProducts: [
   { name: "Fixture product", count: 2, confidence: "high", visibleEvidence: ["fixture"] }
 ], uncertainItems: [] };
+let collectionTime = Date.now();
+const services = createFirebaseAgentServices({
+  collectionClock: () => new Date(collectionTime)
+});
+const queued = [];
+const taskEnqueuer = { enqueue: async input => { queued.push(input); } };
+const providerFetch = async (_url, options) => new Response(JSON.stringify(
+  options.method === "POST" ? { id: "resp_fixture", status: "queued",
+    model: "gpt-fixture", usage: { input_tokens: 1, output_tokens: 0 } }
+    : options.method === "GET" ? { id: "resp_fixture", status: "completed",
+      model: "gpt-fixture", usage: { input_tokens: 1, output_tokens: 1 },
+      output_text: JSON.stringify(report) }
+      : { id: "resp_fixture", deleted: true }
+), { status: 200, headers: { "x-request-id": "req_fixture" } });
 const handler = createFirebaseAgentHandler({
   apiKey: "offline-fixture-only", environment: "emulator", release: "fixture",
-  logger: { info: () => {}, error: () => {} },
-  fetchImpl: async () => new Response(JSON.stringify({
-    status: "completed", model: "gpt-fixture", usage: { input_tokens: 1, output_tokens: 1 },
-    output_text: JSON.stringify(report)
-  }), { status: 200, headers: { "x-request-id": "req_fixture" } })
+  logger: { info: () => {}, error: () => {} }, services, taskEnqueuer,
+  fetchImpl: providerFetch
 });
+const background = createFirebaseAgentBackground({ apiKey: "offline-fixture-only",
+  model: "gpt-fixture", fetchImpl: providerFetch, services, taskEnqueuer });
 const nextProcessContext = createProcessContext();
 const server = createServer(async (request, response) => {
   request[API_PROCESS_CONTEXT] = nextProcessContext();
@@ -108,10 +123,17 @@ try {
   assert.equal(answered.status, 201, answeredBody);
   assert.match(answered.headers.get("x-request-id") ?? "", /^[0-9a-f-]{36}$/);
   const { analysis } = JSON.parse(answeredBody);
-  assert.equal(analysis.status, "analyzed");
+  assert.equal(analysis.status, "analyzing");
   assert.equal(analysis.runs.length, 1);
   assert.equal(analysis.runs[0].context, "count the blue bottles");
-  assert.equal(analysis.report.identifiedProducts[0].count, 2);
+  assert.equal(queued.length, 1, "start persisted and queued one private collection task");
+  collectionTime += 16_000;
+  const collection = queued.shift();
+  await background.taskHandler({ data: { ownerKey: collection.ownerKey,
+    analysisId: collection.analysisId, runId: collection.runId } });
+  const completed = await (await call(a.idToken, "GET", `/${analysis.analysisId}`)).json();
+  assert.equal(completed.analysis.status, "analyzed");
+  assert.equal(completed.analysis.report.identifiedProducts[0].count, 2);
 
   const stored = await singleCall(a.idToken, {});
   assert.equal(stored.status, 201);

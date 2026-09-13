@@ -11,6 +11,15 @@
 
 const BASE = "/v1/admin/analyses";
 const STATUSES = ["uploaded", "analyzing", "analyzed", "failed"];
+export const OBSERVATION_INTERVAL_MS = 15_000;
+export const OBSERVATION_CEILING_MS = 10 * 60_000;
+
+export function shouldPollAnalyses(analyses, { visible = true,
+  elapsedMs = 0 } = {}) {
+  return visible && elapsedMs < OBSERVATION_CEILING_MS
+    && Array.isArray(analyses)
+    && analyses.some(analysis => analysis?.status === "analyzing");
+}
 
 const element = (id) => (typeof document === "undefined" ? null : document.getElementById(id));
 const view = {
@@ -71,6 +80,33 @@ const popupFailed = (code) => ["auth/popup-blocked", "auth/popup-closed-by-user"
 const trail = [];
 let nextCursor = null;
 let objectURLs = [];
+let activeCursor = null;
+let observationTimer = null;
+let observationStartedAt = null;
+
+function stopObservation() {
+  if (observationTimer !== null) clearTimeout(observationTimer);
+  observationTimer = null;
+  observationStartedAt = null;
+}
+
+function scheduleObservation(analyses) {
+  if (observationTimer !== null) clearTimeout(observationTimer);
+  observationTimer = null;
+  const visible = document.visibilityState !== "hidden";
+  const now = Date.now();
+  if (analyses.some(analysis => analysis?.status === "analyzing")) {
+    observationStartedAt ??= now;
+  } else {
+    observationStartedAt = null;
+  }
+  if (!shouldPollAnalyses(analyses, { visible,
+    elapsedMs: observationStartedAt === null ? 0 : now - observationStartedAt })) return;
+  observationTimer = setTimeout(() => {
+    observationTimer = null;
+    load(activeCursor);
+  }, OBSERVATION_INTERVAL_MS);
+}
 
 function say(text, isError = false, requestId = null) {
   view.message.textContent = text ?? "";
@@ -230,6 +266,7 @@ function render(page) {
   nextCursor = page.nextCursor ?? null;
   view.next.disabled = !nextCursor;
   view.previous.disabled = trail.length === 0;
+  scheduleObservation(page.analyses);
 }
 
 function filters() {
@@ -245,6 +282,7 @@ function showNotAuthorized(refused) {
 }
 
 async function load(cursor = null) {
+  activeCursor = cursor;
   say("Loading…");
   try {
     const page = await request(BASE + queryString({ ...filters(), cursor }));
@@ -258,6 +296,10 @@ async function load(cursor = null) {
 }
 
 function start() {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") { stopObservation(); return; }
+    if (firebase.auth().currentUser) load(activeCursor);
+  });
   view.status.append(...STATUSES.map((value) => { const option = document.createElement("option"); option.value = value; option.textContent = value; return option; }));
   view.filters.addEventListener("submit", (event) => { event.preventDefault(); trail.length = 0; load(); });
   view.clear.addEventListener("click", () => { view.filters.reset(); trail.length = 0; load(); });
@@ -305,7 +347,8 @@ function start() {
     view.signOut.hidden = !signedIn;
     view.notAuthorized.hidden = true;
     say("");
-    if (!signedIn) { releaseImages(); view.rows.replaceChildren(); trail.length = 0; return; }
+    if (!signedIn) { stopObservation(); releaseImages();
+      view.rows.replaceChildren(); trail.length = 0; return; }
     trail.length = 0;
     delete view.rows.dataset.cursor;
     load();

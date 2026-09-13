@@ -413,6 +413,17 @@ test("an unknown path is 404 and an unsupported method is 405", async () => {
   assert.equal(wrongMethod.body.error.code, "method_not_allowed");
 });
 
+test("no public route can collect or advance provider work", async () => {
+  const { handle, calls } = harness();
+  for (const method of ["GET", "POST"]) {
+    const sent = await send(handle,
+      jsonRequest(method, `${BASE}/${ID}/collect`));
+    assert.equal(sent.status, 404);
+    assert.equal(sent.body.error.code, "not_found");
+  }
+  assert.equal(calls.length, 0);
+});
+
 test("every answer forbids caching, including the failures", async () => {
   const { handle } = harness();
   for (const request of [

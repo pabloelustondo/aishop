@@ -19,6 +19,15 @@
  */
 
 const BASE = "/v1/agent/analyses";
+export const OBSERVATION_INTERVAL_MS = 15_000;
+export const OBSERVATION_CEILING_MS = 10 * 60_000;
+
+export function shouldPollAnalyses(analyses, { visible = true,
+  elapsedMs = 0 } = {}) {
+  return visible && elapsedMs < OBSERVATION_CEILING_MS
+    && Array.isArray(analyses)
+    && analyses.some(analysis => analysis?.status === "analyzing");
+}
 
 /** Mirrors the server's own ceiling, so the refusal happens before the call. */
 const MAX_NOTE = 500;
@@ -192,6 +201,32 @@ const spacer = () => textNode("span", "", "spacer");
  * another copy of every photograph for the life of the tab.
  */
 let objectURLs = [];
+let observationTimer = null;
+let observationStartedAt = null;
+
+function stopObservation() {
+  if (observationTimer !== null) clearTimeout(observationTimer);
+  observationTimer = null;
+  observationStartedAt = null;
+}
+
+function scheduleObservation(analyses) {
+  if (observationTimer !== null) clearTimeout(observationTimer);
+  observationTimer = null;
+  const visible = document.visibilityState !== "hidden";
+  const now = Date.now();
+  if (analyses.some(analysis => analysis?.status === "analyzing")) {
+    observationStartedAt ??= now;
+  } else {
+    observationStartedAt = null;
+  }
+  if (!shouldPollAnalyses(analyses, { visible,
+    elapsedMs: observationStartedAt === null ? 0 : now - observationStartedAt })) return;
+  observationTimer = setTimeout(() => {
+    observationTimer = null;
+    refresh().catch(error => say(error.message, true, error.requestId));
+  }, OBSERVATION_INTERVAL_MS);
+}
 function releaseImages() {
   for (const url of objectURLs) URL.revokeObjectURL(url);
   objectURLs = [];
@@ -437,6 +472,7 @@ function render(analyses) {
   view.empty.hidden = !nothing;
   view.form.hidden = !nothing;
   view.uploadAnother.hidden = nothing;
+  scheduleObservation(analyses);
 }
 
 /**
@@ -474,7 +510,7 @@ async function run(analysisId, context, button) {
   try {
     await request("POST", `${BASE}/${analysisId}/run`,
       note ? { json: { context: note } } : {});
-    say("Done.");
+    say("Analysis started. Results will appear here automatically.");
   } catch (error) {
     // The record is already `failed` on the server, so the refreshed list
     // shows the failure and its Retry. Saying it here as well is what tells
@@ -498,6 +534,11 @@ async function upload(file) {
 }
 
 function start() {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") { stopObservation(); return; }
+    if (firebase.auth().currentUser) refresh()
+      .catch(error => say(error.message, true, error.requestId));
+  });
   view.form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const [file] = view.file.files;
@@ -585,6 +626,7 @@ function start() {
     view.notAuthorized.hidden = true;
     view.allRuns.hidden = true;
     if (!signedIn) {
+      stopObservation();
       releaseImages();
       view.list.replaceChildren();
       view.form.hidden = true;

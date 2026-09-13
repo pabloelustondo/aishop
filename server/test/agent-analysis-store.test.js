@@ -13,7 +13,7 @@ const OWNER = "b".repeat(64);
 const OTHER = "c".repeat(64);
 const ID = "01J8Z6M4QK7R9V2X5T3B0C1D2E";
 
-function harness(existing = null) {
+function harness(existing = null, { collectionClock = () => new Date("2026-09-13T12:00:00Z") } = {}) {
   const calls = [];
   const owners = {};
   const doc = {
@@ -39,7 +39,7 @@ function harness(existing = null) {
     })
   };
   const store = createAgentAnalysisStore({
-    firestore, serverTimestamp: () => "server-time", clock: () => "run-time"
+    firestore, serverTimestamp: () => "server-time", clock: () => "run-time", collectionClock
   });
   return { store, calls, owners };
 }
@@ -305,4 +305,92 @@ test("source dimensions survive reservation and legacy dimensions remain null", 
   const legacy = await harness({ status: "uploaded" }).store.read({ ownerKey: OWNER, analysisId: ID });
   assert.equal(legacy.width, null);
   assert.equal(legacy.height, null);
+});
+
+test("stores provider control state at record level and exposes it only to server reads", async () => {
+  const open = [{ runId: "run-1", status: "analyzing", diagnostics: {} }];
+  const attached = harness({ status: "analyzing", runs: open });
+  await attached.store.markProviderStarted({ ownerKey: OWNER, analysisId: ID,
+    runId: "run-1", responseId: "resp_private", diagnostics: { requestId: "safe-request" } });
+  const patch = attached.calls.find(call => call[0] === "update")[2];
+  assert.equal(patch.providerResponseId, "resp_private");
+  assert.equal(patch.providerRunId, "run-1");
+  assert.equal(patch.collectionDueAt.toISOString(), "2026-09-13T12:00:15.000Z");
+  assert.equal("providerResponseId" in patch.runs[0], false);
+
+  const pending = await harness({ status: "analyzing", ...patch }).store
+    .readPending({ ownerKey: OWNER, analysisId: ID });
+  assert.equal(pending.status, "analyzing");
+  assert.equal(pending.runId, "run-1");
+  assert.equal(pending.responseId, "resp_private");
+  assert.equal(pending.context, null);
+  assert.equal(pending.runNumber, null);
+  assert.equal(pending.diagnostics.requestId, "safe-request");
+});
+
+test("public summaries redact provider response identifiers", async () => {
+  const runs = [{ runId: "run-1", status: "analyzing",
+    diagnostics: { responseId: "resp_private", requestId: "req_public" } }];
+  const record = await harness({ status: "analyzing", runs, providerResponseId: "resp_private",
+    providerRunId: "run-1", collectionDueAt: new Date(), collectionLeaseUntil: new Date() }).store
+    .read({ ownerKey: OWNER, analysisId: ID });
+  assert.equal("providerResponseId" in record, false);
+  assert.equal("collectionDueAt" in record, false);
+  assert.equal("providerResponseId" in record.runs[0], false);
+  assert.equal("responseId" in record.runs[0].diagnostics, false);
+  assert.equal(record.runs[0].diagnostics.requestId, "req_public");
+});
+
+test("settling the same run to the same terminal state is idempotent", async () => {
+  const report = { summary: "done" };
+  const closed = [{ runId: "run-1", status: "analyzed", report }];
+  const { store, calls } = harness({ status: "analyzed", runs: closed, report });
+  const result = await store.markAnalyzed({ ownerKey: OWNER, analysisId: ID,
+    runId: "run-1", report, model: "gpt", mode: "areaScan" });
+  assert.equal(result.runId, "run-1");
+  assert.equal(calls.some(call => call[0] === "update"), false);
+});
+
+test("claims only due current work and writes a short lease", async () => {
+  const due = new Date("2026-09-13T11:59:59Z");
+  const existing = { status: "analyzing", providerResponseId: "resp_private",
+    providerRunId: "run-1", collectionDueAt: due, collectionLeaseUntil: null,
+    runs: [{ runId: "run-1", status: "analyzing", diagnostics: {} }] };
+  const { store, calls } = harness(existing);
+  const claim = await store.claimCollection({ ownerKey: OWNER, analysisId: ID, runId: "run-1" });
+  assert.equal(claim.claimed, true);
+  assert.equal(claim.responseId, "resp_private");
+  const patch = calls.find(call => call[0] === "update")[2];
+  assert.equal(patch.collectionLeaseUntil.toISOString(), "2026-09-13T12:00:30.000Z");
+});
+
+test("duplicate, early, stale and terminal task claims are harmless no-ops", async () => {
+  const base = { status: "analyzing", providerResponseId: "resp_private", providerRunId: "run-1",
+    collectionDueAt: new Date("2026-09-13T11:59:59Z"), collectionLeaseUntil: null,
+    runs: [{ runId: "run-1", status: "analyzing" }] };
+  const leased = await harness({ ...base, collectionLeaseUntil: new Date("2026-09-13T12:00:10Z") }).store
+    .claimCollection({ ownerKey: OWNER, analysisId: ID, runId: "run-1" });
+  assert.equal(leased.reason, "leased");
+  const early = await harness({ ...base, collectionDueAt: new Date("2026-09-13T12:00:10Z") }).store
+    .claimCollection({ ownerKey: OWNER, analysisId: ID, runId: "run-1" });
+  assert.equal(early.reason, "not-due");
+  const stale = await harness(base).store.claimCollection({ ownerKey: OWNER, analysisId: ID, runId: "old" });
+  assert.equal(stale.reason, "stale-run");
+  const terminal = await harness({ ...base, status: "analyzed" }).store
+    .claimCollection({ ownerKey: OWNER, analysisId: ID, runId: "run-1" });
+  assert.equal(terminal.reason, "terminal");
+});
+
+test("rescheduling releases the lease and records the next server due time", async () => {
+  const existing = { status: "analyzing", providerResponseId: "resp_private", providerRunId: "run-1",
+    collectionDueAt: new Date("2026-09-13T11:59:59Z"), collectionLeaseUntil: new Date("2026-09-13T12:00:30Z"),
+    runs: [{ runId: "run-1", status: "analyzing", diagnostics: {} }] };
+  const { store, calls } = harness(existing);
+  const result = await store.rescheduleCollection({ ownerKey: OWNER, analysisId: ID, runId: "run-1",
+    diagnostics: { responseStatus: "in_progress" } });
+  assert.equal(result.scheduled, true);
+  const patch = calls.find(call => call[0] === "update")[2];
+  assert.equal(patch.collectionLeaseUntil, null);
+  assert.equal(patch.collectionDueAt.toISOString(), "2026-09-13T12:00:15.000Z");
+  assert.equal(patch.runs[0].diagnostics.responseStatus, "in_progress");
 });

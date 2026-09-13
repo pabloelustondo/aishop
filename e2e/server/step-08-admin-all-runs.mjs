@@ -16,7 +16,9 @@ import { createServer } from "node:http";
 import { promisify } from "node:util";
 import { API_PROCESS_CONTEXT, createProcessContext } from "../../server/src/firebase-agent-config.js";
 import { createFirebaseAdminHandler } from "../../server/src/firebase-admin-handler.js";
+import { createFirebaseAgentBackground } from "../../server/src/firebase-agent-background.js";
 import { createFirebaseAgentHandler } from "../../server/src/firebase-agent-handler.js";
+import { createFirebaseAgentServices } from "../../server/src/firebase-services.js";
 import {
   mintEmulatorPasswordUser, mintEmulatorUser, signInEmulatorPassword
 } from "./emulator-auth.mjs";
@@ -39,14 +41,31 @@ const today = new Date().toISOString().slice(0, 10);
 const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
 
 const quiet = { info: () => {}, error: () => {} };
+let collectionTime = Date.now();
+const services = createFirebaseAgentServices({
+  collectionClock: () => new Date(collectionTime)
+});
+const queued = [];
+const taskEnqueuer = { enqueue: async input => queued.push(input) };
+let providerSequence = 0;
+const providerFetch = async (url, options) => {
+  const id = options.method === "POST" ? `resp_admin_${++providerSequence}`
+    : url.split("/").at(-1);
+  const body = options.method === "POST" ? { id, status: "queued", model: "gpt-fixture" }
+    : options.method === "GET" ? { id, status: "completed", model: "gpt-fixture",
+      output_text: JSON.stringify({ summary: "fixture", identifiedProducts: [
+        { name: "Fixture product", count: 3, confidence: "high",
+          visibleEvidence: ["fixture"] }], uncertainItems: [] }) }
+      : { id, deleted: true };
+  return new Response(JSON.stringify(body), { status: 200,
+    headers: { "x-request-id": "req_fixture" } });
+};
 const agent = createFirebaseAgentHandler({
   apiKey: "offline-fixture-only", environment: "emulator", release: "fixture", logger: quiet,
-  fetchImpl: async () => new Response(JSON.stringify({
-    status: "completed", model: "gpt-fixture", usage: { input_tokens: 1, output_tokens: 1 },
-    output_text: JSON.stringify({ summary: "fixture", identifiedProducts: [
-      { name: "Fixture product", count: 3, confidence: "high", visibleEvidence: ["fixture"] }], uncertainItems: [] })
-  }), { status: 200, headers: { "x-request-id": "req_fixture" } })
+  services, taskEnqueuer, fetchImpl: providerFetch
 });
+const background = createFirebaseAgentBackground({ apiKey: "offline-fixture-only",
+  model: "gpt-fixture", services, taskEnqueuer, fetchImpl: providerFetch });
 const accessEvents = [];
 const admin = createFirebaseAdminHandler({
   environment: "emulator", release: "fixture",
@@ -81,7 +100,17 @@ async function upload(idToken, fields) {
   // `.text()` there drains the body before `.json()` can parse it.
   const body = await response.text();
   assert.equal(response.status, 201, body);
-  return JSON.parse(body).analysis;
+  let analysis = JSON.parse(body).analysis;
+  if (fields.run === "true") {
+    assert.equal(analysis.status, "analyzing");
+    collectionTime += 16_000;
+    const task = queued.shift();
+    await background.taskHandler({ data: { ownerKey: task.ownerKey,
+      analysisId: task.analysisId, runId: task.runId } });
+    analysis = (await (await call(idToken, "GET",
+      `/v1/agent/analyses/${analysis.analysisId}`)).json()).analysis;
+  }
+  return analysis;
 }
 async function tool(action, subject, role) {
   const { stdout } = await run("node", [TOOL, action, subject, "--project", PROJECT, "--role", role],

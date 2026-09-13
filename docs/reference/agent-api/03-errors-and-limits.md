@@ -3,7 +3,7 @@
 Every error answers `{ "error": { "code", "message", "retryable", "requestId" } }`. `code` and
 `retryable` are stable and safe to branch on; `message` is for people and may change. `X-Request-ID`
 on every response equals `requestId`; quote it when reporting a problem. The single call adds
-`analysisId` when the upload succeeded and the run did not.
+`analysisId` when the upload succeeded but background start did not answer cleanly.
 
 ## Codes
 
@@ -18,9 +18,9 @@ on every response equals `requestId`; quote it when reporting a problem. The sin
 | 409 | `analysis_state_invalid`, `analysis_run_limit`, `source_exists` | no |
 | 413 | `file_too_large` | no |
 | 415 | `media_type_unsupported` | no |
-| 502 | `provider_failed` | yes — retry the run |
+| 502 | `provider_failed` | yes, after the record is `failed` |
 | 503 | `storage_unavailable` | yes |
-| 504 | `provider_timeout` | yes — retry the run |
+| 504 | `provider_timeout` | no while `analyzing`; report the `requestId` |
 | 500 | `unexpected_server_error` | yes, once; then report the `requestId` |
 
 ## Limits
@@ -28,9 +28,13 @@ on every response equals `requestId`; quote it when reporting a problem. The sin
 - File: one JPEG per call, ≤ 5 MB, each side ≤ 4096 px. Only `image/jpeg` is accepted.
 - Note: ≤ 500 characters after trimming. Longer is refused, never truncated.
 - Runs per analysis: 25. Each refine or retry is one run.
-- Latency: not promised beyond the 120 s function timeout; concurrent callers serialise.
+- Provider analysis has no supplied output-token cap and runs outside the HTTP request.
+- Provider start, retrieve and delete transports each stop after 15 s; this does not limit analysis.
+- Public status polling is read-only; provider/task identifiers remain server-private.
 - Recognition: follows `areaScan`; facing counts inherit the open benchmark gaps.
 
 ## Not promised
 
-Row order between runs, throughput, unlisted endpoints, and any route under `/v1/vista/`.
+Completion latency, row order between runs, throughput, unlisted endpoints, and any route under
+`/v1/vista/`. An uncertain provider start can remain `analyzing` for operator investigation; it is
+never automatically repeated because that could create a second billed provider request.

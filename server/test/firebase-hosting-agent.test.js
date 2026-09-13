@@ -58,7 +58,8 @@ test("the All-runs page is served by hosting, and the listing's indexes are decl
   assert.deepEqual(new Set(groups), new Set([
     "ownerKey:ASCENDING,createdAt:DESCENDING",
     "status:ASCENDING,createdAt:DESCENDING",
-    "ownerKey:ASCENDING,status:ASCENDING,createdAt:DESCENDING"
+    "ownerKey:ASCENDING,status:ASCENDING,createdAt:DESCENDING",
+    "status:ASCENDING,collectionDueAt:ASCENDING"
   ]));
   const createdAt = indexes.fieldOverrides.find((override) => override.collectionGroup === "analyses" && override.fieldPath === "createdAt");
   assert.ok(createdAt.indexes.some((index) => index.queryScope === "COLLECTION_GROUP" && index.order === "DESCENDING"));
