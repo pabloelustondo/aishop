@@ -27,7 +27,8 @@ Prerequisites: revised plan and architectures 12–15 approved at `13e1fca`.
 6. **Reconciliation reader.** Add one Firestore due-work reader and tests: find overdue
    active runs and ignore terminal, leased, malformed, superseded or not-yet-due records.
 7. **Task function.** Add private v2 `collectAgentAnalysis` composition and tests with
-   bounded retry/rate settings, shared secret access, diagnostics and Toronto region.
+   bounded retry/rate settings, shared secret access, diagnostics and Montréal region;
+   Cloud Tasks/Scheduler do not support the public API's Toronto region.
 8. **Reconciler function.** Add scheduled `reconcileAgentAnalyses` composition and
    tests: enqueue due work idempotently; one record failure cannot stop the remaining scan.
 9. **Public APIs.** Owner/Admin handlers and tests: remove provider collection routes,

@@ -25,11 +25,13 @@ browser collection in [14](architecture-14-option-a-provider-background-mode.md)
 
 ## Infrastructure boundary
 
-Use Firebase v2 `onTaskDispatched` in Toronto with bounded retries and rate
-limits, plus a scheduled reconciler in the same project. First deployment may
-create a Cloud Tasks queue and needs explicit billing/IAM/deployment approval.
-The existing Node runtime, OpenAI model, prompt, strict schema, authentication,
-Storage evidence and public deploy target remain unchanged.
+Use Firebase v2 `onTaskDispatched` in Montréal (`northamerica-northeast1`) with
+bounded retries and rate limits, plus a scheduled reconciler there. The live
+2026-09-13 deployment proved Cloud Tasks and Scheduler do not accept the public
+API's Toronto region (`northamerica-northeast2`). The API remains in Toronto;
+only private background infrastructure crosses that regional boundary. First
+deployment may create a queue and needs explicit billing/IAM/deployment approval.
+The runtime, model, prompt, schema, authentication and public target stay unchanged.
 
 ## Accepted residual risk
 
