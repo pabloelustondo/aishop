@@ -22,6 +22,7 @@ const BASE = "/v1/agent/analyses";
 export const OBSERVATION_INTERVAL_MS = 15_000;
 export const OBSERVATION_CEILING_MS = 10 * 60_000;
 export const VIDEO_CHUNK_BYTES = 8 * 1024 * 1024;
+export const VIDEO_UPLOAD_RECOVERY_ATTEMPTS = 3;
 const ACTIVE_STATES = new Set(["uploading", "processing", "analyzing"]);
 
 export function shouldPollAnalyses(analyses, { visible = true,
@@ -616,26 +617,104 @@ function releaseSession(file) { try { localStorage.removeItem(sessionKey(file));
 function nextOffset(response) {
   const range = response.headers.get("Range") ?? response.headers.get("range");
   const match = range && /bytes=0-(\d+)/.exec(range);
-  return match ? Number(match[1]) + 1 : 0;
+  return match ? Number(match[1]) + 1 : range ? null : 0;
+}
+
+function safeStorageCode(text) {
+  if (typeof text !== "string" || text.length === 0) return null;
+  let candidate = /<Code>([^<]+)<\/Code>/.exec(text)?.[1] ?? null;
+  if (!candidate) {
+    try { candidate = JSON.parse(text)?.error?.status ?? JSON.parse(text)?.error?.code ?? null; }
+    catch {}
+  }
+  return typeof candidate === "string" && /^[A-Za-z0-9_.-]{1,80}$/.test(candidate)
+    ? candidate : null;
+}
+
+export class VideoUploadTransportError extends Error {
+  constructor(message, { status = null, storageCode = null } = {}) {
+    const detail = status === null ? "" : ` Storage returned ${status}${storageCode
+      ? ` (${storageCode})` : ""}.`;
+    super(`${message}${detail}`);
+    this.name = "VideoUploadTransportError";
+    this.status = status;
+    this.storageCode = storageCode;
+    this.expired = status === 404 || status === 410;
+  }
+}
+
+async function storageError(response, message) {
+  let text = "";
+  try { text = (await response.text()).slice(0, 4096); } catch {}
+  return new VideoUploadTransportError(message, {
+    status: response.status, storageCode: safeStorageCode(text)
+  });
+}
+
+async function inspectVideoUpload(file, uri, fetchImpl) {
+  let response;
+  try {
+    response = await fetchImpl(uri, { method: "PUT",
+      headers: { "Content-Range": `bytes */${file.size}` }, body: new Blob([]) });
+  } catch {
+    throw new VideoUploadTransportError("The resumable upload could not be inspected.");
+  }
+  if (response.status === 200 || response.status === 201) return file.size;
+  if (response.status !== 308) {
+    throw await storageError(response, "The resumable upload could not be inspected.");
+  }
+  const offset = nextOffset(response);
+  if (!Number.isInteger(offset) || offset < 0 || offset > file.size) {
+    throw new VideoUploadTransportError("Storage returned an invalid upload position.", {
+      status: response.status
+    });
+  }
+  return offset;
 }
 
 export async function uploadVideoChunks(file, uri, onProgress = () => {},
   fetchImpl = fetch) {
-  let offset = 0;
-  const status = await fetchImpl(uri, { method: "PUT",
-    headers: { "Content-Range": `bytes */${file.size}` }, body: new Blob([]) });
-  if (status.status === 200 || status.status === 201) { onProgress(1); return; }
-  if (status.status === 308) offset = nextOffset(status);
-  else if (status.status !== 404) throw new Error("The resumable upload could not be inspected.");
+  let offset = await inspectVideoUpload(file, uri, fetchImpl);
+  let recoveries = 0;
+  onProgress(offset / file.size);
   while (offset < file.size) {
     const end = Math.min(file.size, offset + VIDEO_CHUNK_BYTES);
-    const response = await fetchImpl(uri, { method: "PUT", headers: {
-      "Content-Range": `bytes ${offset}-${end - 1}/${file.size}`
-    }, body: file.slice(offset, end) });
-    if (![200, 201, 308].includes(response.status)) {
-      throw new Error("The video upload was interrupted. Select the same file to resume.");
+    let response;
+    try {
+      response = await fetchImpl(uri, { method: "PUT", headers: {
+        "Content-Range": `bytes ${offset}-${end - 1}/${file.size}`
+      }, body: file.slice(offset, end) });
+    } catch {
+      if (++recoveries > VIDEO_UPLOAD_RECOVERY_ATTEMPTS) {
+        throw new VideoUploadTransportError("The video upload repeatedly lost its connection.");
+      }
+      offset = await inspectVideoUpload(file, uri, fetchImpl);
+      onProgress(offset / file.size);
+      continue;
     }
-    offset = response.status === 308 ? Math.max(end, nextOffset(response)) : file.size;
+    if (response.status === 200 || response.status === 201) {
+      offset = file.size;
+    } else if (response.status === 308) {
+      const confirmed = nextOffset(response);
+      if (!Number.isInteger(confirmed) || confirmed < 0 || confirmed > file.size) {
+        throw new VideoUploadTransportError("Storage returned an invalid upload position.", {
+          status: response.status
+        });
+      }
+      recoveries = confirmed > offset ? 0 : recoveries + 1;
+      if (recoveries > VIDEO_UPLOAD_RECOVERY_ATTEMPTS) {
+        throw new VideoUploadTransportError("The video upload made no progress.", {
+          status: response.status
+        });
+      }
+      offset = confirmed;
+    } else if (response.status >= 500 && response.status <= 599
+      && ++recoveries <= VIDEO_UPLOAD_RECOVERY_ATTEMPTS) {
+      offset = await inspectVideoUpload(file, uri, fetchImpl);
+    } else {
+      throw await storageError(response,
+        "The video upload was interrupted. Select the same file to resume.");
+    }
     onProgress(offset / file.size);
   }
 }
@@ -652,11 +731,26 @@ async function uploadVideo(file) {
     holdSession(file, session);
   }
   view.uploadProgressBar.hidden = false;
-  await uploadVideoChunks(file, session.uri, ratio => {
-    const percent = Math.round(ratio * 100);
-    view.uploadProgressBar.value = percent;
-    view.uploadProgressText.textContent = `Uploading video securely… ${percent}%`;
-  });
+  let renewed = false;
+  while (true) {
+    try {
+      await uploadVideoChunks(file, session.uri, ratio => {
+        const percent = Math.round(ratio * 100);
+        view.uploadProgressBar.value = percent;
+        view.uploadProgressText.textContent = `Uploading video securely… ${percent}%`;
+      });
+      break;
+    } catch (error) {
+      if (!(error instanceof VideoUploadTransportError) || !error.expired || renewed) throw error;
+      const replacement = await request("POST",
+        `/v1/agent/video-uploads/${session.analysisId}/session`);
+      session = { analysisId: session.analysisId, uri: replacement.upload.uri };
+      holdSession(file, session);
+      renewed = true;
+      view.uploadProgressBar.value = 0;
+      view.uploadProgressText.textContent = "The secure upload session expired. Restarting transfer…";
+    }
+  }
   await request("POST", `/v1/agent/video-uploads/${session.analysisId}/complete`);
   releaseSession(file);
   view.uploadProgressText.textContent = "Video stored. Preparing representative frames…";

@@ -193,6 +193,9 @@ test("a signed-in account without the agent authorization is forbidden on every 
     jsonRequest("GET", `${BASE}/${ID}/source`, undefined, "token-c"),
     { ...videoCreate(), headers: { ...videoCreate().headers,
       authorization: "Bearer token-c" } },
+    { ...jsonRequest("POST", `/v1/agent/video-uploads/${ID}/session`,
+      undefined, "token-c"), headers: { authorization: "Bearer token-c",
+        origin: "https://aishop-99d36.web.app" } },
     jsonRequest("POST", `/v1/agent/video-uploads/${ID}/complete`,
       undefined, "token-c")
   ];
@@ -273,6 +276,36 @@ test("refuses a video session without a browser origin", async () => {
   assert.equal(sent.status, 400);
   assert.equal(sent.body.error.code, "video_invalid");
   assert.equal(calls.length, 0);
+});
+
+test("renews an expired resumable session for the same uploading record", async () => {
+  const { handle, calls } = harness();
+  const request = jsonRequest("POST", `/v1/agent/video-uploads/${ID}/session`);
+  request.headers.origin = "https://aishop-99d36.web.app";
+  const sent = await send(handle, request);
+
+  assert.equal(sent.status, 201);
+  assert.equal(sent.body.analysis.analysisId, ID);
+  assert.equal(sent.body.upload.uri, "https://storage.example/upload-session");
+  assert.deepEqual(calls.map(([name]) => name),
+    ["readVideoUpload", "createVideoUploadSession"]);
+  assert.equal(calls[1][1].analysisId, ID,
+    "renewal must not create a second durable analysis");
+});
+
+test("does not renew a session after the upload leaves uploading state", async () => {
+  const { handle, calls } = harness({ analysisStore: {
+    readVideoUpload: async (input) => { calls.push(["readVideoUpload", input]);
+      return { analysisId: ID, status: "processing", fileName: "shelf.mov",
+        mediaType: "video/quicktime", expectedByteLength: 1024 }; }
+  } });
+  const request = jsonRequest("POST", `/v1/agent/video-uploads/${ID}/session`);
+  request.headers.origin = "https://aishop-99d36.web.app";
+  const sent = await send(handle, request);
+
+  assert.equal(sent.status, 409);
+  assert.equal(sent.body.error.code, "analysis_state_invalid");
+  assert.deepEqual(calls.map(([name]) => name), ["readVideoUpload"]);
 });
 
 test("verifies completed video bytes, marks processing and dispatches once", async () => {

@@ -14,7 +14,7 @@ import {
   OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS, activityLabel,
   canRetryAnalysis, retryContextOf,
   refinementNote, shouldPollAnalyses, signInErrorMessage, shouldFallBackToRedirect,
-  uploadVideoChunks, VIDEO_CHUNK_BYTES
+  uploadVideoChunks, VIDEO_CHUNK_BYTES, VideoUploadTransportError
 } from "../../dashboard/scripts/agent.js";
 
 test("upload presentation names one file and every supported format", () => {
@@ -80,6 +80,41 @@ test("video upload resumes at the server offset and uses browser-safe headers", 
   assert.equal(calls[2].headers["Content-Range"],
     `bytes ${VIDEO_CHUNK_BYTES + 5}-${file.size - 1}/${file.size}`);
   assert.equal(progress.at(-1), 1);
+});
+
+test("video upload trusts a partially persisted Storage range", async () => {
+  const calls = [];
+  const file = { size: VIDEO_CHUNK_BYTES + 20,
+    slice: (start, end) => ({ start, end }) };
+  const persisted = VIDEO_CHUNK_BYTES - 101;
+  const responses = [
+    { status: 308, headers: new Headers() },
+    { status: 308, headers: new Headers({ Range: `bytes=0-${persisted}` }) },
+    { status: 200, headers: new Headers() }
+  ];
+
+  await uploadVideoChunks(file, "https://storage.invalid/session", () => {},
+    async (_uri, options) => { calls.push(options); return responses.shift(); });
+
+  assert.equal(calls[1].headers["Content-Range"],
+    `bytes 0-${VIDEO_CHUNK_BYTES - 1}/${file.size}`);
+  assert.equal(calls[2].headers["Content-Range"],
+    `bytes ${persisted + 1}-${file.size - 1}/${file.size}`,
+  "the next request starts at Storage's confirmed byte, not the attempted end");
+});
+
+test("expired video upload sessions retain a safe actionable status", async () => {
+  const file = { size: 1024, slice: () => ({}) };
+  await assert.rejects(
+    uploadVideoChunks(file, "https://storage.invalid/session", () => {},
+      async () => ({ status: 410, headers: new Headers(),
+        text: async () => "<Error><Code>UploadSessionExpired</Code><Details>private</Details></Error>" })),
+    error => error instanceof VideoUploadTransportError
+      && error.expired === true
+      && error.status === 410
+      && error.storageCode === "UploadSessionExpired"
+      && !error.message.includes("private")
+  );
 });
 
 test("retrying a failed refinement resends that run's own note", () => {

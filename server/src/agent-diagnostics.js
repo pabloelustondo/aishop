@@ -141,7 +141,7 @@ const events = new Set([
   "provider_cleanup.failed", "persistence.failed", "task.dispatch_failed",
   "run.backgrounded", "video.processed", "video.failed", "access.completed"
 ]);
-const routes = /^(?:(GET|POST) \/v1\/agent\/(?:analyses(?:\/\{analysisId\}(?:\/(?:run|source))?)?|video-uploads(?:\/\{analysisId\}\/complete)?)|GET \/v1\/admin\/analyses(?:\/\{ownerKey\}\/\{analysisId\}(?:\/source)?)?)$/;
+const routes = /^(?:(GET|POST) \/v1\/agent\/(?:analyses(?:\/\{analysisId\}(?:\/(?:run|source))?)?|video-uploads(?:\/\{analysisId\}\/(?:complete|session))?)|GET \/v1\/admin\/analyses(?:\/\{ownerKey\}\/\{analysisId\}(?:\/source)?)?)$/;
 
 export function createDiagnostics(sink = () => {}, defaults = {}) {
   return (event, fields = {}) => {

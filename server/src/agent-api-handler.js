@@ -272,6 +272,24 @@ export function createAgentAPIHandler({
     }
   }
 
+  async function renewVideoUpload(request, ownerKey, analysisId, timed) {
+    if (typeof evidenceStore.createVideoUploadSession !== "function"
+      || typeof analysisStore.readVideoUpload !== "function") {
+      throw agentError("unexpected_server_error");
+    }
+    const origin = typeof request.headers?.origin === "string" ? request.headers.origin : null;
+    if (!origin || !/^https?:\/\/[^/]+$/.test(origin)) throw new AgentVideoError("video_invalid");
+    const upload = await timed("record_read", () =>
+      analysisStore.readVideoUpload({ ownerKey, analysisId }));
+    if (upload.status !== "uploading") throw agentError("analysis_state_invalid");
+    const session = await timed("upload_session_create", () =>
+      evidenceStore.createVideoUploadSession({ ownerKey, analysisId,
+        mediaType: upload.mediaType, byteLength: upload.expectedByteLength, origin }));
+    return [201, { analysis: { analysisId, status: upload.status,
+      fileName: upload.fileName, mediaType: upload.mediaType,
+      expectedByteLength: upload.expectedByteLength }, upload: { uri: session.uri } }];
+  }
+
   async function completeVideoUpload(ownerKey, analysisId, timed) {
     if (typeof analysisStore.readVideoUpload !== "function"
       || typeof analysisStore.markVideoProcessing !== "function"
@@ -356,10 +374,12 @@ export function createAgentAPIHandler({
     if (path.startsWith(`${VIDEO_BASE}/`)) {
       const [analysisId, tail, ...extra] = path.slice(VIDEO_BASE.length + 1).split("/");
       if (!ANALYSIS_ID.test(analysisId)) throw agentError("analysis_not_found");
-      if (tail !== "complete" || extra.length > 0) throw agentError("not_found");
+      if (!new Set(["complete", "session"]).has(tail) || extra.length > 0) {
+        throw agentError("not_found");
+      }
       if (method !== "POST") throw agentError("method_not_allowed");
-      return { operation: "video-complete", analysisId,
-        route: `POST ${VIDEO_BASE}/{analysisId}/complete` };
+      return { operation: tail === "complete" ? "video-complete" : "video-session",
+        analysisId, route: `POST ${VIDEO_BASE}/{analysisId}/${tail}` };
     }
     if (path === BASE) {
       if (method === "POST") return { operation: "upload", route: `POST ${BASE}` };
@@ -445,6 +465,7 @@ export function createAgentAPIHandler({
       }
       const [status, body] = operation === "upload" ? await upload(request, ownerKey, timed, diagnosticContext, cancellation.signal)
         : operation === "video-create" ? await createVideoUpload(request, ownerKey, timed, diagnosticContext)
+          : operation === "video-session" ? await renewVideoUpload(request, ownerKey, analysisId, timed)
           : operation === "video-complete" ? await completeVideoUpload(ownerKey, analysisId, timed)
         : operation === "run" ? await run(request, ownerKey, analysisId, diagnosticContext, cancellation.signal)
           : operation === "read" ? await read(ownerKey, analysisId)
