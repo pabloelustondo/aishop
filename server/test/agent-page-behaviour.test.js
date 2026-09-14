@@ -10,9 +10,16 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS, retryContextOf,
+  OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS, activityLabel, retryContextOf,
   refinementNote, shouldPollAnalyses, signInErrorMessage, shouldFallBackToRedirect
 } from "../../dashboard/scripts/agent.js";
+
+test("My runs names durable analysis activity instead of looking idle", () => {
+  assert.equal(activityLabel([]), "Idle");
+  assert.equal(activityLabel([{ status: "analyzing" }]), "Analysing 1 image");
+  assert.equal(activityLabel([{ status: "analyzing" }, { status: "analyzing" }]),
+    "Analysing 2 images");
+});
 
 test("My runs observes server state every 15 seconds without advancing it", () => {
   assert.equal(OBSERVATION_INTERVAL_MS, 15_000);
