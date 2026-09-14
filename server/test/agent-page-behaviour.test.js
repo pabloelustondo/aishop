@@ -14,7 +14,7 @@ import {
   OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS, activityLabel,
   canRetryAnalysis, retryContextOf,
   refinementNote, shouldPollAnalyses, signInErrorMessage, shouldFallBackToRedirect,
-  uploadVideoChunks, VIDEO_CHUNK_BYTES, VideoUploadTransportError
+  uploadControlState, uploadVideoChunks, VIDEO_CHUNK_BYTES, VideoUploadTransportError
 } from "../../dashboard/scripts/agent.js";
 
 test("upload presentation names one file and every supported format", () => {
@@ -35,6 +35,17 @@ test("My runs names durable analysis activity instead of looking idle", () => {
     "Analysing 2 images");
   assert.equal(activityLabel([{ status: "uploading" }]), "Uploading 1 video");
   assert.equal(activityLabel([{ status: "processing" }]), "Preparing 1 video");
+});
+
+test("polling cannot close an upload form the user opened", () => {
+  assert.deepEqual(uploadControlState({ analysisCount: 1, composerOpen: true }), {
+    formHidden: false, triggerHidden: true
+  });
+  assert.deepEqual(uploadControlState({ analysisCount: 1 }), {
+    formHidden: true, triggerHidden: false
+  });
+  assert.deepEqual(uploadControlState({ analysisCount: 1, composerOpen: true,
+    uploadInFlight: true }), { formHidden: true, triggerHidden: true });
 });
 
 test("only a video with verified frames can retry provider analysis", () => {

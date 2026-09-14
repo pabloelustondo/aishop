@@ -44,6 +44,15 @@ export function activityLabel(analyses) {
   return count === 0 ? "Idle" : `Analysing ${count} ${count === 1 ? "image" : "images"}`;
 }
 
+export function uploadControlState({ analysisCount = 0, uploadInFlight = false,
+  composerOpen = false } = {}) {
+  const nothing = analysisCount === 0;
+  return Object.freeze({
+    formHidden: uploadInFlight || (!nothing && !composerOpen),
+    triggerHidden: nothing || uploadInFlight || composerOpen
+  });
+}
+
 export function canRetryAnalysis(analysis) {
   if (analysis?.status !== "failed") return false;
   const video = analysis.mediaType === "video/mp4"
@@ -231,6 +240,7 @@ let objectURLs = [];
 let observationTimer = null;
 let observationStartedAt = null;
 let uploadInFlight = false;
+let uploadComposerOpen = false;
 let displayedAnalyses = [];
 
 function stopObservation() {
@@ -540,10 +550,16 @@ function render(analyses) {
   view.list.replaceChildren(...analyses.map(card));
   const nothing = analyses.length === 0;
   view.empty.hidden = !nothing;
-  view.form.hidden = uploadInFlight || !nothing;
-  view.uploadAnother.hidden = nothing;
+  syncUploadControls();
   busy(activityLabel(analyses));
   scheduleObservation(analyses);
+}
+
+function syncUploadControls() {
+  const state = uploadControlState({ analysisCount: displayedAnalyses.length,
+    uploadInFlight, composerOpen: uploadComposerOpen });
+  view.form.hidden = state.formHidden;
+  view.uploadAnother.hidden = state.triggerHidden;
 }
 
 /**
@@ -768,6 +784,7 @@ function start() {
     const [file] = view.file.files;
     if (!file) return;
     uploadInFlight = true;
+    uploadComposerOpen = false;
     view.submit.disabled = true;
     view.submit.textContent = "Uploading…";
     view.form.setAttribute("aria-busy", "true");
@@ -780,8 +797,8 @@ function start() {
       await upload(file);
       view.form.reset();
     } catch (error) {
+      uploadComposerOpen = true;
       say(error.message, true, error.requestId);
-      view.form.hidden = false;
       busy(activityLabel(displayedAnalyses));
     } finally {
       uploadInFlight = false;
@@ -789,11 +806,13 @@ function start() {
       view.submit.textContent = "Upload and analyse";
       view.form.removeAttribute("aria-busy");
       view.uploadProgress.hidden = true;
+      syncUploadControls();
     }
   });
 
   view.uploadAnother.addEventListener("click", () => {
-    view.form.hidden = false;
+    uploadComposerOpen = true;
+    syncUploadControls();
     view.file.focus();
   });
 
@@ -864,6 +883,7 @@ function start() {
     view.allRuns.hidden = true;
     if (!signedIn) {
       stopObservation();
+      uploadComposerOpen = false;
       releaseImages();
       view.list.replaceChildren();
       view.form.hidden = true;
