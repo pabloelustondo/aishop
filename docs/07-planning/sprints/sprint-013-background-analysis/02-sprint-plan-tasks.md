@@ -1,7 +1,7 @@
 # Sprint 013 — Sprint Plan Tasks
 
-Date: 2026-09-13. Status: PROPOSED revision; approval requires Pablo's commit.
-Prerequisites: revised plan and architectures 12–15 approved at `13e1fca`.
+Date: 2026-09-13. Status: CORRECTION PROPOSED; approval requires Pablo's commit.
+Prerequisites: correction plan approved at `650dbfb`; architectures 12–15 at `13e1fca`.
 
 ## Fixed interfaces
 
@@ -33,8 +33,10 @@ Prerequisites: revised plan and architectures 12–15 approved at `13e1fca`.
    tests: enqueue due work idempotently; one record failure cannot stop the remaining scan.
 9. **Public APIs.** Owner/Admin handlers and tests: remove provider collection routes,
    preserve authorization and make run/upload-start responses return promptly.
-10. **Web presentation.** My Runs/All Runs scripts and behavior tests: poll only GET
-    state every 15 seconds while visible; reload resumes observation without causing work.
+10. **Web presentation.** My Runs HTML/script/styles and behavior tests: disable the
+    submit action immediately and show upload progress; after server acceptance, render a
+    prominent analyzing panel and active header from owner GET state; refresh reconstructs
+    it, terminal state replaces it, and no stale start notification remains.
 11. **Reference.** Update Agent API pages 02–03 with server-owned progression, read-only
     polling, honest start uncertainty and no public provider/task identifiers.
 12. **E2E gate.** Extend `./e2e/server/run.zsh`: simulate queue dispatch while invoking
