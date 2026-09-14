@@ -32,12 +32,24 @@
 
 /* Expanded only on request, or when there is nothing else on the page. */
 .upload-open {
-  display: flex; align-items: center; gap: .75rem; flex-wrap: wrap;
-  padding: .75rem clamp(1rem, 3vw, 2.5rem);
-  border-bottom: 1px solid #d2d4ce; background: #e9e8e1;
+  display: grid; grid-template-columns: minmax(18rem, 1fr) auto;
+  align-items: center; gap: clamp(1rem, 4vw, 3rem);
+  margin: clamp(1rem, 2vw, 1.5rem) clamp(1rem, 3vw, 2.5rem) 0;
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid #bfcfc5; border-radius: .9rem;
+  background: linear-gradient(135deg, #edf4ef, #faf9f5 68%);
+  box-shadow: 0 16px 40px #26352d10;
 }
-.upload-open .hint { margin: 0; color: #5e6b64; font-size: .78rem; }
-.upload-open button { padding: .45rem .9rem; font-size: .88rem; }
+.upload-open .eyebrow { margin-bottom: .35rem; }
+.upload-open h2 { margin-bottom: .45rem; font-size: clamp(1.25rem, 2vw, 1.65rem); }
+.upload-open .hint { margin: 0; max-width: 46rem; color: #5e6b64; font-size: .86rem; }
+.upload-controls { display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; }
+.upload-open input { max-width: 22rem; }
+.upload-open input::file-selector-button {
+  margin-right: .7rem; padding: .5rem .75rem; border: 1px solid #a9afa8;
+  border-radius: .5rem; background: #fff; color: #18211d; cursor: pointer;
+}
+.upload-open button { padding: .65rem 1rem; font-size: .92rem; }
 .upload-open button:disabled { cursor: wait; opacity: .65; }
 
 /* Carried over from layout.css, which this page no longer loads. */
@@ -186,6 +198,7 @@
   .agent-header .spacer { display: none; }
   .analysis-body { grid-template-columns: 1fr; }
   .evidence { border-right: 0; border-bottom: 1px solid #d2d4ce; }
+  .upload-open { grid-template-columns: 1fr; }
 }
 
 /* Diagnostic text stays selectable and contained at both accepted widths. */

@@ -8,6 +8,7 @@
  * this covers the two decisions the page gets wrong, not the page.
  */
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
   OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS, activityLabel,
@@ -15,6 +16,17 @@ import {
   refinementNote, shouldPollAnalyses, signInErrorMessage, shouldFallBackToRedirect,
   uploadVideoChunks, VIDEO_CHUNK_BYTES
 } from "../../dashboard/scripts/agent.js";
+
+test("upload presentation names one file and every supported format", () => {
+  const html = readFileSync(new URL("../../dashboard/agent.html", import.meta.url), "utf8");
+  assert.match(html, />New shelf analysis</);
+  assert.match(html, /Upload one photograph or video/);
+  assert.match(html, /One file per analysis/);
+  for (const format of ["image\/jpeg", "video\/mp4", "video\/quicktime", "\.mov"]) {
+    assert.match(html, new RegExp(format));
+  }
+  assert.doesNotMatch(html, /id="file"[^>]*\smultiple(?:\s|=|>)/);
+});
 
 test("My runs names durable analysis activity instead of looking idle", () => {
   assert.equal(activityLabel([]), "Idle");
