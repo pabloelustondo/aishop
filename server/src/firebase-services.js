@@ -3,6 +3,7 @@ import { getAuth } from "firebase-admin/auth";
 import { FieldValue, getFirestore, Timestamp } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 import { createAgentAnalysisStore } from "./agent-analysis-store.js";
+import { createAgentDueWorkReader } from "./agent-due-work-reader.js";
 import { createAgentEvidenceStore } from "./agent-evidence-store.js";
 import { createAdminAnalysisReader } from "./admin-analysis-reader.js";
 import { createOwnerIdentityResolver } from "./admin-owner-identity.js";
@@ -61,15 +62,21 @@ export function createFirebaseVistaServices({ serverEnvironment, ingestVersion,
  * interchangeable — Firestore refuses a server-timestamp sentinel written
  * inside an array element, and the run history is an array.
  */
-export function createFirebaseAgentServices() {
+export function createFirebaseAgentServices({
+  runClock = () => Timestamp.now().toDate(),
+  collectionClock = () => Timestamp.now().toDate()
+} = {}) {
   const { app, firestore, bucket } = firebaseResources();
   return Object.freeze({
     evidenceStore: createAgentEvidenceStore({ bucket }),
     analysisStore: createAgentAnalysisStore({
       firestore,
       serverTimestamp: FieldValue.serverTimestamp,
-      clock: () => Timestamp.now().toDate()
+      clock: runClock,
+      collectionClock
     }),
+    dueWorkReader: createAgentDueWorkReader({ firestore,
+      clock: collectionClock }),
     verifyIdToken: createFirebaseVistaTokenVerifier(getAuth(app))
   });
 }

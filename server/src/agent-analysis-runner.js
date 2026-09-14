@@ -87,7 +87,8 @@ function failureReason(error) {
  * is being asked, so the note travels with the run rather than beside it.
  */
 export function createAgentAnalysisRunner({
-  evidenceStore, analysisStore, analyzeProduct, model = null, diagnostics = () => {}, configuration = {}, memorySampling = {}
+  evidenceStore, analysisStore, analyzer, taskEnqueuer,
+  diagnostics = () => {}, configuration = {}, memorySampling = {}
 } = {}) {
   if (typeof evidenceStore?.readSource !== "function") {
     throw new TypeError("An agent evidence store is required.");
@@ -95,8 +96,16 @@ export function createAgentAnalysisRunner({
   if (typeof analysisStore?.markAnalyzing !== "function") {
     throw new TypeError("An agent analysis store is required.");
   }
-  if (typeof analyzeProduct !== "function") {
-    throw new TypeError("An analysis function is required.");
+  if (typeof analysisStore?.markProviderStarted !== "function"
+    || typeof analysisStore?.markFailed !== "function"
+    || typeof analysisStore?.read !== "function") {
+    throw new TypeError("A background-capable agent analysis store is required.");
+  }
+  if (typeof analyzer?.start !== "function") {
+    throw new TypeError("A background analysis adapter is required.");
+  }
+  if (typeof taskEnqueuer?.enqueue !== "function") {
+    throw new TypeError("An agent task enqueuer is required.");
   }
 
   return Object.freeze({
@@ -131,31 +140,50 @@ export function createAgentAnalysisRunner({
         let stageName = "source_read";
         try {
           const source = await stage(stageName, () => evidenceStore.readSource({ ownerKey, analysisId }));
-          stageName = "provider";
-          const report = await stage(stageName, () => analyzeProduct({
+          stageName = "provider_start";
+          const provider = await stage(stageName, () => analyzer.start({
             imageBase64: source.bytes.toString("base64"), mediaType: source.mediaType ?? "image/jpeg", mode: MODE, context,
             onDiagnostics: metadata => Object.assign(detail, sanitizeDiagnostics(metadata))
           }));
-          emit("provider.completed", { durationMs: durations.provider });
-          stageName = "settlement";
-          Object.assign(detail, { productRows: report.identifiedProducts?.length ?? 0,
-            facingTotal: report.identifiedProducts?.reduce((sum, row) => sum + row.count, 0) ?? 0,
-            uncertaintyCount: report.uncertainItems?.length ?? 0 });
-          await stage(stageName, () => analysisStore.markAnalyzed({ ownerKey, analysisId, runId: reserved?.runId, report, model, mode: MODE,
-            diagnostics: { ...detail, memory: sampler.capture(), durations: { ...durations, ...detail.durations } } }));
-          emit("run.completed", { durationMs: performance.now() - started, durations: { ...durations, ...detail.durations } });
+          emit("provider.started", { durationMs: durations.provider_start });
+          stageName = "provider_id_settlement";
+          const pending = await stage(stageName, () => analysisStore.markProviderStarted({
+            ownerKey, analysisId, runId: reserved?.runId, responseId: provider.responseId,
+            diagnostics: { ...detail, memory: sampler.capture(),
+              durations: { ...durations, ...detail.durations } }
+          }));
+          stageName = "task_dispatch";
+          try {
+            await stage(stageName, () => taskEnqueuer.enqueue({ ownerKey, analysisId,
+              runId: reserved?.runId, dueAt: pending.dueAt }));
+          } catch (error) {
+            Object.assign(detail, { failureClass: "task_dispatch_failed" });
+            emit("task.dispatch_failed", { stage: stageName });
+            // The provider ID and due time are already durable. The scheduled
+            // reconciler owns recovery, so an unavailable queue must not turn
+            // a real background run into a client-visible failed run.
+          }
+          emit("run.backgrounded", { durationMs: performance.now() - started,
+            durations: { ...durations, ...detail.durations } });
         } catch (error) {
           Object.assign(detail, sanitizeDiagnostics(error.diagnostics));
-          detail.failureClass ??= stageName === "settlement" ? "persistence_failed" : error instanceof AgentEvidenceUnavailableError ? "storage_unavailable"
+          detail.failureClass ??= stageName === "provider_id_settlement" ? "persistence_failed" : error instanceof AgentEvidenceUnavailableError ? "storage_unavailable"
             : error instanceof ProviderError ? (error.kind === "timeout" ? "provider_timeout" : error.kind === "unconfigured" ? "provider_unconfigured" : "provider_network") : "unexpected_failure";
-          if (stageName === "provider") emit("provider.failed");
-          if (stageName === "settlement") emit("persistence.failed", { stage: "settlement" });
-          try {
-            await stage("settlement", () => analysisStore.markFailed({ ownerKey, analysisId, runId: reserved?.runId, reason: failureReason(error),
-              diagnostics: { ...detail, memory: sampler.capture(), durations: { ...durations, ...detail.durations } } }));
-            emit("run.failed", { durationMs: performance.now() - started });
-          } catch {
-            emit("persistence.failed", { failureClass: "persistence_failed", stage: "settlement" });
+          if (stageName === "provider_start") emit("provider.failed");
+          if (stageName === "provider_id_settlement") emit("persistence.failed", { stage: stageName });
+          const uncertainProviderStart = stageName === "provider_start"
+            && error instanceof ProviderError
+            && (error.kind === "timeout" || error.kind === "network");
+          if (!uncertainProviderStart && stageName !== "provider_id_settlement") {
+            try {
+              await stage("settlement", () => analysisStore.markFailed({ ownerKey,
+                analysisId, runId: reserved?.runId, reason: failureReason(error),
+                diagnostics: { ...detail, memory: sampler.capture(),
+                  durations: { ...durations, ...detail.durations } } }));
+              emit("run.failed", { durationMs: performance.now() - started });
+            } catch {
+              emit("persistence.failed", { failureClass: "persistence_failed", stage: "settlement" });
+            }
           }
           throw error;
         }

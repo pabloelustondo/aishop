@@ -2,10 +2,12 @@ import { agentReleaseMetadata, API_PROCESS_CONTEXT, FUNCTION_MEMORY_BYTES } from
 import * as firebaseLogger from "firebase-functions/logger";
 import { createDiagnostics } from "./agent-diagnostics.js";
 import { createAgentAnalysisRunner } from "./agent-analysis-runner.js";
+import { createAgentTaskEnqueuer } from "./agent-task-enqueuer.js";
 import { createAgentAPIHandler } from "./agent-api-handler.js";
 import { createFirebaseAgentServices } from "./firebase-services.js";
 import { ProviderError } from "./errors.js";
-import { createOpenAIAnalyzer, DEFAULT_MODEL, analyzerConfiguration } from "./openai-analyzer.js";
+import { createOpenAIBackgroundAnalyzer, DEFAULT_MODEL,
+  PROVIDER_CONTROL_TIMEOUT_MS } from "./openai-analyzer.js";
 
 /**
  * Without a key the endpoint still uploads, lists and reads; only a run
@@ -15,13 +17,13 @@ import { createOpenAIAnalyzer, DEFAULT_MODEL, analyzerConfiguration } from "./op
  * halfway through somebody's upload.
  */
 function unconfiguredAnalyzer() {
-  return async () => { throw new ProviderError("unconfigured"); };
+  return Object.freeze({ start: async () => { throw new ProviderError("unconfigured"); } });
 }
 
 export function createFirebaseAgentHandler({
   logger = firebaseLogger, apiKey = null, model, fetchImpl, services: providedServices,
   environment = process.env.FUNCTIONS_EMULATOR === "true" ? "emulator" : "test",
-  release, releaseKind
+  release, releaseKind, taskEnqueuer
 } = {}) {
   const releaseMetadata = release
     ? { release, releaseKind: releaseKind ?? "override" }
@@ -32,14 +34,21 @@ export function createFirebaseAgentHandler({
     const write = event.severity === "ERROR" ? logger.error : logger.info;
     return write.call(logger, event);
   }, { environment, ...releaseMetadata });
+  const analyzer = apiKey
+    ? createOpenAIBackgroundAnalyzer({ apiKey, model, fetchImpl })
+    : unconfiguredAnalyzer();
   const runner = createAgentAnalysisRunner({
     evidenceStore: services.evidenceStore,
     analysisStore: services.analysisStore,
-    analyzeProduct: apiKey
-      ? createOpenAIAnalyzer({ apiKey, model, fetchImpl })
-      : unconfiguredAnalyzer(),
-    model: apiKey ? (model ?? DEFAULT_MODEL) : null,
-    diagnostics, configuration: { memoryLimitBytes: FUNCTION_MEMORY_BYTES, ...analyzerConfiguration(model ?? DEFAULT_MODEL), environment, ...releaseMetadata }
+    analyzer,
+    taskEnqueuer: taskEnqueuer ?? { enqueue: input =>
+      createAgentTaskEnqueuer().enqueue(input) },
+    diagnostics, configuration: { memoryLimitBytes: FUNCTION_MEMORY_BYTES,
+      ...(apiKey ? analyzer.configuration("areaScan") : {
+        requestedModel: model ?? DEFAULT_MODEL, mode: "areaScan",
+        timeoutMs: PROVIDER_CONTROL_TIMEOUT_MS,
+        preprocessingVersion: "original-image-auto-detail"
+      }), environment, ...releaseMetadata }
   });
   const handler = createAgentAPIHandler({
     evidenceStore: services.evidenceStore,

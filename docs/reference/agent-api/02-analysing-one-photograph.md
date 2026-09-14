@@ -1,6 +1,6 @@
 # Agent API — 2. Analysing one photograph
 
-One `POST` uploads a JPEG, runs the analysis and returns the settled record. Base:
+One `POST` uploads a JPEG, starts durable background analysis and returns promptly. Base:
 `https://aishop-99d36.web.app/v1/agent/analyses` (TEST). The token comes from [01](01-getting-a-token.md).
 
 ## The single call
@@ -16,22 +16,26 @@ curl -s -i -X POST "https://aishop-99d36.web.app/v1/agent/analyses" \
 | Part | Required | Meaning |
 | --- | --- | --- |
 | `file` | yes | one JPEG, ≤ 5 MB, ≤ 4096 px per side |
-| `run` | no | the literal `true` analyses before answering; anything else, or absent, stores only |
+| `run` | no | the literal `true` starts analysis; anything else, or absent, stores only |
 | `context` | no | ≤ 500 characters; the note the first run receives; ignored without `run` |
 
 ## The answer
 
-`201` with `{ "analysis": … }`. With `run`, `analysis.status` is `analyzed`, `analysis.runs[0]` is the
-settled run (its `context` is your note) and `analysis.report` holds the `areaScan` result: `summary`,
-`identifiedProducts[]` with `name`, `count`, `confidence`, `visibleEvidence[]`, and `uncertainItems[]`.
-Without `run`, `status` is `uploaded` and `runs` is empty — the pre-existing upload behaviour.
+`201` with `{ "analysis": … }`. With `run`, `analysis.status` is normally `analyzing`; the provider
+response ID, Cloud Task and collection timing never appear in this public record. Without `run`,
+`status` is `uploaded` and `runs` is empty. A later successful GET returns `status: analyzed` and the
+`areaScan` report: `summary`, `identifiedProducts[]` with `name`, `count`, `confidence`,
+`visibleEvidence[]`, and `uncertainItems[]`.
 
-Runs settle in roughly 6–10 s. The function's timeout is 120 s; calls serialise, so a busy moment waits.
+Poll `GET …/analyses/{analysisId}` every 15 seconds while the record is `analyzing`. Stop at a terminal
+state; a page reload may resume the same GET polling because progression and identity live server-side.
+Polling never starts, retrieves or retries provider work, and there is no public collection route.
 
 ## When the run fails after the upload succeeded
 
 The status is the run's own — `502 provider_failed`, `504 provider_timeout`, `503 storage_unavailable` —
-and the body carries `analysisId` beside `requestId`. **Do not upload again.** Retry the run:
+and the body carries `analysisId` beside `requestId`. **Do not upload again.** Retry only a record that
+has settled `failed`:
 
 ```sh
 curl -s -X POST "https://aishop-99d36.web.app/v1/agent/analyses/{analysisId}/run" \

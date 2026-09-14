@@ -59,7 +59,7 @@ OVERRIDE_INSTALLED=1
 mv -f "$LOCK/override" "$SECRETS"
 
 firebase emulators:exec \
-  --config firebase.e2e.json \
+  --config "${FIREBASE_E2E_CONFIG:-firebase.e2e.json}" \
   --project demo-aishop-e2e \
   --only auth,functions,firestore,storage \
   "node e2e/server/step-01-golden-receipt.mjs && node e2e/server/step-02-manifest-conflict.mjs && node e2e/server/step-03-persisted-evidence.mjs && node e2e/server/step-04-agent-upload.mjs && node server/scripts/e2e-agent-refine-persistence.mjs && node server/scripts/e2e-agent-observability.mjs && node e2e/server/step-07-agent-programmatic.mjs && node e2e/server/step-08-admin-all-runs.mjs" &

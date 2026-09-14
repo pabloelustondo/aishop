@@ -1,42 +1,30 @@
 # Long-Running Analysis — Decision
 
-**Status: SELECTED.** Pablo selected Option A on 2026-09-12. Option B is
-deferred for possible future analysis. See [14](architecture-14-option-a-provider-background-mode.md)
-and [15](architecture-15-option-b-queue-and-worker.md).
+**Status: REVISED.** Pablo rejected browser-driven progression on 2026-09-13
+and selected the server-owned design in [15](architecture-15-option-b-queue-and-worker.md).
 
 ## Evidence
 
-Ignacio's 750 x 1000 shelf failed four times in TEST. Every provider
-answer was HTTP 200 ending at exactly 1,200 output tokens with
-`max_output_tokens`. Removing that cap and the Agent's 20-second abort
-removes limits imposed by this application, but does not make a long
-provider call safe inside one HTTP request.
+Ignacio's dense shelf reached AI Shop's 1,200-token output cap. Removing that
+cap and the 20-second abort does not make a long provider call safe inside one
+Hosting request. A completed, billed response can outlive that request.
 
-`server/src/firebase.js` sets `timeoutSeconds: 120`. Agent routes are also
-reached through a Firebase Hosting rewrite reportedly limited to roughly 60
-seconds; that number remains unverified in AI Shop. A provider request may then
-finish and be billed without the application recording its result.
-
-Option A makes Agent calls short, but the same possible ceiling still matters
-to synchronous `/inspections` and VISTA package ingestion. Raising only the
-function timeout would not remove a shorter Hosting boundary.
+Provider background mode solves the request-duration problem, but a browser
+calling `collect` does not solve ownership of progress. A closed or refreshed
+page can leave a completed provider response and an AI Shop record disagreeing.
 
 ## Decision
 
-Use the OpenAI Responses API background mode. One request starts analysis and
-stores the provider response identifier. Later short requests retrieve the
-provider status and settle the AI Shop record when the response is terminal.
+Keep OpenAI background responses, but move every retrieve and settlement step
+to private Firebase Cloud Tasks. Firestore owns the provider reference, status,
+lease, schedule, report and diagnostics. A scheduled reconciler repairs missed
+dispatches. Browser and iPhone clients only create work and read durable state.
 
-The Agent remains responsive while dense-shelf work continues. The strict
-structured-output contract, authorization, ownership, diagnostics and
-idempotent record transitions remain mandatory.
+## Consequences
 
-## Consequence
-
-Option A uses provider-stored response state and therefore carries an explicit
-retention decision. AI Shop will delete the provider response after a terminal
-result is durably settled, while recognizing that default platform retention
-and abuse-monitoring rules still apply.
-
-Option B remains a future alternative if contractual privacy, reliability,
-video processing or workload evidence justifies owning a queue and worker.
+- Client lifetime cannot stop analysis progression or create another response.
+- Task delivery may repeat, so claims and terminal settlement are idempotent.
+- Cloud Tasks, a task function, a scheduled reconciler, IAM and small operating
+  cost are now explicit infrastructure.
+- The existing public API remains the authentication and ownership boundary.
+- Synchronous VISTA and `/inspections` retain their independent Hosting limit.

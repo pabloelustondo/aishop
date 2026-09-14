@@ -3,7 +3,8 @@ import test from "node:test";
 import { limitEnvironment } from "../test-support/vista-limit-values.js";
 
 Object.assign(process.env, limitEnvironment);
-const { api } = await import("../src/firebase.js");
+const { api, collectAgentAnalysis, reconcileAgentAnalyses } =
+  await import("../src/firebase.js");
 
 test("exports the Firebase v2 HTTP function in Toronto with both secrets", () => {
   assert.equal(typeof api, "function");
@@ -22,4 +23,28 @@ test("exports the Firebase v2 HTTP function in Toronto with both secrets", () =>
     api.__endpoint.secretEnvironmentVariables.map((secret) => secret.key).sort(),
     ["AI_SHOP_CLIENT_TOKEN", "OPENAI_API_KEY"]
   );
+});
+
+test("exports a private bounded task queue collector in Montréal", () => {
+  assert.equal(typeof collectAgentAnalysis, "function");
+  assert.deepEqual(collectAgentAnalysis.__endpoint.region,
+    ["northamerica-northeast1"]);
+  assert.equal(collectAgentAnalysis.__endpoint.platform, "gcfv2");
+  assert.equal(collectAgentAnalysis.__endpoint.timeoutSeconds, 60);
+  assert.deepEqual(collectAgentAnalysis.__endpoint.taskQueueTrigger.invoker,
+    ["35745728095-compute@developer.gserviceaccount.com"]);
+  assert.equal(collectAgentAnalysis.__endpoint.taskQueueTrigger.rateLimits
+    .maxConcurrentDispatches, 1);
+  assert.equal(collectAgentAnalysis.__endpoint.taskQueueTrigger.retryConfig.maxAttempts, 5);
+  assert.deepEqual(collectAgentAnalysis.__endpoint.secretEnvironmentVariables
+    .map(secret => secret.key), ["OPENAI_API_KEY"]);
+});
+
+test("exports the one-minute reconciliation safety net", () => {
+  assert.equal(typeof reconcileAgentAnalyses, "function");
+  assert.deepEqual(reconcileAgentAnalyses.__endpoint.region,
+    ["northamerica-northeast1"]);
+  assert.equal(reconcileAgentAnalyses.__endpoint.scheduleTrigger.schedule,
+    "every 1 minutes");
+  assert.equal(reconcileAgentAnalyses.__endpoint.timeoutSeconds, 60);
 });

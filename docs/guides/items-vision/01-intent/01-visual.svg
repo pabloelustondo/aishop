@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">VISTA Agentic Items Vision: from image to item report</title>
+  <desc id="desc">The browser sends a shelf photo to the server API. The server coordinates OpenAI analysis and saves images in Cloud Storage and records in Firestore. The user reads the saved report in the browser. This is a simplified architecture view.</desc>
+  <!-- Editable source. Render this SVG to 01-visual.png at 1600 by 900. -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto-start-reverse" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#52657A"/></marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #172D43; }
+      .heading { font-size: 30px; font-weight: 700; }
+      .body { font-size: 24px; }
+      .label { font-size: 22px; fill: #52657A; }
+      .link { fill: none; stroke: #52657A; stroke-width: 3; marker-end: url(#arrow); }
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <rect x="72" y="70" width="64" height="7" fill="#087E8B"/>
+  <text x="72" y="133" font-size="48" font-weight="700">From image to item report</text>
+  <text x="72" y="182" font-size="27" fill="#52657A">VISTA Agentic Items Vision</text>
+
+  <!-- Browser boundary: both uploading and reading belong to the user interface. -->
+  <rect x="72" y="259" width="340" height="483" rx="12" fill="#EDF5FD" stroke="#B8D1E7" stroke-width="2"/>
+  <text x="100" y="307" class="heading">Browser interface</text>
+  <rect x="102" y="338" width="110" height="77" rx="4" fill="#FFF" stroke="#367BA8" stroke-width="2"/>
+  <path d="M111 395 H202 M120 392 V358 H140 V392 M150 392 V348 H171 V392 M181 392 V366 H195 V392" fill="none" stroke="#367BA8" stroke-width="3"/>
+  <text x="102" y="458" class="body">Upload a shelf photo</text>
+  <path d="M100 500 H383" stroke="#B8D1E7" stroke-width="2"/>
+  <text x="102" y="553" class="heading">Read the report</text>
+  <text x="102" y="603" class="body">Products and facings</text>
+  <text x="102" y="640" class="body">Progress and outcome</text>
+  <text x="102" y="696" class="label">Review the observations</text>
+
+  <!-- Server owns coordination and durable outcome recording. -->
+  <rect x="590" y="290" width="370" height="220" rx="12" fill="#E7F3F1" stroke="#8DBEB8" stroke-width="2"/>
+  <text x="620" y="340" class="heading">Server API</text>
+  <text x="620" y="390" class="body">Check access</text>
+  <text x="620" y="428" class="body">Coordinate analysis</text>
+  <text x="620" y="466" class="body">Record the outcome</text>
+  <text x="590" y="266" font-size="22" fill="#087E8B">/v1/agent/analyses</text>
+
+  <path d="M412 373 H590" class="link"/>
+  <text x="501" y="348" text-anchor="middle" class="label">Photo</text>
+  <path d="M590 480 H505 V581 H412" class="link"/>
+  <text x="518" y="550" class="label">Saved result</text>
+
+  <!-- External analysis provider. -->
+  <rect x="1180" y="290" width="348" height="220" rx="12" fill="#F0ECF9" stroke="#BFAEDC" stroke-width="2"/>
+  <text x="1210" y="340" class="heading">OpenAI analysis</text>
+  <text x="1210" y="390" class="body">Identify products</text>
+  <text x="1210" y="428" class="body">Count visible facings</text>
+  <text x="1210" y="466" class="label">Runs in the background</text>
+  <path d="M960 373 H1180" class="link"/>
+  <text x="1070" y="325" text-anchor="middle" class="label">Image +</text>
+  <text x="1070" y="351" text-anchor="middle" class="label">instructions</text>
+  <path d="M1180 446 H960" class="link"/>
+  <text x="1070" y="481" text-anchor="middle" class="label">Observations</text>
+
+  <!-- Storage is accessed by the server, never drawn as an AI input source. -->
+  <rect x="700" y="610" width="560" height="132" rx="12" fill="#FFF5E6" stroke="#DCC399" stroke-width="2"/>
+  <text x="728" y="657" class="heading">Saved evidence and results</text>
+  <text x="728" y="697" class="body">Cloud Storage: image · Firestore: record</text>
+  <path d="M850 510 V610" class="link" marker-start="url(#arrow)"/>
+  <text x="873" y="563" class="label">Save / read</text>
+
+  <text x="72" y="824" font-size="24" fill="#52657A">The server keeps the work moving; the browser shows progress and the saved result.</text>
+  <text x="1528" y="824" text-anchor="end" font-size="24" fill="#52657A">01</text>
+</svg>

@@ -19,6 +19,21 @@
  */
 
 const BASE = "/v1/agent/analyses";
+export const OBSERVATION_INTERVAL_MS = 15_000;
+export const OBSERVATION_CEILING_MS = 10 * 60_000;
+
+export function shouldPollAnalyses(analyses, { visible = true,
+  elapsedMs = 0 } = {}) {
+  return visible && elapsedMs < OBSERVATION_CEILING_MS
+    && Array.isArray(analyses)
+    && analyses.some(analysis => analysis?.status === "analyzing");
+}
+
+export function activityLabel(analyses) {
+  const count = Array.isArray(analyses)
+    ? analyses.filter(analysis => analysis?.status === "analyzing").length : 0;
+  return count === 0 ? "Idle" : `Analysing ${count} ${count === 1 ? "image" : "images"}`;
+}
 
 /** Mirrors the server's own ceiling, so the refusal happens before the call. */
 const MAX_NOTE = 500;
@@ -34,7 +49,8 @@ const view = {
   form: element("upload-form"), file: element("file"), submit: element("submit"),
   uploadAnother: element("upload-another"), refresh: element("refresh"),
   live: element("live"), liveText: element("live-text"),
-  list: element("analyses"), empty: element("empty"), message: element("message")
+  uploadProgress: element("upload-progress"), list: element("analyses"),
+  empty: element("empty"), message: element("message")
 };
 
 function say(text, isError = false, requestId = null) {
@@ -192,6 +208,34 @@ const spacer = () => textNode("span", "", "spacer");
  * another copy of every photograph for the life of the tab.
  */
 let objectURLs = [];
+let observationTimer = null;
+let observationStartedAt = null;
+let uploadInFlight = false;
+let displayedAnalyses = [];
+
+function stopObservation() {
+  if (observationTimer !== null) clearTimeout(observationTimer);
+  observationTimer = null;
+  observationStartedAt = null;
+}
+
+function scheduleObservation(analyses) {
+  if (observationTimer !== null) clearTimeout(observationTimer);
+  observationTimer = null;
+  const visible = document.visibilityState !== "hidden";
+  const now = Date.now();
+  if (analyses.some(analysis => analysis?.status === "analyzing")) {
+    observationStartedAt ??= now;
+  } else {
+    observationStartedAt = null;
+  }
+  if (!shouldPollAnalyses(analyses, { visible,
+    elapsedMs: observationStartedAt === null ? 0 : now - observationStartedAt })) return;
+  observationTimer = setTimeout(() => {
+    observationTimer = null;
+    refresh().catch(error => say(error.message, true, error.requestId));
+  }, OBSERVATION_INTERVAL_MS);
+}
 function releaseImages() {
   for (const url of objectURLs) URL.revokeObjectURL(url);
   objectURLs = [];
@@ -383,6 +427,23 @@ function actionStrip(analysis) {
   return strip;
 }
 
+function analysisWaitingPanel() {
+  const panel = document.createElement("div");
+  panel.className = "analysis-waiting";
+  panel.setAttribute("role", "status");
+  const spinner = textNode("span", "", "progress-spinner");
+  spinner.setAttribute("aria-hidden", "true");
+  const copy = document.createElement("div");
+  copy.append(
+    textNode("p", "ANALYSIS IN PROGRESS", "eyebrow"),
+    textNode("h2", "Analysing this shelf…"),
+    textNode("p", "This can take a minute or two. You may safely leave or refresh this page."),
+    textNode("p", "Checking automatically every 15 seconds.", "meta")
+  );
+  panel.append(spinner, copy);
+  return panel;
+}
+
 function card(analysis) {
   const section = document.createElement("section");
   section.className = "analysis";
@@ -409,6 +470,8 @@ function card(analysis) {
   rows.className = "rows";
   if (analysis.status === "analyzed" && analysis.report) {
     rows.appendChild(facingsTable(analysis.report));
+  } else if (analysis.status === "analyzing") {
+    rows.appendChild(analysisWaitingPanel());
   }
   body.appendChild(rows);
   section.appendChild(body);
@@ -432,11 +495,15 @@ function card(analysis) {
  */
 function render(analyses) {
   releaseImages();
+  displayedAnalyses = analyses;
+  if (!uploadInFlight) view.uploadProgress.hidden = true;
   view.list.replaceChildren(...analyses.map(card));
   const nothing = analyses.length === 0;
   view.empty.hidden = !nothing;
-  view.form.hidden = !nothing;
+  view.form.hidden = uploadInFlight || !nothing;
   view.uploadAnother.hidden = nothing;
+  busy(activityLabel(analyses));
+  scheduleObservation(analyses);
 }
 
 /**
@@ -470,11 +537,10 @@ async function run(analysisId, context, button) {
   const note = typeof context === "string" ? context.trim() : "";
   if (button) button.disabled = true;
   busy(note ? "Refining" : "Analysing");
-  say(note ? "Refining…" : "Analysing…");
+  say("");
   try {
     await request("POST", `${BASE}/${analysisId}/run`,
       note ? { json: { context: note } } : {});
-    say("Done.");
   } catch (error) {
     // The record is already `failed` on the server, so the refreshed list
     // shows the failure and its Retry. Saying it here as well is what tells
@@ -482,7 +548,6 @@ async function run(analysisId, context, button) {
     say(error.message, true, error.requestId);
   } finally {
     if (button) button.disabled = false;
-    busy("Idle");
     await refresh().catch(() => {});
   }
 }
@@ -491,26 +556,40 @@ async function upload(file) {
   const body = new FormData();
   body.append("file", file, file.name);
   busy("Uploading");
-  say("Uploading…");
+  say("");
   const created = await request("POST", BASE, { body });
-  await refresh().catch(() => {});
   await run(created.analysis.analysisId, null, null);
 }
 
 function start() {
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") { stopObservation(); return; }
+    if (firebase.auth().currentUser) refresh()
+      .catch(error => say(error.message, true, error.requestId));
+  });
   view.form.addEventListener("submit", async (event) => {
     event.preventDefault();
     const [file] = view.file.files;
     if (!file) return;
+    uploadInFlight = true;
     view.submit.disabled = true;
+    view.submit.textContent = "Uploading…";
+    view.form.setAttribute("aria-busy", "true");
+    view.form.hidden = true;
+    view.uploadProgress.hidden = false;
     try {
       await upload(file);
       view.form.reset();
     } catch (error) {
       say(error.message, true, error.requestId);
+      view.form.hidden = false;
+      busy(activityLabel(displayedAnalyses));
     } finally {
+      uploadInFlight = false;
       view.submit.disabled = false;
-      busy("Idle");
+      view.submit.textContent = "Upload and analyse";
+      view.form.removeAttribute("aria-busy");
+      view.uploadProgress.hidden = true;
     }
   });
 
@@ -585,6 +664,7 @@ function start() {
     view.notAuthorized.hidden = true;
     view.allRuns.hidden = true;
     if (!signedIn) {
+      stopObservation();
       releaseImages();
       view.list.replaceChildren();
       view.form.hidden = true;

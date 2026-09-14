@@ -1,7 +1,11 @@
 import { defineSecret } from "firebase-functions/params";
 import { onRequest } from "firebase-functions/v2/https";
+import { onSchedule } from "firebase-functions/v2/scheduler";
+import { onTaskDispatched } from "firebase-functions/v2/tasks";
 import { createFirebaseAdminHandler } from "./firebase-admin-handler.js";
 import { createFirebaseAgentHandler } from "./firebase-agent-handler.js";
+import { createFirebaseAgentBackground,
+  createFirebaseAgentReconciler } from "./firebase-agent-background.js";
 import { agentAPIKey, FUNCTION_MEMORY, API_PROCESS_CONTEXT, createProcessContext } from "./firebase-agent-config.js";
 import { createFirebaseAPIRouter } from "./firebase-api-router.js";
 import { createFirebaseInspectionHandler } from "./firebase-inspection-handler.js";
@@ -13,6 +17,7 @@ import { readVistaStartupLimits } from "./vista-startup-limits.js";
 
 const openAIAPIKey = defineSecret("OPENAI_API_KEY");
 const aiShopClientToken = defineSecret("AI_SHOP_CLIENT_TOKEN");
+const agentTaskInvoker = "35745728095-compute@developer.gserviceaccount.com";
 const nextProcessContext = createProcessContext();
 const vistaLimits = readVistaStartupLimits();
 let cachedVistaHandler;
@@ -46,6 +51,40 @@ const adminHandler = (request, response) => {
   cachedAdminHandler ??= createFirebaseAdminHandler();
   return cachedAdminHandler(request, response);
 };
+
+let cachedAgentBackground;
+const agentBackground = () => {
+  cachedAgentBackground ??= createFirebaseAgentBackground({
+    apiKey: openAIAPIKey.value(), model: process.env.OPENAI_MODEL
+  });
+  return cachedAgentBackground;
+};
+
+let cachedAgentReconciler;
+const agentReconciler = () => {
+  cachedAgentReconciler ??= createFirebaseAgentReconciler();
+  return cachedAgentReconciler;
+};
+
+export const collectAgentAnalysis = onTaskDispatched({
+  region: "northamerica-northeast1",
+  secrets: [openAIAPIKey],
+  memory: FUNCTION_MEMORY,
+  timeoutSeconds: 60,
+  invoker: agentTaskInvoker,
+  retryConfig: { maxAttempts: 5, minBackoffSeconds: 15,
+    maxBackoffSeconds: 60, maxRetrySeconds: 600 },
+  rateLimits: { maxConcurrentDispatches: 1, maxDispatchesPerSecond: 1 }
+}, request => agentBackground().taskHandler(request));
+
+export const reconcileAgentAnalyses = onSchedule({
+  region: "northamerica-northeast1",
+  schedule: "every 1 minutes",
+  timeoutSeconds: 60,
+  retryCount: 2,
+  minBackoffSeconds: 15,
+  maxBackoffSeconds: 60
+}, () => agentReconciler()());
 
 export const api = onRequest({
   region: "northamerica-northeast2",
