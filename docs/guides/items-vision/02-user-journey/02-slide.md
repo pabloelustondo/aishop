@@ -1,8 +1,13 @@
-# One Photo, From Upload to Report
+# Two Product Use Cases Share One Vision Foundation
 
-- **Upload:** choose a shelf photo in the Agent page.
-- **Analyse:** the first analysis starts automatically after upload.
-- **Wait:** follow progress while the server collects the outcome.
-- **Review:** compare products and facing counts with the original photo.
+## AI Shop shopping experience
+- The AI Shop iPhone app scans products for shoppers.
+- Image processing can occur on the iPhone and through server-side AI.
+- Results help shoppers make better-informed decisions.
 
-Refine with a note, or retry a failed run, when available.
+## VISTA shelf inspection
+- The web Agent manually analyses shelf photographs and videos today.
+- The intended VISTA iPhone app will capture evidence during store inspections.
+- Results identify shelf products and count visible facings.
+
+Both experiences reuse common server capabilities while serving different users.
