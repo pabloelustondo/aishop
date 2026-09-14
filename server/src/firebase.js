@@ -6,6 +6,7 @@ import { createFirebaseAdminHandler } from "./firebase-admin-handler.js";
 import { createFirebaseAgentHandler } from "./firebase-agent-handler.js";
 import { createFirebaseAgentBackground,
   createFirebaseAgentReconciler } from "./firebase-agent-background.js";
+import { createFirebaseAgentVideo } from "./firebase-agent-video.js";
 import { agentAPIKey, FUNCTION_MEMORY, API_PROCESS_CONTEXT, createProcessContext } from "./firebase-agent-config.js";
 import { createFirebaseAPIRouter } from "./firebase-api-router.js";
 import { createFirebaseInspectionHandler } from "./firebase-inspection-handler.js";
@@ -65,6 +66,25 @@ const agentReconciler = () => {
   cachedAgentReconciler ??= createFirebaseAgentReconciler();
   return cachedAgentReconciler;
 };
+
+let cachedAgentVideo;
+const agentVideo = () => {
+  cachedAgentVideo ??= createFirebaseAgentVideo({
+    apiKey: openAIAPIKey.value(), model: process.env.OPENAI_MODEL
+  });
+  return cachedAgentVideo;
+};
+
+export const processAgentVideo = onTaskDispatched({
+  region: "northamerica-northeast1",
+  secrets: [openAIAPIKey],
+  memory: "2GiB",
+  timeoutSeconds: 540,
+  invoker: agentTaskInvoker,
+  retryConfig: { maxAttempts: 3, minBackoffSeconds: 30,
+    maxBackoffSeconds: 120, maxRetrySeconds: 1200 },
+  rateLimits: { maxConcurrentDispatches: 1, maxDispatchesPerSecond: 1 }
+}, request => agentVideo().taskHandler(request));
 
 export const collectAgentAnalysis = onTaskDispatched({
   region: "northamerica-northeast1",

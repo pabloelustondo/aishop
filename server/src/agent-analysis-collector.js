@@ -2,7 +2,7 @@ import { sanitizeDiagnostics } from "./agent-diagnostics.js";
 import { ANALYSIS_MODES } from "./analysis-contracts.js";
 import { ProviderError } from "./errors.js";
 
-const MODE = ANALYSIS_MODES.areaScan;
+const DEFAULT_MODE = ANALYSIS_MODES.areaScan;
 
 function terminalProviderError(error) {
   return error instanceof ProviderError
@@ -30,9 +30,9 @@ export function createAgentAnalysisCollector({ analysisStore, analyzer,
     try { diagnostics(event, sanitizeDiagnostics(fields)); } catch {}
   };
 
-  async function cleanup(responseId, fields) {
+  async function cleanup(responseId, mode, fields) {
     try {
-      await analyzer.delete({ responseId, mode: MODE,
+      await analyzer.delete({ responseId, mode,
         onDiagnostics: metadata => emit("provider_cleanup.completed",
           { ...fields, ...metadata }) });
     } catch (error) {
@@ -61,9 +61,10 @@ export function createAgentAnalysisCollector({ analysisStore, analyzer,
       }
 
       const detail = { ...claim.diagnostics };
+      const mode = claim.mode ?? DEFAULT_MODE;
       try {
         const provider = await analyzer.retrieve({ responseId: claim.responseId,
-          mode: MODE, onDiagnostics: metadata => Object.assign(detail,
+          mode, onDiagnostics: metadata => Object.assign(detail,
             sanitizeDiagnostics(metadata)) });
         if (provider.status === "queued" || provider.status === "in_progress") {
           const scheduled = await analysisStore.rescheduleCollection({ ...identity,
@@ -82,14 +83,14 @@ export function createAgentAnalysisCollector({ analysisStore, analyzer,
         });
         try {
           await analysisStore.markAnalyzed({ ...identity, report,
-            model, mode: MODE, diagnostics: detail });
+            model, mode, diagnostics: detail });
         } catch (error) {
           emit("persistence.failed", { ...identity,
             failureClass: "persistence_failed", stage: "settlement" });
           throw error;
         }
         emit("collection.settled", { ...identity, outcome: "analyzed" });
-        await cleanup(claim.responseId, identity);
+        await cleanup(claim.responseId, mode, identity);
         return Object.freeze({ settled: true, status: "analyzed" });
       } catch (error) {
         Object.assign(detail, sanitizeDiagnostics(error?.diagnostics));
@@ -103,7 +104,7 @@ export function createAgentAnalysisCollector({ analysisStore, analyzer,
             throw settlementError;
           }
           emit("collection.settled", { ...identity, outcome: "failed" });
-          await cleanup(claim.responseId, identity);
+          await cleanup(claim.responseId, mode, identity);
           return Object.freeze({ settled: true, status: "failed" });
         }
         if (error instanceof ProviderError) {

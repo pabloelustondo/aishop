@@ -54,7 +54,7 @@ export function createRunMemorySampler({
 }
 
 /** Open world. Catalog matching is a later increment, not a flag here. */
-const MODE = ANALYSIS_MODES.areaScan;
+const IMAGE_MODE = ANALYSIS_MODES.areaScan;
 
 /**
  * Why a run failed, in terms the list page can show a person. A provider
@@ -139,16 +139,31 @@ export function createAgentAnalysisRunner({
         emit("run.started");
         let stageName = "source_read";
         try {
-          const source = await stage(stageName, () => evidenceStore.readSource({ ownerKey, analysisId }));
+          const record = await stage("record_read_input", () =>
+            analysisStore.read({ ownerKey, analysisId }));
+          const video = record?.mediaType === "video/mp4"
+            || record?.mediaType === "video/quicktime";
+          const sources = video
+            ? await stage(stageName, () => evidenceStore.readFrames({ ownerKey,
+              analysisId, frames: record.frames }))
+            : [await stage(stageName, () => evidenceStore.readSource({ ownerKey, analysisId }))];
+          const mode = video ? ANALYSIS_MODES.videoAreaScan : IMAGE_MODE;
           stageName = "provider_start";
           const provider = await stage(stageName, () => analyzer.start({
-            imageBase64: source.bytes.toString("base64"), mediaType: source.mediaType ?? "image/jpeg", mode: MODE, context,
+            ...(video ? { images: sources.map(source => ({
+              imageBase64: source.bytes.toString("base64"),
+              mediaType: source.mediaType ?? "image/jpeg",
+              timestampMs: source.timestampMs
+            })) } : { imageBase64: sources[0].bytes.toString("base64"),
+              mediaType: sources[0].mediaType ?? "image/jpeg" }),
+            mode, context,
             onDiagnostics: metadata => Object.assign(detail, sanitizeDiagnostics(metadata))
           }));
           emit("provider.started", { durationMs: durations.provider_start });
           stageName = "provider_id_settlement";
           const pending = await stage(stageName, () => analysisStore.markProviderStarted({
             ownerKey, analysisId, runId: reserved?.runId, responseId: provider.responseId,
+            mode,
             diagnostics: { ...detail, memory: sampler.capture(),
               durations: { ...durations, ...detail.durations } }
           }));

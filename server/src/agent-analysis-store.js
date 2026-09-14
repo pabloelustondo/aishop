@@ -32,9 +32,11 @@ export const MAX_ANALYSIS_RUNS = 25;
  * so a report is always readable beside the instruction that produced it.
  */
 const ALLOWED = Object.freeze({
+  processing: ["uploading"],
+  uploaded: ["processing"],
   analyzing: ["uploaded", "failed", "analyzed"],
   analyzed: ["analyzing"],
-  failed: ["analyzing"]
+  failed: ["analyzing", "uploading", "processing"]
 });
 
 export class AgentAnalysisNotFoundError extends Error {
@@ -124,6 +126,11 @@ function summarize(id, data) {
     sha256: data.sha256 ?? null,
     byteLength: data.byteLength ?? null,
     width: dimension(data.width), height: dimension(data.height),
+    durationMs: Number.isInteger(data.durationMs) ? data.durationMs : null,
+    frames: Array.isArray(data.frames) ? data.frames.map(frame => ({
+      index: frame.index, timestampMs: frame.timestampMs,
+      sha256: frame.sha256, byteLength: frame.byteLength
+    })) : [],
     createdAt: data.createdAt ?? null,
     analyzedAt: data.analyzedAt ?? null,
     failureReason: data.failureReason ?? null,
@@ -206,6 +213,8 @@ export function createAgentAnalysisStore({
       const data = snapshot.data() ?? {};
       const from = data.status ?? null;
       const currentRun = runsOf(data).at(-1);
+      if (from === to && expectedRunId === null
+        && (to === "processing" || to === "uploaded" || to === "failed")) return null;
       if (from === to && expectedRunId && currentRun?.runId === expectedRunId
         && currentRun?.status === to && (to === "analyzed" || to === "failed")) {
         return currentRun;
@@ -236,6 +245,44 @@ export function createAgentAnalysisStore({
       return Object.freeze(data);
     },
 
+    async createVideoUpload({ ownerKey, analysisId, fileName, mediaType,
+      expectedByteLength }) {
+      identity(ownerKey, analysisId);
+      const data = {
+        analysisId, ownerKey, status: "uploading",
+        fileName: typeof fileName === "string" ? fileName : null,
+        mediaType, expectedByteLength, sha256: null, byteLength: null,
+        width: null, height: null, durationMs: null, frames: [],
+        createdAt: serverTimestamp(), analyzedAt: null, failureReason: null,
+        model: null, mode: null, report: null,
+        providerResponseId: null, providerRunId: null,
+        collectionDueAt: null, collectionLeaseUntil: null, runs: []
+      };
+      await analyses(ownerKey).doc(analysisId).create(data);
+      return Object.freeze(data);
+    },
+
+    markVideoProcessing({ ownerKey, analysisId }) {
+      return transition(ownerKey, analysisId, "processing", () => ({
+        failureReason: null
+      }));
+    },
+
+    markVideoReady({ ownerKey, analysisId, sha256, byteLength, width, height,
+      durationMs, frames }) {
+      return transition(ownerKey, analysisId, "uploaded", () => ({
+        sha256, byteLength, width: dimension(width), height: dimension(height),
+        durationMs, frames, failureReason: null
+      }));
+    },
+
+    markVideoFailed({ ownerKey, analysisId, reason }) {
+      return transition(ownerKey, analysisId, "failed", () => ({
+        failureReason: typeof reason === "string" ? reason : "video_processing_failed",
+        report: null, analyzedAt: serverTimestamp()
+      }));
+    },
+
     /**
      * Opens a run. A retry after failure carries no context; a refine of an
      * analyzed record is worth its cost only because it does.
@@ -252,6 +299,12 @@ export function createAgentAnalysisStore({
       return transition(ownerKey, analysisId, "analyzing", (data) => {
         const runs = runsOf(data);
         const asked = note(context);
+        const videoWithoutFrames = (data.mediaType === "video/mp4"
+          || data.mediaType === "video/quicktime")
+          && (!Array.isArray(data.frames) || data.frames.length === 0);
+        if (data.status === "failed" && videoWithoutFrames) {
+          throw new AgentAnalysisStateError("failed-video-preparation", "analyzing");
+        }
         // Reopening from `analyzed` is a refine, and a refine earns its cost
         // only because the input differs. From `uploaded` or `failed` nothing
         // was produced, so the same input is worth sending and no note is
@@ -284,7 +337,7 @@ export function createAgentAnalysisStore({
       });
     },
 
-    async markProviderStarted({ ownerKey, analysisId, runId, responseId, diagnostics = {} }) {
+    async markProviderStarted({ ownerKey, analysisId, runId, responseId, mode, diagnostics = {} }) {
       identity(ownerKey, analysisId);
       if (typeof responseId !== "string" || !PROVIDER_RESPONSE_ID.test(responseId)) {
         throw new TypeError("A provider response identifier is required.");
@@ -305,7 +358,8 @@ export function createAgentAnalysisStore({
           diagnostics: diagnosticSummary({ ...current.diagnostics, ...diagnostics }) };
         const dueAt = new Date(collectionNow().getTime() + COLLECTION_INTERVAL_MS);
         transaction.update(reference, { runs, providerResponseId: responseId,
-          providerRunId: runId, collectionDueAt: dueAt, collectionLeaseUntil: null });
+          providerRunId: runId, providerMode: mode ?? data.mode ?? "areaScan",
+          collectionDueAt: dueAt, collectionLeaseUntil: null });
         return Object.freeze({ runId, responseId, dueAt });
       });
     },
@@ -356,6 +410,7 @@ export function createAgentAnalysisStore({
         transaction.update(reference, { collectionLeaseUntil: nextLease });
         return Object.freeze({ claimed: true, ownerKey, analysisId, runId,
           responseId: data.providerResponseId, leaseUntil: nextLease,
+          mode: data.providerMode ?? data.mode ?? "areaScan",
           diagnostics: diagnosticSummary(current.diagnostics) });
       });
     },
@@ -403,6 +458,16 @@ export function createAgentAnalysisStore({
       identity(ownerKey, analysisId);
       const snapshot = await analyses(ownerKey).doc(analysisId).get();
       return snapshot.exists ? summarize(analysisId, snapshot.data()) : null;
+    },
+
+    async readVideoUpload({ ownerKey, analysisId }) {
+      identity(ownerKey, analysisId);
+      const snapshot = await analyses(ownerKey).doc(analysisId).get();
+      if (!snapshot.exists) throw new AgentAnalysisNotFoundError();
+      const data = snapshot.data() ?? {};
+      return Object.freeze({ analysisId, status: data.status ?? null,
+        fileName: data.fileName ?? null, mediaType: data.mediaType ?? null,
+        expectedByteLength: data.expectedByteLength ?? null });
     },
 
     async list({ ownerKey, limit = 100 }) {

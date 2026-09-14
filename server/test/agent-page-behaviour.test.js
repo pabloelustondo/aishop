@@ -10,8 +10,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import {
-  OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS, activityLabel, retryContextOf,
-  refinementNote, shouldPollAnalyses, signInErrorMessage, shouldFallBackToRedirect
+  OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS, activityLabel,
+  canRetryAnalysis, retryContextOf,
+  refinementNote, shouldPollAnalyses, signInErrorMessage, shouldFallBackToRedirect,
+  uploadVideoChunks, VIDEO_CHUNK_BYTES
 } from "../../dashboard/scripts/agent.js";
 
 test("My runs names durable analysis activity instead of looking idle", () => {
@@ -19,6 +21,18 @@ test("My runs names durable analysis activity instead of looking idle", () => {
   assert.equal(activityLabel([{ status: "analyzing" }]), "Analysing 1 image");
   assert.equal(activityLabel([{ status: "analyzing" }, { status: "analyzing" }]),
     "Analysing 2 images");
+  assert.equal(activityLabel([{ status: "uploading" }]), "Uploading 1 video");
+  assert.equal(activityLabel([{ status: "processing" }]), "Preparing 1 video");
+});
+
+test("only a video with verified frames can retry provider analysis", () => {
+  assert.equal(canRetryAnalysis({ status: "failed", mediaType: "image/jpeg" }), true);
+  assert.equal(canRetryAnalysis({ status: "failed", mediaType: "video/quicktime",
+    frames: [] }), false);
+  assert.equal(canRetryAnalysis({ status: "failed", mediaType: "video/mp4",
+    frames: [{ index: 0 }] }), true);
+  assert.equal(canRetryAnalysis({ status: "processing", mediaType: "video/mp4",
+    frames: [{ index: 0 }] }), false);
 });
 
 test("My runs observes server state every 15 seconds without advancing it", () => {
@@ -26,9 +40,34 @@ test("My runs observes server state every 15 seconds without advancing it", () =
   assert.equal(shouldPollAnalyses([{ status: "analyzing" }]), true,
     "a fresh page resumes observation from durable status");
   assert.equal(shouldPollAnalyses([{ status: "analyzed" }]), false);
+  assert.equal(shouldPollAnalyses([{ status: "uploading" }]), true);
+  assert.equal(shouldPollAnalyses([{ status: "processing" }]), true);
   assert.equal(shouldPollAnalyses([{ status: "analyzing" }], { visible: false }), false);
   assert.equal(shouldPollAnalyses([{ status: "analyzing" }],
     { elapsedMs: OBSERVATION_CEILING_MS }), false);
+});
+
+test("video upload resumes at the server offset and uses browser-safe headers", async () => {
+  const calls = [];
+  const file = { size: VIDEO_CHUNK_BYTES + 10, type: "video/quicktime",
+    slice: (start, end) => ({ start, end }) };
+  const responses = [
+    { status: 308, headers: new Headers({ Range: "bytes=0-4" }) },
+    { status: 308, headers: new Headers({ Range: `bytes=0-${VIDEO_CHUNK_BYTES + 4}` }) },
+    { status: 200, headers: new Headers() }
+  ];
+  const progress = [];
+  await uploadVideoChunks(file, "https://storage.invalid/session",
+    ratio => progress.push(ratio), async (_uri, options) => {
+      calls.push(options); return responses.shift();
+    });
+  assert.equal(calls[0].headers["Content-Range"], `bytes */${file.size}`);
+  assert.equal(calls[1].headers["Content-Range"],
+    `bytes 5-${VIDEO_CHUNK_BYTES + 4}/${file.size}`);
+  assert.equal(calls[1].headers["Content-Length"], undefined);
+  assert.equal(calls[2].headers["Content-Range"],
+    `bytes ${VIDEO_CHUNK_BYTES + 5}-${file.size - 1}/${file.size}`);
+  assert.equal(progress.at(-1), 1);
 });
 
 test("retrying a failed refinement resends that run's own note", () => {

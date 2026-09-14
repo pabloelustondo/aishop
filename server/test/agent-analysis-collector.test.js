@@ -45,6 +45,20 @@ test("completed output settles before best-effort provider deletion", async () =
   assert.deepEqual(result, { settled: true, status: "analyzed" });
 });
 
+test("collects a video response with its durably selected contract", async () => {
+  let retrievedMode = null;
+  const { calls, collector } = harness({
+    claim: async () => ({ claimed: true, responseId: "resp_video",
+      mode: "videoAreaScan", diagnostics: {} }),
+    retrieve: async input => { retrievedMode = input.mode;
+      return { status: "completed", report: REPORT }; }
+  });
+  await collector.collect(INPUT);
+  assert.equal(retrievedMode, "videoAreaScan");
+  assert.equal(calls[0][1].mode, "videoAreaScan");
+  assert.equal(calls[1][1].mode, "videoAreaScan");
+});
+
 test("pending output records a new due time before enqueueing", async () => {
   const { calls, collector } = harness({ retrieve: async () => ({ status: "in_progress" }) });
   const result = await collector.collect(INPUT);

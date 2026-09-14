@@ -21,18 +21,33 @@
 const BASE = "/v1/agent/analyses";
 export const OBSERVATION_INTERVAL_MS = 15_000;
 export const OBSERVATION_CEILING_MS = 10 * 60_000;
+export const VIDEO_CHUNK_BYTES = 8 * 1024 * 1024;
+const ACTIVE_STATES = new Set(["uploading", "processing", "analyzing"]);
 
 export function shouldPollAnalyses(analyses, { visible = true,
   elapsedMs = 0 } = {}) {
   return visible && elapsedMs < OBSERVATION_CEILING_MS
     && Array.isArray(analyses)
-    && analyses.some(analysis => analysis?.status === "analyzing");
+    && analyses.some(analysis => ACTIVE_STATES.has(analysis?.status));
 }
 
 export function activityLabel(analyses) {
+  const processing = Array.isArray(analyses)
+    ? analyses.filter(analysis => analysis?.status === "processing").length : 0;
+  const uploading = Array.isArray(analyses)
+    ? analyses.filter(analysis => analysis?.status === "uploading").length : 0;
   const count = Array.isArray(analyses)
     ? analyses.filter(analysis => analysis?.status === "analyzing").length : 0;
+  if (processing > 0) return `Preparing ${processing} ${processing === 1 ? "video" : "videos"}`;
+  if (uploading > 0) return `Uploading ${uploading} ${uploading === 1 ? "video" : "videos"}`;
   return count === 0 ? "Idle" : `Analysing ${count} ${count === 1 ? "image" : "images"}`;
+}
+
+export function canRetryAnalysis(analysis) {
+  if (analysis?.status !== "failed") return false;
+  const video = analysis.mediaType === "video/mp4"
+    || analysis.mediaType === "video/quicktime";
+  return !video || (analysis.frames?.length ?? 0) > 0;
 }
 
 /** Mirrors the server's own ceiling, so the refusal happens before the call. */
@@ -49,7 +64,9 @@ const view = {
   form: element("upload-form"), file: element("file"), submit: element("submit"),
   uploadAnother: element("upload-another"), refresh: element("refresh"),
   live: element("live"), liveText: element("live-text"),
-  uploadProgress: element("upload-progress"), list: element("analyses"),
+  uploadProgress: element("upload-progress"),
+  uploadProgressText: element("upload-progress-text"),
+  uploadProgressBar: element("upload-progress-bar"), list: element("analyses"),
   empty: element("empty"), message: element("message")
 };
 
@@ -176,6 +193,8 @@ export function refinementNote(value) {
 }
 
 const STATUS_LABEL = Object.freeze({
+  uploading: "Uploading",
+  processing: "Preparing video",
   uploaded: "Stored, not yet analysed",
   analyzing: "Analysing",
   analyzed: "Analysed",
@@ -224,7 +243,7 @@ function scheduleObservation(analyses) {
   observationTimer = null;
   const visible = document.visibilityState !== "hidden";
   const now = Date.now();
-  if (analyses.some(analysis => analysis?.status === "analyzing")) {
+  if (analyses.some(analysis => ACTIVE_STATES.has(analysis?.status))) {
     observationStartedAt ??= now;
   } else {
     observationStartedAt = null;
@@ -254,18 +273,22 @@ function evidenceImage(analysis) {
   const figure = document.createElement("div");
   figure.className = "evidence";
 
-  const image = document.createElement("img");
-  image.alt = `The photograph analysed as ${analysis.fileName ?? analysis.analysisId}`;
-  image.loading = "lazy";
-  figure.appendChild(image);
+  const video = analysis.mediaType === "video/mp4" || analysis.mediaType === "video/quicktime";
+  const media = document.createElement(video ? "video" : "img");
+  if (video) { media.controls = true; media.preload = "metadata"; }
+  else { media.alt = `The photograph analysed as ${analysis.fileName ?? analysis.analysisId}`; media.loading = "lazy"; }
+  figure.appendChild(media);
   sourceURL(analysis.analysisId)
-    .then((url) => { if (url) image.src = url; })
-    .catch(() => { image.replaceWith(textNode("p", "The image could not be loaded.", "meta")); });
+    .then((url) => { if (url) media.src = url; })
+    .catch(() => { media.replaceWith(textNode("p", "The source could not be loaded.", "meta")); });
 
   const dimensions = analysis.width && analysis.height
     ? `${analysis.width} × ${analysis.height}` : null;
   figure.appendChild(textNode("p",
-    [dimensions, "the image these counts came from"].filter(Boolean).join(" · "), "imgmeta"));
+    [dimensions, analysis.durationMs ? `${Math.round(analysis.durationMs / 1000)} s` : null,
+      analysis.frames?.length ? `${analysis.frames.length} sampled frames` : null,
+      video ? "the video these counts came from" : "the image these counts came from"]
+      .filter(Boolean).join(" · "), "imgmeta"));
 
   if (analysis.status === "analyzed" && analysis.report?.summary) {
     figure.appendChild(textNode("p", analysis.report.summary, "summary"));
@@ -412,7 +435,8 @@ function actionStrip(analysis) {
 
   const actions = document.createElement("div");
   actions.className = "actions";
-  if (analysis.status === "failed" || analysis.status === "uploaded") {
+  if (canRetryAnalysis(analysis)
+    || analysis.status === "uploaded") {
     // Retry repeats the failed run's input, note included. On `uploaded` the
     // automatic run never started — a dropped connection, a closed tab.
     const label = analysis.status === "failed" ? "Retry" : "Analyse";
@@ -427,17 +451,22 @@ function actionStrip(analysis) {
   return strip;
 }
 
-function analysisWaitingPanel() {
+function analysisWaitingPanel(analysis) {
   const panel = document.createElement("div");
   panel.className = "analysis-waiting";
   panel.setAttribute("role", "status");
   const spinner = textNode("span", "", "progress-spinner");
   spinner.setAttribute("aria-hidden", "true");
   const copy = document.createElement("div");
+  const preparing = analysis?.status === "processing";
+  const uploading = analysis?.status === "uploading";
   copy.append(
-    textNode("p", "ANALYSIS IN PROGRESS", "eyebrow"),
-    textNode("h2", "Analysing this shelf…"),
-    textNode("p", "This can take a minute or two. You may safely leave or refresh this page."),
+    textNode("p", uploading ? "UPLOAD IN PROGRESS" : preparing ? "VIDEO PREPARATION" : "ANALYSIS IN PROGRESS", "eyebrow"),
+    textNode("h2", uploading ? "Continue uploading this video…"
+      : preparing ? "Preparing video frames…" : "Analysing this shelf…"),
+    textNode("p", uploading
+      ? "Select the same video again to resume an interrupted transfer."
+      : "This can take a minute or two. You may safely leave or refresh this page."),
     textNode("p", "Checking automatically every 15 seconds.", "meta")
   );
   panel.append(spinner, copy);
@@ -464,14 +493,24 @@ function card(analysis) {
 
   const body = document.createElement("div");
   body.className = "analysis-body";
-  body.appendChild(evidenceImage(analysis));
+  const videoActive = (analysis.mediaType === "video/mp4"
+    || analysis.mediaType === "video/quicktime") && ACTIVE_STATES.has(analysis.status);
+  if (!videoActive) body.appendChild(evidenceImage(analysis));
 
   const rows = document.createElement("div");
   rows.className = "rows";
   if (analysis.status === "analyzed" && analysis.report) {
     rows.appendChild(facingsTable(analysis.report));
-  } else if (analysis.status === "analyzing") {
-    rows.appendChild(analysisWaitingPanel());
+  } else if (ACTIVE_STATES.has(analysis.status)) {
+    rows.appendChild(analysisWaitingPanel(analysis));
+  } else if (analysis.status === "failed") {
+    const videoPreparationFailed = (analysis.mediaType === "video/mp4"
+      || analysis.mediaType === "video/quicktime")
+      && (analysis.frames?.length ?? 0) === 0;
+    rows.appendChild(textNode("p", videoPreparationFailed
+      ? "This video could not be prepared. Upload a new video to try again."
+      : "The analysis failed. You can retry this saved evidence.",
+    "analysis-failure"));
   }
   body.appendChild(rows);
   section.appendChild(body);
@@ -553,12 +592,75 @@ async function run(analysisId, context, button) {
 }
 
 async function upload(file) {
+  if (file.type === "video/mp4" || file.type === "video/quicktime"
+    || file.name.toLowerCase().endsWith(".mov")) return uploadVideo(file);
   const body = new FormData();
   body.append("file", file, file.name);
   busy("Uploading");
   say("");
   const created = await request("POST", BASE, { body });
   await run(created.analysis.analysisId, null, null);
+}
+
+function sessionKey(file) {
+  return `aishop-video:${file.name}:${file.size}:${file.type}:${file.lastModified ?? 0}`;
+}
+function heldSession(file) {
+  try { return JSON.parse(localStorage.getItem(sessionKey(file))); } catch { return null; }
+}
+function holdSession(file, session) {
+  try { localStorage.setItem(sessionKey(file), JSON.stringify(session)); } catch {}
+}
+function releaseSession(file) { try { localStorage.removeItem(sessionKey(file)); } catch {} }
+
+function nextOffset(response) {
+  const range = response.headers.get("Range") ?? response.headers.get("range");
+  const match = range && /bytes=0-(\d+)/.exec(range);
+  return match ? Number(match[1]) + 1 : 0;
+}
+
+export async function uploadVideoChunks(file, uri, onProgress = () => {},
+  fetchImpl = fetch) {
+  let offset = 0;
+  const status = await fetchImpl(uri, { method: "PUT",
+    headers: { "Content-Range": `bytes */${file.size}` }, body: new Blob([]) });
+  if (status.status === 200 || status.status === 201) { onProgress(1); return; }
+  if (status.status === 308) offset = nextOffset(status);
+  else if (status.status !== 404) throw new Error("The resumable upload could not be inspected.");
+  while (offset < file.size) {
+    const end = Math.min(file.size, offset + VIDEO_CHUNK_BYTES);
+    const response = await fetchImpl(uri, { method: "PUT", headers: {
+      "Content-Range": `bytes ${offset}-${end - 1}/${file.size}`
+    }, body: file.slice(offset, end) });
+    if (![200, 201, 308].includes(response.status)) {
+      throw new Error("The video upload was interrupted. Select the same file to resume.");
+    }
+    offset = response.status === 308 ? Math.max(end, nextOffset(response)) : file.size;
+    onProgress(offset / file.size);
+  }
+}
+
+async function uploadVideo(file) {
+  let session = heldSession(file);
+  if (!session?.uri || !session?.analysisId) {
+    const created = await request("POST", "/v1/agent/video-uploads", { json: {
+      fileName: file.name, mediaType: file.type === "video/quicktime"
+        || file.name.toLowerCase().endsWith(".mov") ? "video/quicktime" : "video/mp4",
+      byteLength: file.size
+    } });
+    session = { analysisId: created.analysis.analysisId, uri: created.upload.uri };
+    holdSession(file, session);
+  }
+  view.uploadProgressBar.hidden = false;
+  await uploadVideoChunks(file, session.uri, ratio => {
+    const percent = Math.round(ratio * 100);
+    view.uploadProgressBar.value = percent;
+    view.uploadProgressText.textContent = `Uploading video securely… ${percent}%`;
+  });
+  await request("POST", `/v1/agent/video-uploads/${session.analysisId}/complete`);
+  releaseSession(file);
+  view.uploadProgressText.textContent = "Video stored. Preparing representative frames…";
+  await refresh();
 }
 
 function start() {
@@ -577,6 +679,9 @@ function start() {
     view.form.setAttribute("aria-busy", "true");
     view.form.hidden = true;
     view.uploadProgress.hidden = false;
+    view.uploadProgressBar.hidden = true;
+    view.uploadProgressBar.value = 0;
+    view.uploadProgressText.textContent = "Uploading securely. Please keep this page open until it is stored.";
     try {
       await upload(file);
       view.form.reset();

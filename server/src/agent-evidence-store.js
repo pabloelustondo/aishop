@@ -46,6 +46,13 @@ function objectPath(ownerKey, analysisId) {
   return `${PREFIX}/${ownerKey}/${analysisId}/source`;
 }
 
+function framePath(ownerKey, analysisId, index) {
+  if (!Number.isInteger(index) || index < 0 || index > 999) {
+    throw new TypeError("A bounded frame index is required.");
+  }
+  return `${objectPath(ownerKey, analysisId)}/frames/${String(index).padStart(3, "0")}.jpg`;
+}
+
 /**
  * Immutable source evidence for one uploaded analysis.
  *
@@ -62,6 +69,23 @@ export function createAgentEvidenceStore({ bucket } = {}) {
   }
 
   return Object.freeze({
+    async createVideoUploadSession({ ownerKey, analysisId, mediaType,
+      byteLength, origin }) {
+      const path = objectPath(ownerKey, analysisId);
+      if (!Number.isInteger(byteLength) || byteLength <= 0) {
+        throw new TypeError("The declared video byte length is required.");
+      }
+      try {
+        const [uri] = await bucket.file(path).createResumableUpload({
+          origin, private: true, preconditionOpts: { ifGenerationMatch: 0 },
+          metadata: { contentType: mediaType, contentLength: byteLength,
+            cacheControl: "private, no-store", metadata: { ownerKey,
+              analysisId, expectedByteLength: String(byteLength) } }
+        });
+        return Object.freeze({ path, uri });
+      } catch (error) { throw new AgentEvidenceUnavailableError(error); }
+    },
+
     async storeSource({ ownerKey, analysisId, bytes, mediaType }) {
       const path = objectPath(ownerKey, analysisId);
       if (!Buffer.isBuffer(bytes) || bytes.length === 0) {
@@ -106,6 +130,74 @@ export function createAgentEvidenceStore({ bucket } = {}) {
       return Object.freeze({
         path, bytes, mediaType: metadata?.contentType ?? null, sha256: sha256(bytes)
       });
+    },
+
+    async describeSource({ ownerKey, analysisId }) {
+      const path = objectPath(ownerKey, analysisId);
+      try {
+        const [metadata] = await bucket.file(path).getMetadata();
+        return Object.freeze({ path, mediaType: metadata?.contentType ?? null,
+          byteLength: Number(metadata?.size), generation: metadata?.generation ?? null });
+      } catch (error) { throw new AgentEvidenceUnavailableError(error); }
+    },
+
+    async downloadSource({ ownerKey, analysisId, destination }) {
+      const path = objectPath(ownerKey, analysisId);
+      try {
+        await bucket.file(path).download({ destination });
+        return Object.freeze({ path, destination });
+      } catch (error) { throw new AgentEvidenceUnavailableError(error); }
+    },
+
+    async storeFrame({ ownerKey, analysisId, index, timestampMs, bytes }) {
+      const path = framePath(ownerKey, analysisId, index);
+      if (!Buffer.isBuffer(bytes) || bytes.length === 0) {
+        throw new TypeError("Frame bytes are required.");
+      }
+      const digest = sha256(bytes);
+      try {
+        await bucket.file(path).save(bytes, {
+          resumable: false, preconditionOpts: { ifGenerationMatch: 0 },
+          metadata: { contentType: "image/jpeg", cacheControl: "private, no-store",
+            metadata: { ownerKey, analysisId, index: String(index),
+              timestampMs: String(timestampMs), sha256: digest } }
+        });
+      } catch (error) {
+        if (error?.code === 412) {
+          try {
+            const [metadata] = await bucket.file(path).getMetadata();
+            if (metadata?.metadata?.sha256 === digest) {
+              return Object.freeze({ index, timestampMs, path, sha256: digest,
+                byteLength: bytes.length });
+            }
+          } catch {}
+          throw new AgentEvidenceAlreadyExistsError(path);
+        }
+        throw new AgentEvidenceUnavailableError(error);
+      }
+      return Object.freeze({ index, timestampMs, path, sha256: digest,
+        byteLength: bytes.length });
+    },
+
+    async readFrames({ ownerKey, analysisId, frames }) {
+      if (!Array.isArray(frames) || frames.length === 0) {
+        throw new AgentEvidenceUnavailableError(new Error("Frame manifest is empty."));
+      }
+      try {
+        return Object.freeze(await Promise.all(frames.map(async frame => {
+          const path = framePath(ownerKey, analysisId, frame.index);
+          const [bytes] = await bucket.file(path).download();
+          return Object.freeze({ index: frame.index, timestampMs: frame.timestampMs,
+            bytes, mediaType: "image/jpeg", sha256: sha256(bytes) });
+        })));
+      } catch (error) {
+        if (error instanceof AgentEvidenceUnavailableError) throw error;
+        throw new AgentEvidenceUnavailableError(error);
+      }
+    },
+
+    sourceStream({ ownerKey, analysisId }) {
+      return bucket.file(objectPath(ownerKey, analysisId)).createReadStream();
     }
   });
 }

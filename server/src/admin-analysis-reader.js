@@ -12,7 +12,9 @@ import { adminError } from "./admin-api-error.js";
  * encodes exactly that pair plus the owner; it is a position, not a
  * capability, and the handler re-checks the claim on every request.
  */
-export const ANALYSIS_STATUSES = Object.freeze(["uploaded", "analyzing", "analyzed", "failed"]);
+export const ANALYSIS_STATUSES = Object.freeze([
+  "uploading", "processing", "uploaded", "analyzing", "analyzed", "failed"
+]);
 export const DEFAULT_PAGE = 25;
 export const MAX_PAGE = 50;
 const KEY = /^[a-f0-9]{64}$/;

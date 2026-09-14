@@ -31,6 +31,13 @@
         }
       },
       {
+        "source": "/v1/agent/video-uploads{,/**}",
+        "function": {
+          "functionId": "api",
+          "region": "northamerica-northeast2"
+        }
+      },
+      {
         "source": "/v1/agent/analyses{,/**}",
         "function": {
           "functionId": "api",

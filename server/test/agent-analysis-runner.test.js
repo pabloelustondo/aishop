@@ -11,7 +11,8 @@ const RUN = "56fe7ad1-7a4f-4ba8-86a6-04cfd701de2b";
 const DUE = new Date("2026-09-13T15:00:15.000Z");
 const BYTES = Buffer.from([0xff, 0xd8, 7, 7, 0xff, 0xd9]);
 
-function harness({ start, readSource, enqueue, markProviderStarted } = {}) {
+function harness({ start, readSource, readFrames, record, enqueue,
+  markProviderStarted } = {}) {
   const calls = [];
   const analysisStore = {
     markAnalyzing: async input => { calls.push(["analyzing", input]);
@@ -20,12 +21,14 @@ function harness({ start, readSource, enqueue, markProviderStarted } = {}) {
       calls.push(["provider-id", input]); return { runId: RUN,
         responseId: "resp_123", dueAt: DUE }; }),
     markFailed: async input => { calls.push(["failed", input]); },
-    read: async () => ({ analysisId: ID, status: "analyzing", runCount: 1 })
+    read: async () => record ?? ({ analysisId: ID, status: "analyzing",
+      runCount: 1, mediaType: "image/jpeg" })
   };
   const runner = createAgentAnalysisRunner({
     evidenceStore: { readSource: readSource ?? (async () => {
       calls.push(["source"]); return { bytes: BYTES, mediaType: "image/jpeg" };
-    }) },
+    }), readFrames: readFrames ?? (async input => { calls.push(["frames", input]);
+      return [{ bytes: BYTES, mediaType: "image/jpeg", timestampMs: 0 }]; }) },
     analysisStore,
     analyzer: { start: start ?? (async input => {
       calls.push(["provider", input]); return { status: "queued", responseId: "resp_123" };
@@ -45,6 +48,31 @@ test("starts, persists the provider id, then dispatches the private task", async
   assert.deepEqual(calls.find(([kind]) => kind === "enqueue")[1],
     { ownerKey: OWNER, analysisId: ID, runId: RUN, dueAt: DUE });
   assert.equal(result.status, "analyzing");
+});
+
+test("a video run reads its immutable frame manifest and starts one multi-frame response", async () => {
+  const frames = [
+    { index: 0, timestampMs: 0, sha256: "a".repeat(64) },
+    { index: 1, timestampMs: 1_000, sha256: "b".repeat(64) }
+  ];
+  const sources = frames.map(frame => ({ ...frame, bytes: BYTES,
+    mediaType: "image/jpeg" }));
+  const { calls, runner } = harness({
+    record: { analysisId: ID, status: "analyzing", runCount: 1,
+      mediaType: "video/quicktime", frames },
+    readFrames: async input => { calls.push(["frames", input]); return sources; }
+  });
+  await runner.run({ ownerKey: OWNER, analysisId: ID });
+  assert.ok(!calls.some(([kind]) => kind === "source"));
+  assert.deepEqual(calls.find(([kind]) => kind === "frames")[1].frames, frames);
+  const provider = calls.find(([kind]) => kind === "provider")[1];
+  assert.equal(provider.mode, "videoAreaScan");
+  assert.equal(calls.find(([kind]) => kind === "provider-id")[1].mode,
+    "videoAreaScan");
+  assert.deepEqual(provider.images.map(({ timestampMs, imageBase64 }) => ({
+    timestampMs, imageBase64
+  })), sources.map(source => ({ timestampMs: source.timestampMs,
+    imageBase64: BYTES.toString("base64") })));
 });
 
 test("a queue outage leaves durable due work for reconciliation", async () => {

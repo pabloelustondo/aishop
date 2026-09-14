@@ -3,7 +3,8 @@ const choices = {
   errorCode: [
     "unauthorized", "forbidden", "not_found", "method_not_allowed", "multipart_invalid",
     "file_missing", "file_count_invalid", "file_not_jpeg", "file_dimensions_invalid",
-    "file_too_large", "media_type_unsupported", "context_invalid", "context_required",
+    "file_too_large", "media_type_unsupported", "video_invalid", "video_unsupported",
+    "video_too_long", "frame_extraction_failed", "context_invalid", "context_required",
     "analysis_not_found", "analysis_state_invalid", "analysis_run_limit", "source_exists",
     "storage_unavailable", "provider_timeout", "provider_failed", "unexpected_server_error"
   ],
@@ -11,7 +12,8 @@ const choices = {
     "provider_output_limit", "provider_incomplete", "provider_refusal", "provider_http",
     "provider_timeout", "provider_network", "provider_json", "provider_schema",
     "provider_empty", "provider_unconfigured", "storage_unavailable",
-    "persistence_failed", "unexpected_failure"
+    "persistence_failed", "video_invalid", "video_unsupported", "video_too_long",
+    "frame_extraction_failed", "video_processing_failed", "unexpected_failure"
   ],
   responseStatus: ["completed", "incomplete", "failed", "cancelled", "queued", "in_progress"],
   incompleteReason: ["max_output_tokens", "content_filter", "unknown"],
@@ -24,11 +26,14 @@ const choices = {
     "server_error", "insufficient_quota"
   ],
   stage: [
-    "validation", "source_write", "record_create", "reservation", "source_read",
-    "provider", "report_validation", "settlement", "record_read"
+    "validation", "source_write", "record_create", "upload_session_create",
+    "source_verify", "record_processing", "processing_dispatch", "reservation",
+    "record_read_input", "source_read", "provider", "provider_start",
+    "provider_id_settlement", "task_dispatch", "report_validation", "settlement",
+    "record_read"
   ],
-  trigger: ["initial", "refine", "retry"],
-  mode: ["areaScan", "targetProduct"],
+  trigger: ["initial", "refine", "retry", "video-processing"],
+  mode: ["areaScan", "videoAreaScan", "targetProduct"],
   reasoning: ["none", "minimal", "low", "medium", "high", "xhigh"],
   environment: ["test", "emulator", "unknown"],
   releaseKind: ["commit", "revision", "override", "unknown"],
@@ -52,7 +57,8 @@ const ids = new Set([
 const numbers = new Set([
   "httpStatus", "providerStatus", "durationMs", "runNumber", "attempt", "timeoutMs",
   "maxOutputTokens", "retryAfterSeconds", "productRows", "facingTotal", "uncertaintyCount",
-  "memoryLimitBytes", "invocationSequence", "processUptimeMs", "imageWidth", "imageHeight", "imageByteLength"
+  "memoryLimitBytes", "invocationSequence", "processUptimeMs", "imageWidth", "imageHeight",
+  "imageByteLength", "frameCount"
 ]);
 const versions = new Set([
   "requestedModel", "returnedModel", "promptVersion", "schemaVersion",
@@ -131,9 +137,11 @@ export function sanitizeDiagnostics(input = {}) {
 const events = new Set([
   "request.started", "request.completed", "run.started", "run.completed", "run.failed",
   "stage.started", "stage.completed", "stage.failed", "provider.completed",
-  "provider.failed", "persistence.failed", "access.completed"
+  "provider.started", "provider.failed", "provider_cleanup.completed",
+  "provider_cleanup.failed", "persistence.failed", "task.dispatch_failed",
+  "run.backgrounded", "video.processed", "video.failed", "access.completed"
 ]);
-const routes = /^(?:(GET|POST) \/v1\/agent\/analyses(?:\/\{analysisId\}(?:\/(?:run|source))?)?|GET \/v1\/admin\/analyses(?:\/\{ownerKey\}\/\{analysisId\}(?:\/source)?)?)$/;
+const routes = /^(?:(GET|POST) \/v1\/agent\/(?:analyses(?:\/\{analysisId\}(?:\/(?:run|source))?)?|video-uploads(?:\/\{analysisId\}\/complete)?)|GET \/v1\/admin\/analyses(?:\/\{ownerKey\}\/\{analysisId\}(?:\/source)?)?)$/;
 
 export function createDiagnostics(sink = () => {}, defaults = {}) {
   return (event, fields = {}) => {

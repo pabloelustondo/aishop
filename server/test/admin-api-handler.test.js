@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { Readable, Writable } from "node:stream";
 import test from "node:test";
 import { createAdminAPIHandler } from "../src/admin-api-handler.js";
 import { AgentEvidenceUnavailableError } from "../src/agent-evidence-store.js";
@@ -64,6 +65,19 @@ async function send(handle, req) {
   return sent;
 }
 
+async function sendStream(handle, req) {
+  const sent = { chunks: [] };
+  const response = new Writable({ write(chunk, _encoding, callback) {
+    sent.chunks.push(Buffer.from(chunk)); callback();
+  } });
+  response.writeHead = (status, headers) => {
+    sent.status = status; sent.headers = headers; return response;
+  };
+  await handle(req, response);
+  sent.body = Buffer.concat(sent.chunks);
+  return sent;
+}
+
 test("every route checks the claim before touching any store: 401 without a token, 403 without admin", async () => {
   const { handle, calls } = harness();
   const routes = [BASE, `${BASE}/${OWNER}/${ID}`, `${BASE}/${OWNER}/${ID}/source`];
@@ -120,6 +134,25 @@ test("serves the stored image for an existing record, and never for a missing on
   const missing = await send(handle, request(`${BASE}/${OTHER}/${ID}/source`));
   assert.equal(missing.status, 404);
   assert.ok(!calls.some(([name, input]) => name === "readSource" && input.ownerKey === OTHER));
+});
+
+test("streams a stored video without buffering it into the admin function", async () => {
+  const video = { ...RECORD, fileName: "shelf.mov", mediaType: "video/quicktime" };
+  const { handle, calls } = harness({
+    reader: { read: async input => input.ownerKey === OWNER ? video : null },
+    evidenceStore: {
+      describeSource: async input => { calls.push(["describeSource", input]); return {
+        mediaType: "video/quicktime", byteLength: 10
+      }; },
+      sourceStream: input => { calls.push(["sourceStream", input]); return Readable.from("VIDEOBYTES"); }
+    }
+  });
+  const sent = await sendStream(handle, request(`${BASE}/${OWNER}/${ID}/source`));
+  assert.equal(sent.status, 200);
+  assert.equal(sent.headers["Content-Type"], "video/quicktime");
+  assert.equal(sent.headers["Content-Length"], 10);
+  assert.equal(sent.body.toString(), "VIDEOBYTES");
+  assert.ok(!calls.some(([name]) => name === "readSource"));
 });
 
 test("filters and cursors the reader refuses keep their own codes; storage faults are 503", async () => {

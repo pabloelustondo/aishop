@@ -67,6 +67,28 @@ test("background start stores the response without an output cap", async () => {
   assert.equal(PROVIDER_CONTROL_TIMEOUT_MS, 15_000);
 });
 
+test("background video start sends ordered timestamped frames under the video contract", async () => {
+  let requestBody;
+  const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "test",
+    fetchImpl: async (_url, options) => {
+      requestBody = JSON.parse(options.body);
+      return responseJson({ id: "resp_video", status: "queued", model: DEFAULT_MODEL });
+    } });
+  await analyzer.start({ mode: ANALYSIS_MODES.videoAreaScan, images: [
+    { ...image, timestampMs: 0 }, { ...image, timestampMs: 1_500 }
+  ] });
+  const content = requestBody.input[0].content;
+  assert.equal(content[0].text, ANALYSIS_CONTRACTS.videoAreaScan.instruction);
+  assert.deepEqual(content.slice(1).map(item => item.type),
+    ["input_text", "input_image", "input_text", "input_image"]);
+  assert.match(content[1].text, /frame 1 at 0 ms/);
+  assert.match(content[3].text, /frame 2 at 1500 ms/);
+  assert.equal(requestBody.text.format.name, "video_area_scan_report");
+  assert.equal(requestBody.text.format.strict, true);
+  assert.deepEqual(requestBody.text.format.schema,
+    ANALYSIS_CONTRACTS.areaScan.schema);
+});
+
 test("background retrieve preserves pending and validates completed strict output", async () => {
   const replies = [
     { id: "resp_job", status: "in_progress" },
@@ -83,6 +105,15 @@ test("background retrieve preserves pending and validates completed strict outpu
   assert.deepEqual(completed.report, areaReport);
   assert.equal(calls[0].url, "https://api.openai.com/v1/responses/resp_job");
   assert.equal(calls[0].options.method, "GET");
+});
+
+test("background retrieve validates a completed video report with the shared area schema", async () => {
+  const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "test",
+    fetchImpl: async () => responseJson({ id: "resp_video", status: "completed",
+      output_text: JSON.stringify(areaReport) }) });
+  const completed = await analyzer.retrieve({ responseId: "resp_video",
+    mode: ANALYSIS_MODES.videoAreaScan });
+  assert.deepEqual(completed.report, areaReport);
 });
 
 test("background delete uses the provider response endpoint", async () => {

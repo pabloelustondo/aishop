@@ -3,7 +3,7 @@ import test from "node:test";
 import { limitEnvironment } from "../test-support/vista-limit-values.js";
 
 Object.assign(process.env, limitEnvironment);
-const { api, collectAgentAnalysis, reconcileAgentAnalyses } =
+const { api, collectAgentAnalysis, processAgentVideo, reconcileAgentAnalyses } =
   await import("../src/firebase.js");
 
 test("exports the Firebase v2 HTTP function in Toronto with both secrets", () => {
@@ -37,6 +37,22 @@ test("exports a private bounded task queue collector in Montréal", () => {
     .maxConcurrentDispatches, 1);
   assert.equal(collectAgentAnalysis.__endpoint.taskQueueTrigger.retryConfig.maxAttempts, 5);
   assert.deepEqual(collectAgentAnalysis.__endpoint.secretEnvironmentVariables
+    .map(secret => secret.key), ["OPENAI_API_KEY"]);
+});
+
+test("exports a private bounded video processor with extraction capacity", () => {
+  assert.equal(typeof processAgentVideo, "function");
+  assert.deepEqual(processAgentVideo.__endpoint.region,
+    ["northamerica-northeast1"]);
+  assert.equal(processAgentVideo.__endpoint.platform, "gcfv2");
+  assert.equal(processAgentVideo.__endpoint.timeoutSeconds, 540);
+  assert.equal(processAgentVideo.__endpoint.availableMemoryMb, 2048);
+  assert.deepEqual(processAgentVideo.__endpoint.taskQueueTrigger.invoker,
+    ["35745728095-compute@developer.gserviceaccount.com"]);
+  assert.equal(processAgentVideo.__endpoint.taskQueueTrigger.rateLimits
+    .maxConcurrentDispatches, 1);
+  assert.equal(processAgentVideo.__endpoint.taskQueueTrigger.retryConfig.maxAttempts, 3);
+  assert.deepEqual(processAgentVideo.__endpoint.secretEnvironmentVariables
     .map(secret => secret.key), ["OPENAI_API_KEY"]);
 });
 

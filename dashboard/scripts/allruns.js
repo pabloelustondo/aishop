@@ -10,7 +10,8 @@
  */
 
 const BASE = "/v1/admin/analyses";
-const STATUSES = ["uploaded", "analyzing", "analyzed", "failed"];
+const STATUSES = ["uploading", "processing", "uploaded", "analyzing", "analyzed", "failed"];
+const ACTIVE_STATES = new Set(["uploading", "processing", "analyzing"]);
 export const OBSERVATION_INTERVAL_MS = 15_000;
 export const OBSERVATION_CEILING_MS = 10 * 60_000;
 
@@ -18,7 +19,7 @@ export function shouldPollAnalyses(analyses, { visible = true,
   elapsedMs = 0 } = {}) {
   return visible && elapsedMs < OBSERVATION_CEILING_MS
     && Array.isArray(analyses)
-    && analyses.some(analysis => analysis?.status === "analyzing");
+    && analyses.some(analysis => ACTIVE_STATES.has(analysis?.status));
 }
 
 const element = (id) => (typeof document === "undefined" ? null : document.getElementById(id));
@@ -95,7 +96,7 @@ function scheduleObservation(analyses) {
   observationTimer = null;
   const visible = document.visibilityState !== "hidden";
   const now = Date.now();
-  if (analyses.some(analysis => analysis?.status === "analyzing")) {
+  if (analyses.some(analysis => ACTIVE_STATES.has(analysis?.status))) {
     observationStartedAt ??= now;
   } else {
     observationStartedAt = null;
@@ -203,19 +204,29 @@ function attempts(analysis) {
 function evidence(analysis) {
   const box = document.createElement("div");
   box.className = "evidence";
-  const image = document.createElement("img");
-  image.alt = analysis.fileName ? `Uploaded image ${analysis.fileName}` : "Uploaded image";
-  const note = text("p", "Loading image…", "imgmeta");
-  box.append(image, note);
+  const isVideo = analysis.mediaType === "video/mp4"
+    || analysis.mediaType === "video/quicktime";
+  const media = document.createElement(isVideo ? "video" : "img");
+  if (isVideo) { media.controls = true; media.preload = "metadata"; }
+  else media.alt = analysis.fileName
+    ? `Uploaded image ${analysis.fileName}` : "Uploaded image";
+  const note = text("p", `Loading ${isVideo ? "video" : "image"}…`, "imgmeta");
+  box.append(media, note);
   request(`${BASE}/${analysis.ownerKey}/${analysis.analysisId}/source`).then((blob) => {
     const url = URL.createObjectURL(blob);
     objectURLs.push(url);
-    image.src = url;
-    note.textContent = `${analysis.width ?? "?"} × ${analysis.height ?? "?"} px · ${analysis.byteLength ?? "?"} bytes`;
+    media.src = url;
+    note.textContent = [
+      `${analysis.width ?? "?"} × ${analysis.height ?? "?"} px`,
+      `${analysis.byteLength ?? "?"} bytes`,
+      isVideo && analysis.durationMs ? `${(analysis.durationMs / 1000).toFixed(1)} seconds` : null,
+      isVideo && analysis.frames?.length ? `${analysis.frames.length} sampled frames` : null
+    ].filter(Boolean).join(" · ");
   }).catch((error) => {
     // Explicit, never a broken icon: the record exists, its bytes do not answer.
-    image.remove();
-    note.textContent = error.status === 404 ? "Image not stored." : "Image unavailable right now.";
+    media.remove();
+    const kind = isVideo ? "Video" : "Image";
+    note.textContent = error.status === 404 ? `${kind} not stored.` : `${kind} unavailable right now.`;
   });
   if (analysis.report?.summary) box.appendChild(text("p", analysis.report.summary, "summary"));
   return box;
@@ -245,7 +256,13 @@ function row(analysis) {
   const rows = document.createElement("div");
   rows.className = "rows";
   if (analysis.report) rows.appendChild(facings(analysis.report));
-  else rows.appendChild(text("p", analysis.failureReason ? `Failed: ${analysis.failureReason}` : "No report yet.", "meta"));
+  else rows.appendChild(text("p", analysis.failureReason
+    ? `Failed: ${analysis.failureReason}`
+    : ACTIVE_STATES.has(analysis.status)
+      ? analysis.status === "uploading" ? "Video upload in progress."
+        : analysis.status === "processing" ? "Preparing representative video frames."
+          : "Analysis in progress."
+      : "No report yet.", "meta"));
   rows.appendChild(attempts(analysis));
   const keys = text("p", `owner ${analysis.ownerKey?.slice(0, 12)}… · analysis ${analysis.analysisId}`, "meta keys");
   rows.appendChild(keys);

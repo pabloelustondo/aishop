@@ -91,6 +91,43 @@ test("reads stored bytes back with their recorded media type", async () => {
   assert.equal(source.sha256, createHash("sha256").update(JPEG).digest("hex"));
 });
 
+test("creates one private origin-bound resumable video session", async () => {
+  const capture = {};
+  const bucket = { file: path => ({ createResumableUpload: async options => {
+    capture.path = path; capture.options = options;
+    return ["https://storage.invalid/private-session"];
+  } }) };
+  const store = createAgentEvidenceStore({ bucket });
+  const session = await store.createVideoUploadSession({ ownerKey: OWNER,
+    analysisId: ANALYSIS, mediaType: "video/quicktime", byteLength: 5_000,
+    origin: "https://aishop-99d36.web.app" });
+  assert.equal(session.uri, "https://storage.invalid/private-session");
+  assert.equal(capture.options.origin, "https://aishop-99d36.web.app");
+  assert.equal(capture.options.private, true);
+  assert.equal(capture.options.preconditionOpts.ifGenerationMatch, 0);
+  assert.equal(capture.options.metadata.contentType, "video/quicktime");
+  assert.equal(capture.options.metadata.metadata.expectedByteLength, "5000");
+});
+
+test("stores immutable JPEG frames and reads only the recorded manifest", async () => {
+  const files = new Map();
+  const bucket = { file: path => ({
+    save: async (bytes, options) => { files.set(path, { bytes, options }); },
+    download: async () => [files.get(path).bytes]
+  }) };
+  const store = createAgentEvidenceStore({ bucket });
+  const stored = await store.storeFrame({ ownerKey: OWNER,
+    analysisId: ANALYSIS, index: 2, timestampMs: 1_500, bytes: JPEG });
+  assert.match(stored.path, /source\/frames\/002\.jpg$/);
+  assert.equal(files.get(stored.path).options.preconditionOpts.ifGenerationMatch, 0);
+  assert.equal(files.get(stored.path).options.metadata.contentType, "image/jpeg");
+  const [frame] = await store.readFrames({ ownerKey: OWNER,
+    analysisId: ANALYSIS, frames: [stored] });
+  assert.deepEqual(frame.bytes, JPEG);
+  assert.equal(frame.timestampMs, 1_500);
+  assert.equal(frame.sha256, stored.sha256);
+});
+
 test("refuses identities that could escape the owner-scoped prefix", async () => {
   const store = createAgentEvidenceStore({ bucket: savingBucket({}) });
   const attempts = [

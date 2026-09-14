@@ -101,12 +101,27 @@ function harness(overrides = {}) {
       calls.push(["storeSource", input]);
       return { path: "p", sha256: "a".repeat(64), byteLength: input.bytes.length };
     },
+    createVideoUploadSession: async (input) => {
+      calls.push(["createVideoUploadSession", input]);
+      return { path: "video", uri: "https://storage.example/upload-session" };
+    },
+    describeSource: async (input) => {
+      calls.push(["describeSource", input]);
+      return { path: "video", mediaType: "video/quicktime", byteLength: 1024 };
+    },
     ...overrides.evidenceStore
   };
   const analysisStore = {
     create: async (input) => { calls.push(["create", input]); return input; },
     read: async (input) => { calls.push(["read", input]); return RECORD; },
     list: async (input) => { calls.push(["list", input]); return [RECORD]; },
+    createVideoUpload: async (input) => { calls.push(["createVideoUpload", input]); return input; },
+    readVideoUpload: async (input) => { calls.push(["readVideoUpload", input]); return {
+      analysisId: ID, status: "uploading", fileName: "shelf.mov",
+      mediaType: "video/quicktime", expectedByteLength: 1024
+    }; },
+    markVideoProcessing: async (input) => { calls.push(["markVideoProcessing", input]); },
+    markVideoFailed: async (input) => { calls.push(["markVideoFailed", input]); },
     ...overrides.analysisStore
   };
   const runner = {
@@ -115,6 +130,9 @@ function harness(overrides = {}) {
   };
   const handle = createAgentAPIHandler({
     evidenceStore, analysisStore, runner,
+    videoTaskEnqueuer: overrides.videoTaskEnqueuer ?? { enqueue: async input => {
+      calls.push(["enqueueVideo", input]); return { enqueued: true };
+    } },
     // Every fixture identity is a real signed-in account. Only `token-c`
     // lacks the authorization, which is the one difference the gate reads.
     verifyIdToken: overrides.verifyIdToken
@@ -127,6 +145,15 @@ function harness(overrides = {}) {
   });
   return { handle, calls };
 }
+
+const videoCreate = (overrides = {}) => {
+  const request = jsonRequest("POST", "/v1/agent/video-uploads", {
+    fileName: "shelf.mov", mediaType: "video/quicktime", byteLength: 1024,
+    ...overrides
+  });
+  request.headers.origin = "https://aishop-99d36.web.app";
+  return request;
+};
 
 async function send(handle, request) {
   const response = responseDouble();
@@ -163,7 +190,11 @@ test("a signed-in account without the agent authorization is forbidden on every 
     jsonRequest("GET", BASE, undefined, "token-c"),
     jsonRequest("GET", `${BASE}/${ID}`, undefined, "token-c"),
     jsonRequest("POST", `${BASE}/${ID}/run`, { context: "again" }, "token-c"),
-    jsonRequest("GET", `${BASE}/${ID}/source`, undefined, "token-c")
+    jsonRequest("GET", `${BASE}/${ID}/source`, undefined, "token-c"),
+    { ...videoCreate(), headers: { ...videoCreate().headers,
+      authorization: "Bearer token-c" } },
+    jsonRequest("POST", `/v1/agent/video-uploads/${ID}/complete`,
+      undefined, "token-c")
   ];
   for (const request of attempts) {
     const sent = await send(handle, request);
@@ -208,6 +239,62 @@ test("stores the bytes before the record and answers 201 uploaded", async () => 
   assert.equal(created.ownerKey, OWNER);
   assert.equal(created.fileName, "shelf.jpg");
   assert.ok(!Object.hasOwn(created, "bytes"), "bytes must not reach the record store");
+});
+
+test("reserves a private video record before returning one resumable session", async () => {
+  const { handle, calls } = harness();
+  const sent = await send(handle, videoCreate());
+
+  assert.equal(sent.status, 201);
+  assert.equal(sent.body.analysis.analysisId, ID);
+  assert.equal(sent.body.analysis.status, "uploading");
+  assert.equal(sent.body.upload.uri, "https://storage.example/upload-session");
+  assert.deepEqual(calls.map(([name]) => name),
+    ["createVideoUpload", "createVideoUploadSession"]);
+  assert.equal(calls[0][1].ownerKey, OWNER);
+  assert.equal(calls[1][1].origin, "https://aishop-99d36.web.app");
+});
+
+test("refuses unsupported or oversized video declarations before storage", async () => {
+  for (const request of [videoCreate({ mediaType: "video/webm" }),
+    videoCreate({ byteLength: 251 * 1024 * 1024 })]) {
+    const { handle, calls } = harness();
+    const sent = await send(handle, request);
+    assert.ok([413, 415].includes(sent.status));
+    assert.equal(calls.length, 0);
+  }
+});
+
+test("refuses a video session without a browser origin", async () => {
+  const { handle, calls } = harness();
+  const request = videoCreate();
+  delete request.headers.origin;
+  const sent = await send(handle, request);
+  assert.equal(sent.status, 400);
+  assert.equal(sent.body.error.code, "video_invalid");
+  assert.equal(calls.length, 0);
+});
+
+test("verifies completed video bytes, marks processing and dispatches once", async () => {
+  const { handle, calls } = harness();
+  const sent = await send(handle, jsonRequest("POST",
+    `/v1/agent/video-uploads/${ID}/complete`));
+
+  assert.equal(sent.status, 200);
+  assert.deepEqual(calls.map(([name]) => name), ["readVideoUpload",
+    "describeSource", "markVideoProcessing", "enqueueVideo", "read"]);
+  assert.deepEqual(calls[3][1], { ownerKey: OWNER, analysisId: ID });
+});
+
+test("video completion refuses an object whose bytes differ from its reservation", async () => {
+  const { handle, calls } = harness({ evidenceStore: { describeSource: async () => ({
+    path: "video", mediaType: "video/quicktime", byteLength: 999
+  }) } });
+  const sent = await send(handle, jsonRequest("POST",
+    `/v1/agent/video-uploads/${ID}/complete`));
+  assert.equal(sent.status, 400);
+  assert.equal(sent.body.error.code, "video_invalid");
+  assert.ok(!calls.some(([name]) => name === "enqueueVideo"));
 });
 
 test("the single call stores, creates, runs, and answers 201 with the settled record", async () => {
