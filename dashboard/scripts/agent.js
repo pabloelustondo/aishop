@@ -656,7 +656,13 @@ export class VideoUploadTransportError extends Error {
     this.status = status;
     this.storageCode = storageCode;
     this.expired = status === 404 || status === 410;
+    this.restartable = Number.isInteger(status) && status >= 400 && status < 500;
   }
+}
+
+export function shouldRenewVideoUpload(error, alreadyRenewed = false) {
+  return error instanceof VideoUploadTransportError
+    && error.restartable && !alreadyRenewed;
 }
 
 async function storageError(response, message) {
@@ -689,8 +695,12 @@ async function inspectVideoUpload(file, uri, fetchImpl) {
 }
 
 export async function uploadVideoChunks(file, uri, onProgress = () => {},
-  fetchImpl = fetch) {
-  let offset = await inspectVideoUpload(file, uri, fetchImpl);
+  fetchImpl = fetch, knownOffset = null) {
+  let offset = Number.isInteger(knownOffset)
+    ? knownOffset : await inspectVideoUpload(file, uri, fetchImpl);
+  if (offset < 0 || offset > file.size) {
+    throw new VideoUploadTransportError("The upload position is invalid.");
+  }
   let recoveries = 0;
   onProgress(offset / file.size);
   while (offset < file.size) {
@@ -737,6 +747,7 @@ export async function uploadVideoChunks(file, uri, onProgress = () => {},
 
 async function uploadVideo(file) {
   let session = heldSession(file);
+  let knownOffset = null;
   if (!session?.uri || !session?.analysisId) {
     const created = await request("POST", "/v1/agent/video-uploads", { json: {
       fileName: file.name, mediaType: file.type === "video/quicktime"
@@ -745,6 +756,7 @@ async function uploadVideo(file) {
     } });
     session = { analysisId: created.analysis.analysisId, uri: created.upload.uri };
     holdSession(file, session);
+    knownOffset = 0;
   }
   view.uploadProgressBar.hidden = false;
   let renewed = false;
@@ -754,17 +766,18 @@ async function uploadVideo(file) {
         const percent = Math.round(ratio * 100);
         view.uploadProgressBar.value = percent;
         view.uploadProgressText.textContent = `Uploading video securely… ${percent}%`;
-      });
+      }, fetch, knownOffset);
       break;
     } catch (error) {
-      if (!(error instanceof VideoUploadTransportError) || !error.expired || renewed) throw error;
+      if (!shouldRenewVideoUpload(error, renewed)) throw error;
       const replacement = await request("POST",
         `/v1/agent/video-uploads/${session.analysisId}/session`);
       session = { analysisId: session.analysisId, uri: replacement.upload.uri };
       holdSession(file, session);
       renewed = true;
+      knownOffset = 0;
       view.uploadProgressBar.value = 0;
-      view.uploadProgressText.textContent = "The secure upload session expired. Restarting transfer…";
+      view.uploadProgressText.textContent = "The secure upload session was rejected. Restarting transfer…";
     }
   }
   await request("POST", `/v1/agent/video-uploads/${session.analysisId}/complete`);

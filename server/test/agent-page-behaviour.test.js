@@ -14,7 +14,8 @@ import {
   OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS, activityLabel,
   canRetryAnalysis, retryContextOf,
   refinementNote, shouldPollAnalyses, signInErrorMessage, shouldFallBackToRedirect,
-  uploadControlState, uploadVideoChunks, VIDEO_CHUNK_BYTES, VideoUploadTransportError
+  shouldRenewVideoUpload, uploadControlState, uploadVideoChunks,
+  VIDEO_CHUNK_BYTES, VideoUploadTransportError
 } from "../../dashboard/scripts/agent.js";
 
 test("upload presentation names one file and every supported format", () => {
@@ -126,6 +127,25 @@ test("expired video upload sessions retain a safe actionable status", async () =
       && error.storageCode === "UploadSessionExpired"
       && !error.message.includes("private")
   );
+});
+
+test("a rejected resumable session can be replaced once", () => {
+  const rejected = new VideoUploadTransportError("rejected", { status: 400 });
+  assert.equal(shouldRenewVideoUpload(rejected), true);
+  assert.equal(shouldRenewVideoUpload(rejected, true), false);
+  assert.equal(shouldRenewVideoUpload(new Error("network")), false);
+});
+
+test("a new resumable session starts without an unnecessary status probe", async () => {
+  const calls = [];
+  const file = { size: 1024, slice: (start, end) => ({ start, end }) };
+  await uploadVideoChunks(file, "https://storage.invalid/session", () => {},
+    async (_uri, options) => {
+      calls.push(options);
+      return { status: 200, headers: new Headers() };
+    }, 0);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].headers["Content-Range"], "bytes 0-1023/1024");
 });
 
 test("retrying a failed refinement resends that run's own note", () => {
