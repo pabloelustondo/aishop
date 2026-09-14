@@ -13,7 +13,8 @@ import test from "node:test";
 import {
   OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS, activityLabel,
   canRetryAnalysis, retryContextOf,
-  refinementNote, shouldPollAnalyses, signInErrorMessage, shouldFallBackToRedirect,
+  refinementNote, safeStorageCode, shouldPollAnalyses, signInErrorMessage,
+  shouldFallBackToRedirect,
   shouldRenewVideoUpload, uploadControlState, uploadVideoChunks,
   VIDEO_CHUNK_BYTES, VideoUploadTransportError
 } from "../../dashboard/scripts/agent.js";
@@ -134,6 +135,16 @@ test("a rejected resumable session can be replaced once", () => {
   assert.equal(shouldRenewVideoUpload(rejected), true);
   assert.equal(shouldRenewVideoUpload(rejected, true), false);
   assert.equal(shouldRenewVideoUpload(new Error("network")), false);
+});
+
+test("plain Storage failures become safe actionable reason codes", () => {
+  assert.equal(safeStorageCode(
+    "Invalid request. The Content-Range header is invalid for this upload."),
+  "content_range_invalid");
+  assert.equal(safeStorageCode(
+    "Invalid request. There were fewer bytes in the request body than expected."),
+  "content_length_mismatch");
+  assert.equal(safeStorageCode("private unexplained failure"), null);
 });
 
 test("a new resumable session starts without an unnecessary status probe", async () => {

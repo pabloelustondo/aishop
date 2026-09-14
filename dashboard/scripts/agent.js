@@ -636,15 +636,26 @@ function nextOffset(response) {
   return match ? Number(match[1]) + 1 : range ? null : 0;
 }
 
-function safeStorageCode(text) {
+export function safeStorageCode(text) {
   if (typeof text !== "string" || text.length === 0) return null;
   let candidate = /<Code>([^<]+)<\/Code>/.exec(text)?.[1] ?? null;
   if (!candidate) {
     try { candidate = JSON.parse(text)?.error?.status ?? JSON.parse(text)?.error?.code ?? null; }
     catch {}
   }
-  return typeof candidate === "string" && /^[A-Za-z0-9_.-]{1,80}$/.test(candidate)
-    ? candidate : null;
+  if (typeof candidate === "string" && /^[A-Za-z0-9_.-]{1,80}$/.test(candidate)) {
+    return candidate;
+  }
+  const reason = text.toLowerCase();
+  if (reason.includes("content-range")) return "content_range_invalid";
+  if (reason.includes("content-length") || reason.includes("request body")
+    || reason.includes("bytes in the request")) return "content_length_mismatch";
+  if (reason.includes("precondition")) return "precondition_failed";
+  if (reason.includes("upload session") || reason.includes("upload id")) {
+    return "upload_session_invalid";
+  }
+  if (reason.includes("invalid request")) return "invalid_upload_request";
+  return null;
 }
 
 export class VideoUploadTransportError extends Error {
@@ -769,9 +780,20 @@ async function uploadVideo(file) {
       }, fetch, knownOffset);
       break;
     } catch (error) {
-      if (!shouldRenewVideoUpload(error, renewed)) throw error;
-      const replacement = await request("POST",
-        `/v1/agent/video-uploads/${session.analysisId}/session`);
+      if (!shouldRenewVideoUpload(error, renewed)) {
+        if (error instanceof VideoUploadTransportError && error.restartable) {
+          releaseSession(file);
+        }
+        throw error;
+      }
+      let replacement;
+      try {
+        replacement = await request("POST",
+          `/v1/agent/video-uploads/${session.analysisId}/session`);
+      } catch (renewalError) {
+        releaseSession(file);
+        throw renewalError;
+      }
       session = { analysisId: session.analysisId, uri: replacement.upload.uri };
       holdSession(file, session);
       renewed = true;
