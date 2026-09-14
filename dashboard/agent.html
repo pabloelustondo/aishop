@@ -60,7 +60,7 @@
         MP4 video, or iPhone QuickTime/MOV video.</p>
     </div>
     <div class="upload-controls">
-      <input id="file" type="file" accept="image/jpeg,video/mp4,video/quicktime,.mov" required>
+      <input id="file" type="file" accept="image/jpeg,video/mp4,video/quicktime,.mov,.mp4" required>
       <button id="submit" type="submit" class="primary">Upload and analyse</button>
     </div>
   </form>
@@ -73,6 +73,7 @@
         <h2>Analysing this shelf…</h2>
         <p id="upload-progress-text">Uploading securely. Please keep this page open until it is stored.</p>
         <progress id="upload-progress-bar" max="100" value="0" hidden></progress>
+        <button id="cancel-transfer" type="button" hidden>Cancel upload</button>
       </div>
     </section>
     <div id="analyses"></div>

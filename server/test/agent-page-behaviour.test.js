@@ -12,7 +12,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 import {
   OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS, activityLabel,
-  canRetryAnalysis, retryContextOf,
+  canRetryAnalysis, retryContextOf, recoveryActions, prepareVideoRecovery,
   refinementNote, safeStorageCode, shouldPollAnalyses, signInErrorMessage,
   shouldFallBackToRedirect,
   shouldRenewVideoUpload, uploadControlState, uploadVideoChunks,
@@ -35,7 +35,7 @@ test("My runs names durable analysis activity instead of looking idle", () => {
   assert.equal(activityLabel([{ status: "analyzing" }]), "Analysing 1 image");
   assert.equal(activityLabel([{ status: "analyzing" }, { status: "analyzing" }]),
     "Analysing 2 images");
-  assert.equal(activityLabel([{ status: "uploading" }]), "Uploading 1 video");
+  assert.equal(activityLabel([{ status: "uploading" }]), "1 upload needs attention");
   assert.equal(activityLabel([{ status: "processing" }]), "Preparing 1 video");
 });
 
@@ -130,11 +130,39 @@ test("expired video upload sessions retain a safe actionable status", async () =
   );
 });
 
-test("a rejected resumable session can be replaced once", () => {
-  const rejected = new VideoUploadTransportError("rejected", { status: 400 });
+test("only an expired resumable session can be replaced once", () => {
+  const rejected = new VideoUploadTransportError("expired", { status: 410 });
   assert.equal(shouldRenewVideoUpload(rejected), true);
   assert.equal(shouldRenewVideoUpload(rejected, true), false);
   assert.equal(shouldRenewVideoUpload(new Error("network")), false);
+  for (const status of [400, 401, 403, 412]) {
+    assert.equal(shouldRenewVideoUpload(new VideoUploadTransportError("rejected", { status })), false);
+  }
+});
+
+test("recovery controls follow durable status and available video evidence", () => {
+  assert.deepEqual(recoveryActions({ status: "uploading" }), ["resume", "cancel", "fresh"]);
+  assert.deepEqual(recoveryActions({ status: "analyzing" }), ["cancel"]);
+  assert.deepEqual(recoveryActions({ status: "cancelled", cancelledFrom: "uploading" }), ["fresh"]);
+  assert.deepEqual(recoveryActions({ status: "cancelled", mediaType: "video/mp4", cancelledFrom: "processing" }), ["restart"]);
+  for (const status of ["analyzed", "failed"]) assert.deepEqual(recoveryActions({ status }), []);
+  assert.equal(shouldPollAnalyses([{ status: "cancelled" }]), false);
+});
+
+test("a saved session requires an explicit choice and checks current server state", async () => {
+  const file = { name: "shelf.mp4", size: 100 };
+  const saved = { analysisId: "a", uri: "https://example.test/session" };
+  const analysis = { analysisId: "a", fileName: file.name, status: "uploading" };
+  const calls = [];
+  const api = async (...args) => { calls.push(args); return { analysis }; };
+  assert.deepEqual(await prepareVideoRecovery(file, null, saved, api), { needsChoice: analysis });
+  assert.deepEqual(await prepareVideoRecovery(file, { mode: "resume", analysis }, saved, api), { session: saved });
+  assert.ok(calls.every(([method]) => method === "GET"));
+  await assert.rejects(prepareVideoRecovery(file, { mode: "resume", analysis }, null, api), /Start fresh/);
+  await assert.rejects(prepareVideoRecovery({ ...file, name: "other.mp4" }, { mode: "resume", analysis }, saved, api), /original video/);
+  const terminal = async () => ({ analysis: { ...analysis, status: "cancelled" } });
+  assert.deepEqual(await prepareVideoRecovery(file, null, saved, terminal), { session: null });
+  await assert.rejects(prepareVideoRecovery(file, { mode: "resume", analysis }, saved, terminal), /no longer resumable/);
 });
 
 test("plain Storage failures become safe actionable reason codes", () => {
