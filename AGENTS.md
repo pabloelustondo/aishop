@@ -30,9 +30,10 @@ These rules are mandatory throughout this repository.
 
 ## Execution
 
+- Start every sprint by creating and switching to its dedicated sprint branch from the approved integration branch, before drafting sprint artifacts.
 - No sprint coding may start until Pablo has committed every governed Markdown file the sprint depends on.
 - Every sprint requires an approved Sprint Plan followed by a separate approved Sprint Plan Tasks document before coding begins.
-- After both commits, create and switch to a dedicated sprint branch before coding; Pablo merges it into `main` through the normal reviewed workflow.
+- Keep the planning approvals and all implementation commits on that sprint branch; Pablo merges it through the normal reviewed workflow.
 - Each implementation task names exactly one approved component and modifies only that component; split multi-component work into ordered tasks.
 - Sprint authorization covers its approved tasks, branch creation, routine changes, builds, tests, and simulator checks; proceed autonomously without intermediate permission.
 - Do not ask between routine, reversible, in-scope steps or before advancing to the next approved task.

@@ -17,7 +17,7 @@ The twelve lifecycle areas and their navigation are maintained in the [SDLC2 Doc
 - Documentation may be drafted and revised before human review.
 - Pablo's commit of the exact reviewed contents approves changed documentation. See [Document Review](document-review.md).
 - No sprint coding may start until every governed Markdown file the sprint depends on is committed by Pablo.
-- After the approved Sprint Plan Tasks define the steps, create and switch to a dedicated sprint branch before coding.
+- Before drafting the Sprint Plan, create and switch to a dedicated sprint branch from the approved integration branch.
 - Review the completed sprint branch and merge it into `main` through the normal Git workflow.
 - Agents never create a Git commit. Pablo commits, and that act is the approval.
 - Every implementation task names one approved component and modifies only that component; split cross-component work into ordered tasks with stable interfaces.
@@ -28,9 +28,10 @@ The twelve lifecycle areas and their navigation are maintained in the [SDLC2 Doc
 
 ## Sprint artifacts
 
-1. The **Sprint Plan** defines the goal, purpose, stories, scope, acceptance, and exclusions.
-2. Only after that plan is approved, create **Sprint Plan Tasks** with ordered component-scoped implementation work.
-3. Coding begins only after Pablo has committed both artifacts.
+1. Create and switch to the dedicated sprint branch before drafting sprint artifacts.
+2. The **Sprint Plan** defines the goal, purpose, stories, scope, acceptance, and exclusions.
+3. Only after that plan is approved, create **Sprint Plan Tasks** with ordered component-scoped implementation work.
+4. Coding begins only after Pablo has committed both artifacts on the sprint branch.
 
 ## Completion
 
