@@ -1,7 +1,6 @@
 # Sprint 013 — Server-Owned Background Analysis
 
-Date: 2026-09-13. Status: PROPOSED revision; approval requires Pablo's commit.
-The previously approved browser-collection scope is rejected and authorizes no further code.
+Date: 2026-09-13. Status: CORRECTION PROPOSED; approval requires Pablo's commit.
 
 ## Goal
 
@@ -18,6 +17,8 @@ server processes—not any browser—own progression and terminal state.
 - Reconcile overdue `analyzing` records on a server schedule to repair dispatch gaps.
 - Delete provider responses best-effort only after durable terminal settlement.
 - Make My Runs and All Runs read durable state only; page refresh cannot advance work.
+- Disable upload immediately, then show a prominent waiting state until settlement.
+- Derive post-upload status from server records so refresh reconstructs the same experience.
 - Preserve strict schemas, diagnostics, redaction, authorization and TEST target.
 
 ## Acceptance
@@ -26,6 +27,8 @@ server processes—not any browser—own progression and terminal state.
 - Repeated, concurrent and stale task deliveries create no duplicate run or settlement.
 - A missed enqueue or crashed task is recovered by the reconciler without user action.
 - Pages show state loaded from owner/admin APIs and never call a provider-collection route.
+- Upload feedback appears on click; accepted work never looks idle while still analyzing.
+- Completion replaces waiting feedback automatically and removes stale start messaging.
 - Provider IDs and task internals never serialize publicly.
 - Emulator E2E proves start, intermediate, recovery, terminal, cleanup and authorization.
 - TEST completes Ignacio's image and correlates Firestore, task and provider diagnostics.
@@ -33,6 +36,7 @@ server processes—not any browser—own progression and terminal state.
 ## Boundaries and authority
 
 No Python, Cloud Run, Pub/Sub, model/prompt/schema/auth, VISTA or iOS change.
+Interrupted file transfer remains non-resumable; durable behavior begins after acceptance.
 An uncertain provider start remains a diagnosed orphan and is never auto-retried.
 Cloud Tasks/Scheduler creation, IAM, billing and TEST deployment require separate approval.
 
