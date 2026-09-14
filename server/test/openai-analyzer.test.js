@@ -127,6 +127,20 @@ test("background delete uses the provider response endpoint", async () => {
   assert.equal(request.options.method, "DELETE");
 });
 
+test("background cancel uses the provider cancellation endpoint", async () => {
+  let request;
+  const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "test",
+    fetchImpl: async (url, options) => {
+      request = { url, options };
+      return responseJson({ id: "resp_cancel", status: "cancelled" });
+    } });
+  assert.deepEqual(await analyzer.cancel({ responseId: "resp_cancel" }),
+    { cancelled: true, status: "cancelled" });
+  assert.equal(request.url,
+    "https://api.openai.com/v1/responses/resp_cancel/cancel");
+  assert.equal(request.options.method, "POST");
+});
+
 test("each background control call enforces its transport deadline", async () => {
   const fetchImpl = (_url, { signal }) => new Promise((_resolve, reject) => signal.addEventListener("abort", () => {
     const error = new Error("aborted"); error.name = "AbortError"; reject(error);
@@ -134,6 +148,7 @@ test("each background control call enforces its transport deadline", async () =>
   const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "test", fetchImpl, timeoutMs: 5 });
   await assert.rejects(analyzer.start(image), error => error instanceof ProviderError && error.kind === "timeout");
   await assert.rejects(analyzer.retrieve({ responseId: "resp_job" }), error => error instanceof ProviderError && error.kind === "timeout");
+  await assert.rejects(analyzer.cancel({ responseId: "resp_job" }), error => error instanceof ProviderError && error.kind === "timeout");
   await assert.rejects(analyzer.delete({ responseId: "resp_job" }), error => error instanceof ProviderError && error.kind === "timeout");
 });
 

@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">A correct answer needs a correct reference</title>
+  <desc id="desc">Original shelf evidence, a human-verified reference, and the AI result feed an object-level comparison governed by a counting and identity contract.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#52657A"/></marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #172D43; }
+      .heading { font-size: 24px; font-weight: 700; }
+      .body { font-size: 19px; fill: #52657A; }
+      .inverse { fill: #FFFFFF; }
+      .inverseBody { fill: #D7E4EA; }
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <rect x="72" y="70" width="64" height="7" fill="#087E8B"/>
+  <text x="72" y="136" font-size="48" font-weight="700">A Correct Answer Needs a Correct Reference</text>
+  <text x="72" y="181" font-size="24" fill="#52657A">Accuracy starts with an agreed counting and identity contract</text>
+
+  <path d="M360 382 H470 M720 382 H830 M1080 382 H1190" stroke="#52657A" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <rect x="80" y="275" width="280" height="220" rx="18" fill="#EAF3F8" stroke="#1F6685" stroke-width="3"/>
+  <path d="M128 430 H312 M146 422 V340 H184 V422 M204 422 V320 H244 V422 M262 422 V358 H296 V422" fill="none" stroke="#1F6685" stroke-width="4"/>
+  <text x="104" y="530" class="heading">1. Original evidence</text>
+  <text x="104" y="563" class="body">Unchanged shelf image</text>
+
+  <rect x="470" y="275" width="250" height="220" rx="18" fill="#E7F3F1" stroke="#087E8B" stroke-width="3"/>
+  <path d="M520 321 H670 V449 H520 Z M545 354 H645 M545 383 H645 M545 412 H620" fill="none" stroke="#087E8B" stroke-width="4"/>
+  <path d="M625 423 L642 440 L678 397" fill="none" stroke="#087E8B" stroke-width="5"/>
+  <text x="494" y="530" class="heading">2. Verified reference</text>
+  <text x="494" y="563" class="body">Human-reviewed inventory</text>
+
+  <rect x="830" y="275" width="250" height="220" rx="18" fill="#FFF3E2" stroke="#C67B22" stroke-width="3"/>
+  <circle cx="955" cy="366" r="55" fill="none" stroke="#C67B22" stroke-width="4"/>
+  <path d="M921 366 H989 M955 332 V400" stroke="#C67B22" stroke-width="4"/>
+  <text x="854" y="530" class="heading">3. AI result</text>
+  <text x="854" y="563" class="body">Identities and quantities</text>
+
+  <rect x="1190" y="275" width="330" height="220" rx="18" fill="#F0ECF9" stroke="#7651A7" stroke-width="3"/>
+  <path d="M1250 337 H1350 M1250 382 H1350 M1250 427 H1350" stroke="#7651A7" stroke-width="4"/>
+  <path d="M1382 334 L1398 350 L1428 317 M1382 379 L1398 395 L1428 362 M1382 424 L1398 440 L1428 407" fill="none" stroke="#7651A7" stroke-width="5"/>
+  <text x="1214" y="530" class="heading">4. Object comparison</text>
+  <text x="1214" y="563" class="body">Matches, errors, and uncertainty</text>
+
+  <rect x="80" y="625" width="1440" height="122" rx="18" fill="#172D43"/>
+  <text x="112" y="671" font-size="25" font-weight="700" class="inverse">Counting and identity contract</text>
+  <text x="112" y="715" font-size="19" class="inverseBody">Facings or visible units</text>
+  <text x="420" y="715" font-size="19" class="inverseBody">Required identity depth</text>
+  <text x="765" y="715" font-size="19" class="inverseBody">Partial and unknown handling</text>
+  <text x="1168" y="715" font-size="19" class="inverseBody">Source-object links</text>
+
+  <text x="80" y="805" font-size="21" fill="#7651A7">Current GPT reference reports are baselines, not human-approved ground truth.</text>
+  <text x="1520" y="805" text-anchor="end" font-size="24" fill="#52657A">031</text>
+</svg>

@@ -1,4 +1,4 @@
-const TASK_KEYS = Object.freeze(["analysisId", "ownerKey", "runId"]);
+const TASK_KEYS = Object.freeze(["analysisId", "attemptId", "ownerKey", "runId"]);
 
 export function readCollectionTaskPayload(value) {
   if (!value || typeof value !== "object" || Array.isArray(value)
@@ -6,7 +6,7 @@ export function readCollectionTaskPayload(value) {
     throw new TypeError("The fixed collection task payload is required.");
   }
   return Object.freeze({ ownerKey: value.ownerKey, analysisId: value.analysisId,
-    runId: value.runId });
+    attemptId: value.attemptId, runId: value.runId });
 }
 
 export function createAgentCollectionTaskHandler({ collector } = {}) {

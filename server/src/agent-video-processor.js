@@ -22,8 +22,11 @@ export function createAgentVideoProcessor({ evidenceStore, analysisStore, runner
     throw new TypeError("Video processing dependencies are required.");
   }
   return Object.freeze({
-    async process({ ownerKey, analysisId }) {
+    async process({ ownerKey, analysisId, attemptId }) {
       let upload = await analysisStore.readVideoUpload({ ownerKey, analysisId });
+      if (upload.attemptId !== attemptId) {
+        return Object.freeze({ processed: false, reason: "stale-attempt" });
+      }
       if (["analyzing", "analyzed"].includes(upload.status)) {
         return Object.freeze({ processed: false, reason: "already-started" });
       }
@@ -41,17 +44,21 @@ export function createAgentVideoProcessor({ evidenceStore, analysisStore, runner
           const extracted = await extract(source, directory, metadata);
           const frames = [];
           for (const frame of extracted) {
-            frames.push(await evidenceStore.storeFrame({ ownerKey, analysisId,
+            const current = await analysisStore.readVideoUpload({ ownerKey, analysisId });
+            if (current.status !== "processing" || current.attemptId !== attemptId) {
+              return Object.freeze({ processed: false, reason: "stale-attempt" });
+            }
+            frames.push(await evidenceStore.storeFrame({ ownerKey, analysisId, attemptId,
               index: frame.index, timestampMs: frame.timestampMs,
               bytes: await readFile(frame.path) }));
           }
-          await analysisStore.markVideoReady({ ownerKey, analysisId,
+          await analysisStore.markVideoReady({ ownerKey, analysisId, attemptId,
             sha256: await sha256File(source), ...metadata, frames });
           diagnostics("video.processed", { ownerKey, analysisId,
             frameCount: frames.length, durationMs: metadata.durationMs });
         } catch (error) {
           if (error instanceof AgentVideoError) {
-            await analysisStore.markVideoFailed({ ownerKey, analysisId,
+            await analysisStore.markVideoFailed({ ownerKey, analysisId, attemptId,
               reason: error.code }).catch(() => {});
           }
           diagnostics("video.failed", { ownerKey, analysisId,
@@ -61,7 +68,7 @@ export function createAgentVideoProcessor({ evidenceStore, analysisStore, runner
         upload = await analysisStore.readVideoUpload({ ownerKey, analysisId });
       }
       if (upload.status === "uploaded") {
-        await runner.run({ ownerKey, analysisId, context: null,
+        await runner.run({ ownerKey, analysisId, attemptId, context: null,
           diagnosticContext: { trigger: "video-processing" } });
         return Object.freeze({ processed: true, reason: "analysis-started" });
       }

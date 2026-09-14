@@ -46,7 +46,8 @@ test("starts, persists the provider id, then dispatches the private task", async
   assert.equal(calls.find(([kind]) => kind === "provider")[1].imageBase64,
     BYTES.toString("base64"));
   assert.deepEqual(calls.find(([kind]) => kind === "enqueue")[1],
-    { ownerKey: OWNER, analysisId: ID, runId: RUN, dueAt: DUE });
+    { ownerKey: OWNER, analysisId: ID, attemptId: null,
+      runId: RUN, dueAt: DUE });
   assert.equal(result.status, "analyzing");
 });
 
@@ -62,9 +63,14 @@ test("a video run reads its immutable frame manifest and starts one multi-frame 
       mediaType: "video/quicktime", frames },
     readFrames: async input => { calls.push(["frames", input]); return sources; }
   });
-  await runner.run({ ownerKey: OWNER, analysisId: ID });
+  await runner.run({ ownerKey: OWNER, analysisId: ID,
+    attemptId: "attempt-video" });
   assert.ok(!calls.some(([kind]) => kind === "source"));
   assert.deepEqual(calls.find(([kind]) => kind === "frames")[1].frames, frames);
+  assert.equal(calls.find(([kind]) => kind === "frames")[1].attemptId,
+    "attempt-video");
+  assert.equal(calls.find(([kind]) => kind === "provider-id")[1].attemptId,
+    "attempt-video");
   const provider = calls.find(([kind]) => kind === "provider")[1];
   assert.equal(provider.mode, "videoAreaScan");
   assert.equal(calls.find(([kind]) => kind === "provider-id")[1].mode,

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">What AI Shop must improve</title>
+  <desc id="desc">Three existing human workflows for shopping assistance, product identification, and shelf inspection converge on a standard of less effort, clearer evidence, and preserved human judgment.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#52657A"/></marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #172D43; }
+      .heading { font-size: 26px; font-weight: 700; }
+      .body { font-size: 20px; fill: #52657A; }
+      .small { font-size: 17px; fill: #52657A; }
+      .inverse { fill: #FFFFFF; }
+      .accentInverse { fill: #8FD0C8; }
+      .inverseBody { fill: #D7E4EA; }
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <rect x="72" y="70" width="64" height="7" fill="#087E8B"/>
+  <text x="72" y="136" font-size="48" font-weight="700">What AI Shop Must Improve</text>
+  <text x="72" y="181" font-size="24" fill="#52657A">Useful human workflows establish the benchmark</text>
+
+  <path d="M520 340 C690 340 700 450 830 450 M520 470 H830 M520 600 C690 600 700 490 830 490" fill="none" stroke="#52657A" stroke-width="3" marker-end="url(#arrow)"/>
+
+  <circle cx="160" cy="340" r="62" fill="#EAF3F8" stroke="#1F6685" stroke-width="3"/>
+  <path d="M132 359 H188 M140 352 V320 H158 V352 M168 352 V330 H182 V352" fill="none" stroke="#1F6685" stroke-width="4"/>
+  <text x="252" y="325" class="heading">Shopping assistance</text>
+  <text x="252" y="363" class="body">Photograph, explain, converse, decide</text>
+  <text x="252" y="394" class="small">Current alternative: iPhone and ChatGPT</text>
+
+  <circle cx="160" cy="470" r="62" fill="#E7F3F1" stroke="#087E8B" stroke-width="3"/>
+  <path d="M124 470 C142 441 178 441 196 470 C178 499 142 499 124 470 Z M160 457 A13 13 0 1 0 160 483 A13 13 0 1 0 160 457" fill="none" stroke="#087E8B" stroke-width="4"/>
+  <text x="252" y="455" class="heading">Product identification</text>
+  <text x="252" y="493" class="body">Inspect labels, packaging, and context</text>
+  <text x="252" y="524" class="small">Current alternative: unaided human inspection</text>
+
+  <circle cx="160" cy="600" r="62" fill="#F0ECF9" stroke="#7651A7" stroke-width="3"/>
+  <path d="M130 566 H190 V632 H130 Z M142 585 H178 M142 600 H178 M142 615 H170" fill="none" stroke="#7651A7" stroke-width="4"/>
+  <text x="252" y="585" class="heading">Shelf inspection and review</text>
+  <text x="252" y="623" class="body">Photograph, record findings, compare</text>
+  <text x="252" y="654" class="small">Current alternative: notes, messages, or spreadsheets</text>
+
+  <rect x="850" y="292" width="678" height="360" rx="20" fill="#172D43"/>
+  <text x="900" y="355" font-size="31" font-weight="700" class="inverse">The standard AI Shop must meet</text>
+  <text x="900" y="414" font-size="26" font-weight="700" class="accentInverse">Less effort and clearer evidence</text>
+  <text x="900" y="464" font-size="22" class="inverseBody">Fewer actions and less repeated context</text>
+  <text x="900" y="508" font-size="22" class="inverseBody">Faster understanding with honest uncertainty</text>
+  <text x="900" y="552" font-size="22" class="inverseBody">Traceable evidence, findings, corrections, and review</text>
+  <path d="M900 592 H1478" stroke="#52657A" stroke-width="2"/>
+  <text x="900" y="625" font-size="19" class="inverse">Human judgment remains authoritative</text>
+
+  <text x="72" y="818" font-size="23" fill="#52657A">A useful AI response is only the starting point for comparison.</text>
+  <text x="1528" y="818" text-anchor="end" font-size="24" fill="#52657A">03</text>
+</svg>

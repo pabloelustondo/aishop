@@ -25,7 +25,8 @@ test("enqueues only the fixed private payload at the persisted due time", async 
   const result = await enqueuer.enqueue({ ownerKey: OWNER, analysisId: ID,
     runId: RUN, dueAt: DUE, ignored: "never serialized" });
 
-  assert.deepEqual(calls[0][0], { ownerKey: OWNER, analysisId: ID, runId: RUN });
+  assert.deepEqual(calls[0][0], { ownerKey: OWNER, analysisId: ID,
+    attemptId: null, runId: RUN });
   assert.deepEqual(calls[0][1].scheduleTime, DUE);
   assert.equal(calls[0][1].dispatchDeadlineSeconds,
     AGENT_TASK_DISPATCH_DEADLINE_SECONDS);

@@ -2,7 +2,8 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { createAgentVideoTaskEnqueuer, readVideoTaskPayload } from "../src/agent-video-task-enqueuer.js";
 
-const input = { ownerKey: "a".repeat(64), analysisId: "video-analysis" };
+const input = { ownerKey: "a".repeat(64), analysisId: "video-analysis",
+  attemptId: "attempt-current" };
 
 test("enqueues an idempotently named private video task", async () => {
   const calls = [];
@@ -10,8 +11,27 @@ test("enqueues an idempotently named private video task", async () => {
   const result = await enqueuer.enqueue(input);
   assert.equal(result.enqueued, true);
   assert.match(result.taskId, /^video-[a-f0-9]{48}$/);
+  assert.equal(result.taskName, result.taskId);
   assert.deepEqual(calls[0][0], input);
   assert.equal(calls[0][1].dispatchDeadlineSeconds, 540);
+});
+
+test("different attempts receive different task identities", async () => {
+  const queue = { enqueue: async () => {} };
+  const enqueuer = createAgentVideoTaskEnqueuer({ queue });
+  const first = await enqueuer.enqueue(input);
+  const second = await enqueuer.enqueue({ ...input, attemptId: "attempt-next" });
+  assert.notEqual(first.taskName, second.taskName);
+});
+
+test("deletes a queued task by its returned identity", async () => {
+  const calls = [];
+  const enqueuer = createAgentVideoTaskEnqueuer({ queue: {
+    enqueue: async () => {}, delete: async value => calls.push(value)
+  } });
+  const { taskName } = await enqueuer.enqueue(input);
+  assert.deepEqual(await enqueuer.delete(taskName), { deleted: true });
+  assert.deepEqual(calls, [taskName]);
 });
 
 test("duplicate task creation is successful idempotency", async () => {

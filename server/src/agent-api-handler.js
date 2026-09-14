@@ -147,6 +147,7 @@ function readContext(request) {
  */
 export function createAgentAPIHandler({
   evidenceStore, analysisStore, runner, verifyIdToken, videoTaskEnqueuer,
+  providerControl,
   newAnalysisId = () => randomUUID().replaceAll("-", ""),
   logger = console, diagnostics = createDiagnostics(event => logger.error(event)), project = process.env.GCLOUD_PROJECT,
   readMemory = () => process.memoryUsage()
@@ -254,7 +255,7 @@ export function createAgentAPIHandler({
     const input = await timed("validation", () => readVideoUploadRequest(request));
     const analysisId = newAnalysisId();
     diagnosticContext.analysisId = analysisId;
-    await timed("record_create", () => analysisStore.createVideoUpload({
+    const created = await timed("record_create", () => analysisStore.createVideoUpload({
       ownerKey, analysisId, fileName: input.fileName, mediaType: input.mediaType,
       expectedByteLength: input.byteLength
     }));
@@ -262,12 +263,16 @@ export function createAgentAPIHandler({
       const session = await timed("upload_session_create", () =>
         evidenceStore.createVideoUploadSession({ ownerKey, analysisId,
           mediaType: input.mediaType, byteLength: input.byteLength, origin: input.origin }));
+      await timed("upload_session_record", () =>
+        analysisStore.recordVideoUploadSession?.({ ownerKey, analysisId,
+          attemptId: created.attemptId, uploadSessionUri: session.uri }));
       return [201, { analysis: { analysisId, status: "uploading",
         fileName: input.fileName, mediaType: input.mediaType,
-        expectedByteLength: input.byteLength }, upload: { uri: session.uri } }];
+        expectedByteLength: input.byteLength, version: created.version },
+      upload: { uri: session.uri } }];
     } catch (error) {
       await analysisStore.markVideoFailed?.({ ownerKey, analysisId,
-        reason: "storage_unavailable" }).catch(() => {});
+        attemptId: created.attemptId, reason: "storage_unavailable" }).catch(() => {});
       throw error;
     }
   }
@@ -285,6 +290,9 @@ export function createAgentAPIHandler({
     const session = await timed("upload_session_create", () =>
       evidenceStore.createVideoUploadSession({ ownerKey, analysisId,
         mediaType: upload.mediaType, byteLength: upload.expectedByteLength, origin }));
+    await timed("upload_session_record", () =>
+      analysisStore.recordVideoUploadSession?.({ ownerKey, analysisId,
+        attemptId: upload.attemptId, uploadSessionUri: session.uri }));
     return [201, { analysis: { analysisId, status: upload.status,
       fileName: upload.fileName, mediaType: upload.mediaType,
       expectedByteLength: upload.expectedByteLength }, upload: { uri: session.uri } }];
@@ -311,12 +319,104 @@ export function createAgentAPIHandler({
     }
     if (upload.status === "uploading") {
       await timed("record_processing", () =>
-        analysisStore.markVideoProcessing({ ownerKey, analysisId }));
+        analysisStore.markVideoProcessing({ ownerKey, analysisId,
+          attemptId: upload.attemptId }));
     }
-    await timed("processing_dispatch", () =>
-      videoTaskEnqueuer.enqueue({ ownerKey, analysisId }));
+    const task = await timed("processing_dispatch", () =>
+      videoTaskEnqueuer.enqueue({ ownerKey, analysisId,
+        attemptId: upload.attemptId }));
+    try {
+      await timed("processing_task_record", () =>
+        analysisStore.recordVideoTask?.({ ownerKey, analysisId,
+          attemptId: upload.attemptId, taskName: task.taskName }));
+    } catch (error) {
+      await videoTaskEnqueuer.delete?.(task.taskName).catch(() => {});
+      throw error;
+    }
     const record = await analysisStore.read({ ownerKey, analysisId });
     return [200, { analysis: serialize(record) }];
+  }
+
+  function expectedVersion(request) {
+    if (!request.rawBody || request.rawBody.length === 0) return null;
+    let input;
+    try { input = JSON.parse(Buffer.from(request.rawBody).toString("utf8")); }
+    catch (error) { throw agentError("context_invalid", error); }
+    if (!input || typeof input !== "object" || Array.isArray(input)
+      || Object.keys(input).some(key => key !== "version")
+      || !Number.isInteger(input.version) || input.version < 0) {
+      throw agentError("context_invalid");
+    }
+    return input.version;
+  }
+
+  async function cancelAnalysis(request, ownerKey, analysisId, timed) {
+    if (typeof analysisStore.cancel !== "function") {
+      throw agentError("unexpected_server_error");
+    }
+    const result = await timed("cancellation_settlement", () => analysisStore.cancel({
+      ownerKey, analysisId, expectedVersion: expectedVersion(request) }));
+    if (!result.cancelled || result.reason === "already-cancelled") {
+      const record = await analysisStore.read({ ownerKey, analysisId });
+      return [200, { outcome: result.reason, analysis: serialize(record) }];
+    }
+    const cleanup = {};
+    if (result.cancelledFrom === "uploading" && result.uploadSessionUri) {
+      try {
+        await evidenceStore.invalidateVideoUploadSession?.({
+          uri: result.uploadSessionUri });
+        cleanup.uploadSession = "invalidated";
+      } catch { cleanup.uploadSession = "failed"; }
+    }
+    if (result.cancelledFrom === "processing" && result.taskName) {
+      try {
+        await videoTaskEnqueuer.delete?.(result.taskName);
+        cleanup.task = "deleted";
+      } catch { cleanup.task = "failed"; }
+    }
+    if (result.cancelledFrom === "analyzing" && result.providerResponseId) {
+      if (typeof providerControl?.cancel === "function") {
+        try {
+          await providerControl.cancel({ responseId: result.providerResponseId });
+          cleanup.providerCancel = "requested";
+        } catch { cleanup.providerCancel = "failed"; }
+      } else cleanup.providerCancel = "unavailable";
+      if (typeof providerControl?.delete === "function") {
+        try {
+          await providerControl.delete({ responseId: result.providerResponseId });
+          cleanup.providerDelete = "requested";
+        } catch { cleanup.providerDelete = "failed"; }
+      } else cleanup.providerDelete = "unavailable";
+    }
+    await analysisStore.recordCancellationCleanup?.({ ownerKey, analysisId,
+      version: result.version, cleanup }).catch(() => {});
+    const record = await analysisStore.read({ ownerKey, analysisId });
+    return [200, { outcome: "cancelled", cleanup, analysis: serialize(record) }];
+  }
+
+  async function restartAnalysis(request, ownerKey, analysisId, timed) {
+    if (typeof analysisStore.restartCancelled !== "function") {
+      throw agentError("unexpected_server_error");
+    }
+    const restarted = await timed("restart_settlement", () =>
+      analysisStore.restartCancelled({ ownerKey, analysisId,
+        expectedVersion: expectedVersion(request) }));
+    if (!restarted.restarted) {
+      const record = await analysisStore.read({ ownerKey, analysisId });
+      return [200, { outcome: restarted.reason, analysis: serialize(record) }];
+    }
+    const task = await timed("processing_dispatch", () => videoTaskEnqueuer.enqueue({
+      ownerKey, analysisId, attemptId: restarted.attemptId }));
+    try {
+      await timed("processing_task_record", () => analysisStore.recordVideoTask?.({
+        ownerKey, analysisId, attemptId: restarted.attemptId,
+        taskName: task.taskName }));
+    } catch (error) {
+      await videoTaskEnqueuer.delete?.(task.taskName).catch(() => {});
+      throw error;
+    }
+    const record = await analysisStore.read({ ownerKey, analysisId });
+    return [200, { outcome: "restarted", analysis: serialize(record) }];
   }
 
   async function run(request, ownerKey, analysisId, diagnosticContext, signal) {
@@ -391,7 +491,7 @@ export function createAgentAPIHandler({
     const rest = path.slice(BASE.length + 1).split("/");
     const [analysisId, tail, ...extra] = rest;
     if (extra.length > 0
-      || (tail !== undefined && tail !== "run" && tail !== "source")) {
+      || (tail !== undefined && !new Set(["run", "source", "cancel", "restart"]).has(tail))) {
       throw agentError("not_found");
     }
     // Checked before any lookup, so a crafted identifier is refused rather
@@ -405,6 +505,11 @@ export function createAgentAPIHandler({
     if (tail === "source") {
       if (method !== "GET") throw agentError("method_not_allowed");
       return { operation: "source", analysisId, route: `GET ${BASE}/{analysisId}/source` };
+    }
+    if (tail === "cancel" || tail === "restart") {
+      if (method !== "POST") throw agentError("method_not_allowed");
+      return { operation: tail, analysisId,
+        route: `POST ${BASE}/{analysisId}/${tail}` };
     }
     if (method !== "GET") throw agentError("method_not_allowed");
     return { operation: "read", analysisId, route: `GET ${BASE}/{analysisId}` };
@@ -467,6 +572,8 @@ export function createAgentAPIHandler({
         : operation === "video-create" ? await createVideoUpload(request, ownerKey, timed, diagnosticContext)
           : operation === "video-session" ? await renewVideoUpload(request, ownerKey, analysisId, timed)
           : operation === "video-complete" ? await completeVideoUpload(ownerKey, analysisId, timed)
+        : operation === "cancel" ? await cancelAnalysis(request, ownerKey, analysisId, timed)
+          : operation === "restart" ? await restartAnalysis(request, ownerKey, analysisId, timed)
         : operation === "run" ? await run(request, ownerKey, analysisId, diagnosticContext, cancellation.signal)
           : operation === "read" ? await read(ownerKey, analysisId)
             : await list(ownerKey);

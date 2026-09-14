@@ -9,6 +9,7 @@ import {
 
 const OWNER = "a".repeat(64);
 const ANALYSIS = "01J8Z6M4QK7R9V2X5T3B0C1D2E";
+const ATTEMPT = "attempt-current";
 const JPEG = Buffer.from([0xff, 0xd8, 1, 2, 3, 0xff, 0xd9]);
 
 const savingBucket = (capture) => ({
@@ -117,15 +118,42 @@ test("stores immutable JPEG frames and reads only the recorded manifest", async 
   }) };
   const store = createAgentEvidenceStore({ bucket });
   const stored = await store.storeFrame({ ownerKey: OWNER,
-    analysisId: ANALYSIS, index: 2, timestampMs: 1_500, bytes: JPEG });
-  assert.match(stored.path, /source\/frames\/002\.jpg$/);
+    analysisId: ANALYSIS, attemptId: ATTEMPT,
+    index: 2, timestampMs: 1_500, bytes: JPEG });
+  assert.match(stored.path, /attempts\/attempt-current\/frames\/002\.jpg$/);
   assert.equal(files.get(stored.path).options.preconditionOpts.ifGenerationMatch, 0);
   assert.equal(files.get(stored.path).options.metadata.contentType, "image/jpeg");
   const [frame] = await store.readFrames({ ownerKey: OWNER,
-    analysisId: ANALYSIS, frames: [stored] });
+    analysisId: ANALYSIS, attemptId: ATTEMPT, frames: [stored] });
   assert.deepEqual(frame.bytes, JPEG);
   assert.equal(frame.timestampMs, 1_500);
   assert.equal(frame.sha256, stored.sha256);
+});
+
+test("isolates frame objects between video attempts", async () => {
+  const paths = [];
+  const store = createAgentEvidenceStore({ bucket: { file: path => ({
+    save: async () => paths.push(path)
+  }) } });
+  await store.storeFrame({ ownerKey: OWNER, analysisId: ANALYSIS,
+    attemptId: "attempt-one", index: 0, timestampMs: 0, bytes: JPEG });
+  await store.storeFrame({ ownerKey: OWNER, analysisId: ANALYSIS,
+    attemptId: "attempt-two", index: 0, timestampMs: 0, bytes: JPEG });
+  assert.notEqual(paths[0], paths[1]);
+});
+
+test("invalidates only a bounded provider-issued resumable session", async () => {
+  const calls = [];
+  const store = createAgentEvidenceStore({ bucket: savingBucket({}),
+    fetchImpl: async (url, options) => {
+      calls.push({ url, options }); return new Response(null, { status: 499 });
+    } });
+  const uri = "https://storage.googleapis.com/upload/storage/v1/b/aishop/o?uploadType=resumable&upload_id=opaque";
+  assert.deepEqual(await store.invalidateVideoUploadSession({ uri }),
+    { invalidated: true });
+  assert.equal(calls[0].options.method, "DELETE");
+  await assert.rejects(store.invalidateVideoUploadSession({
+    uri: "https://example.com/upload?upload_id=opaque" }), TypeError);
 });
 
 test("refuses identities that could escape the owner-scoped prefix", async () => {

@@ -36,7 +36,8 @@ const ALLOWED = Object.freeze({
   uploaded: ["processing"],
   analyzing: ["uploaded", "failed", "analyzed"],
   analyzed: ["analyzing"],
-  failed: ["analyzing", "uploading", "processing"]
+  failed: ["analyzing", "uploading", "processing"],
+  cancelled: ["uploading", "uploaded", "processing", "analyzing"]
 });
 
 export class AgentAnalysisNotFoundError extends Error {
@@ -96,6 +97,16 @@ function note(context) {
   return typeof context === "string" && context.trim() !== "" ? context.trim() : null;
 }
 
+function attempt(value) {
+  if (typeof value !== "string" || value.length < 1 || value.length > 64) {
+    throw new TypeError("A video attempt identifier is required.");
+  }
+  return value;
+}
+
+const versionOf = data => Number.isInteger(data?.version) && data.version > 0
+  ? data.version : 0;
+
 const runsOf = (data) => (Array.isArray(data?.runs) ? data.runs : []);
 const diagnosticSummary = (value) => {
   const { responseId: _privateResponseId, ...safe } = sanitizeDiagnostics(value);
@@ -108,7 +119,8 @@ const diagnosticSummary = (value) => {
 };
 
 function publicRun(run) {
-  const { providerResponseId: _privateProviderResponseId, ...safe } = run ?? {};
+  const { providerResponseId: _privateProviderResponseId,
+    attemptId: _privateAttemptId, ...safe } = run ?? {};
   return Object.freeze({ ...safe,
     diagnostics: safe.diagnostics ? diagnosticSummary(safe.diagnostics) : null });
 }
@@ -121,6 +133,7 @@ function summarize(id, data) {
   return Object.freeze({
     analysisId: id,
     status: data.status ?? null,
+    version: versionOf(data),
     fileName: data.fileName ?? null,
     mediaType: data.mediaType ?? null,
     sha256: data.sha256 ?? null,
@@ -132,6 +145,9 @@ function summarize(id, data) {
       sha256: frame.sha256, byteLength: frame.byteLength
     })) : [],
     createdAt: data.createdAt ?? null,
+    updatedAt: data.updatedAt ?? null,
+    cancelledAt: data.cancelledAt ?? null,
+    cancelledFrom: data.cancelledFrom ?? null,
     analyzedAt: data.analyzedAt ?? null,
     failureReason: data.failureReason ?? null,
     model: data.model ?? null,
@@ -204,7 +220,8 @@ export function createAgentAnalysisStore({
     return runs;
   }
 
-  async function transition(ownerKey, analysisId, to, patch, expectedRunId = null) {
+  async function transition(ownerKey, analysisId, to, patch, expectedRunId = null,
+    expectedAttemptId = null) {
     identity(ownerKey, analysisId);
     const reference = analyses(ownerKey).doc(analysisId);
     return firestore.runTransaction(async (transaction) => {
@@ -213,6 +230,14 @@ export function createAgentAnalysisStore({
       const data = snapshot.data() ?? {};
       const from = data.status ?? null;
       const currentRun = runsOf(data).at(-1);
+      if (data.attemptId !== null && data.attemptId !== undefined
+        && data.attemptId !== expectedAttemptId) {
+        throw new AgentAnalysisStateError(expectedAttemptId === null
+          ? "attempt-required" : "stale-attempt", to);
+      }
+      if (expectedAttemptId !== null && data.attemptId !== expectedAttemptId) {
+        throw new AgentAnalysisStateError("stale-attempt", to);
+      }
       if (from === to && expectedRunId === null
         && (to === "processing" || to === "uploaded" || to === "failed")) return null;
       if (from === to && expectedRunId && currentRun?.runId === expectedRunId
@@ -222,6 +247,7 @@ export function createAgentAnalysisStore({
       if (!ALLOWED[to].includes(from)) throw new AgentAnalysisStateError(from, to);
       const update = patch(data);
       transaction.update(reference, { ...update, status: to,
+        version: versionOf(data) + 1, updatedAt: serverTimestamp(),
         collectionDueAt: null, collectionLeaseUntil: null });
       return update.runs?.at(-1);
     });
@@ -235,6 +261,7 @@ export function createAgentAnalysisStore({
         fileName: typeof fileName === "string" ? fileName : null,
         mediaType, sha256, byteLength, width: dimension(width), height: dimension(height),
         createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(), version: 1,
         analyzedAt: null, failureReason: null,
         model: null, mode: null, report: null,
         providerResponseId: null, providerRunId: null,
@@ -250,10 +277,13 @@ export function createAgentAnalysisStore({
       identity(ownerKey, analysisId);
       const data = {
         analysisId, ownerKey, status: "uploading",
+        attemptId: randomUUID(), version: 1,
         fileName: typeof fileName === "string" ? fileName : null,
         mediaType, expectedByteLength, sha256: null, byteLength: null,
         width: null, height: null, durationMs: null, frames: [],
-        createdAt: serverTimestamp(), analyzedAt: null, failureReason: null,
+        createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
+        analyzedAt: null, failureReason: null, sourceComplete: false,
+        taskName: null, taskAttemptId: null, uploadSessionUri: null,
         model: null, mode: null, report: null,
         providerResponseId: null, providerRunId: null,
         collectionDueAt: null, collectionLeaseUntil: null, runs: []
@@ -262,25 +292,166 @@ export function createAgentAnalysisStore({
       return Object.freeze(data);
     },
 
-    markVideoProcessing({ ownerKey, analysisId }) {
+    markVideoProcessing({ ownerKey, analysisId, attemptId }) {
       return transition(ownerKey, analysisId, "processing", () => ({
-        failureReason: null
-      }));
+        failureReason: null, sourceComplete: true
+      }), null, attemptId === undefined ? null : attempt(attemptId));
     },
 
     markVideoReady({ ownerKey, analysisId, sha256, byteLength, width, height,
-      durationMs, frames }) {
+      durationMs, frames, attemptId }) {
       return transition(ownerKey, analysisId, "uploaded", () => ({
         sha256, byteLength, width: dimension(width), height: dimension(height),
         durationMs, frames, failureReason: null
-      }));
+      }), null, attemptId === undefined ? null : attempt(attemptId));
     },
 
-    markVideoFailed({ ownerKey, analysisId, reason }) {
+    markVideoFailed({ ownerKey, analysisId, reason, attemptId }) {
       return transition(ownerKey, analysisId, "failed", () => ({
         failureReason: typeof reason === "string" ? reason : "video_processing_failed",
         report: null, analyzedAt: serverTimestamp()
-      }));
+      }), null, attemptId === undefined ? null : attempt(attemptId));
+    },
+
+    async recordVideoTask({ ownerKey, analysisId, attemptId, taskName }) {
+      identity(ownerKey, analysisId);
+      attempt(attemptId);
+      if (typeof taskName !== "string" || taskName.length < 1 || taskName.length > 500) {
+        throw new TypeError("A video task identity is required.");
+      }
+      const reference = analyses(ownerKey).doc(analysisId);
+      return firestore.runTransaction(async transaction => {
+        const snapshot = await transaction.get(reference);
+        if (!snapshot.exists) throw new AgentAnalysisNotFoundError();
+        const data = snapshot.data() ?? {};
+        if (data.status !== "processing" || data.attemptId !== attemptId) {
+          throw new AgentAnalysisStateError(data.attemptId === attemptId
+            ? data.status ?? null : "stale-attempt", "task-recorded");
+        }
+        if (data.taskName && (data.taskName !== taskName
+          || data.taskAttemptId !== attemptId)) {
+          throw new AgentAnalysisStateError("different-task", "task-recorded");
+        }
+        if (data.taskName === taskName) return Object.freeze({ taskName, attemptId });
+        transaction.update(reference, { taskName, taskAttemptId: attemptId,
+          version: versionOf(data) + 1, updatedAt: serverTimestamp() });
+        return Object.freeze({ taskName, attemptId });
+      });
+    },
+
+    async recordVideoUploadSession({ ownerKey, analysisId, attemptId,
+      uploadSessionUri }) {
+      identity(ownerKey, analysisId);
+      attempt(attemptId);
+      if (typeof uploadSessionUri !== "string" || uploadSessionUri.length < 1
+        || uploadSessionUri.length > 4096) {
+        throw new TypeError("A resumable upload session is required.");
+      }
+      const reference = analyses(ownerKey).doc(analysisId);
+      return firestore.runTransaction(async transaction => {
+        const snapshot = await transaction.get(reference);
+        if (!snapshot.exists) throw new AgentAnalysisNotFoundError();
+        const data = snapshot.data() ?? {};
+        if (data.status !== "uploading" || data.attemptId !== attemptId) {
+          throw new AgentAnalysisStateError(data.attemptId === attemptId
+            ? data.status ?? null : "stale-attempt", "session-recorded");
+        }
+        transaction.update(reference, { uploadSessionUri,
+          version: versionOf(data) + 1, updatedAt: serverTimestamp() });
+        return Object.freeze({ attemptId, version: versionOf(data) + 1 });
+      });
+    },
+
+    async cancel({ ownerKey, analysisId, expectedVersion = null }) {
+      identity(ownerKey, analysisId);
+      if (expectedVersion !== null && (!Number.isInteger(expectedVersion)
+        || expectedVersion < 0)) throw new TypeError("A record version is required.");
+      const reference = analyses(ownerKey).doc(analysisId);
+      return firestore.runTransaction(async transaction => {
+        const snapshot = await transaction.get(reference);
+        if (!snapshot.exists) throw new AgentAnalysisNotFoundError();
+        const data = snapshot.data() ?? {};
+        const version = versionOf(data);
+        if (expectedVersion !== null && version !== expectedVersion) {
+          return Object.freeze({ cancelled: false, reason: "changed",
+            status: data.status ?? null, version });
+        }
+        if (data.status === "cancelled") return Object.freeze({ cancelled: true,
+          reason: "already-cancelled", status: "cancelled", version });
+        if (!["uploading", "uploaded", "processing", "analyzing"].includes(data.status)) {
+          return Object.freeze({ cancelled: false, reason: "already-settled",
+            status: data.status ?? null, version });
+        }
+        const runs = [...runsOf(data)];
+        if (data.status === "analyzing" && runs.length > 0) {
+          runs[runs.length - 1] = { ...runs.at(-1), status: "cancelled",
+            endedAt: clock(), failureReason: "cancelled" };
+        }
+        const nextVersion = version + 1;
+        const cancelledAttemptId = data.attemptId ?? null;
+        transaction.update(reference, { status: "cancelled", runs,
+          cancelledFrom: data.status, cancelledAt: serverTimestamp(),
+          cancelledAttemptId, attemptId: null,
+          cancellationCleanup: null, version: nextVersion,
+          updatedAt: serverTimestamp(), collectionDueAt: null,
+          collectionLeaseUntil: null });
+        return Object.freeze({ cancelled: true, reason: "cancelled",
+          status: "cancelled", version: nextVersion, attemptId: cancelledAttemptId,
+          cancelledFrom: data.status, taskName: data.taskName ?? null,
+          providerResponseId: data.providerResponseId ?? null,
+          uploadSessionUri: data.uploadSessionUri ?? null });
+      });
+    },
+
+    async recordCancellationCleanup({ ownerKey, analysisId, version,
+      cleanup }) {
+      identity(ownerKey, analysisId);
+      if (!Number.isInteger(version) || version < 1 || cleanup === null
+        || typeof cleanup !== "object" || Array.isArray(cleanup)) {
+        throw new TypeError("A cancellation cleanup result is required.");
+      }
+      const reference = analyses(ownerKey).doc(analysisId);
+      return firestore.runTransaction(async transaction => {
+        const snapshot = await transaction.get(reference);
+        if (!snapshot.exists) throw new AgentAnalysisNotFoundError();
+        const data = snapshot.data() ?? {};
+        if (data.status !== "cancelled" || versionOf(data) !== version) {
+          return Object.freeze({ recorded: false, reason: "changed" });
+        }
+        transaction.update(reference, { cancellationCleanup: cleanup,
+          updatedAt: serverTimestamp() });
+        return Object.freeze({ recorded: true });
+      });
+    },
+
+    async restartCancelled({ ownerKey, analysisId, expectedVersion = null }) {
+      identity(ownerKey, analysisId);
+      const reference = analyses(ownerKey).doc(analysisId);
+      return firestore.runTransaction(async transaction => {
+        const snapshot = await transaction.get(reference);
+        if (!snapshot.exists) throw new AgentAnalysisNotFoundError();
+        const data = snapshot.data() ?? {};
+        const version = versionOf(data);
+        if (expectedVersion !== null && version !== expectedVersion) {
+          return Object.freeze({ restarted: false, reason: "changed",
+            status: data.status ?? null, version });
+        }
+        if (data.status !== "cancelled" || data.sourceComplete !== true) {
+          throw new AgentAnalysisStateError(data.status ?? null, "restarted");
+        }
+        const attemptId = randomUUID();
+        const status = "processing";
+        const nextVersion = version + 1;
+        transaction.update(reference, { status, attemptId, version: nextVersion,
+          updatedAt: serverTimestamp(), taskName: null, taskAttemptId: null,
+          uploadSessionUri: null,
+          providerResponseId: null, providerRunId: null, collectionDueAt: null,
+          collectionLeaseUntil: null, failureReason: null, frames: [],
+          sha256: null, byteLength: null, width: null, height: null,
+          durationMs: null });
+        return Object.freeze({ restarted: true, status, attemptId,
+          version: nextVersion });
+      });
     },
 
     /**
@@ -294,7 +465,8 @@ export function createAgentAnalysisStore({
      * render it during `analyzing`; showing prior rows while a refine runs is
      * an open UI proposal, not a promise this store keeps.
      */
-    markAnalyzing({ ownerKey, analysisId, context, diagnostics = {} }) {
+    markAnalyzing({ ownerKey, analysisId, attemptId = null, context,
+      diagnostics = {} }) {
       const runId = randomUUID();
       return transition(ownerKey, analysisId, "analyzing", (data) => {
         const runs = runsOf(data);
@@ -321,6 +493,7 @@ export function createAgentAnalysisStore({
           collectionDueAt: null, collectionLeaseUntil: null,
           runs: [...runs, {
             runId,
+            attemptId: data.attemptId ?? null,
             trigger: data.status === "uploaded" ? "initial" : data.status === "failed" ? "retry" : "refine",
             diagnostics: diagnosticSummary({ ...diagnostics,
               imageWidth: dimension(data.width), imageHeight: dimension(data.height),
@@ -334,10 +507,11 @@ export function createAgentAnalysisStore({
             report: null, model: null, mode: null, failureReason: null
           }]
         };
-      });
+      }, null, attemptId === null ? null : attempt(attemptId));
     },
 
-    async markProviderStarted({ ownerKey, analysisId, runId, responseId, mode, diagnostics = {} }) {
+    async markProviderStarted({ ownerKey, analysisId, attemptId = null, runId,
+      responseId, mode, diagnostics = {} }) {
       identity(ownerKey, analysisId);
       if (typeof responseId !== "string" || !PROVIDER_RESPONSE_ID.test(responseId)) {
         throw new TypeError("A provider response identifier is required.");
@@ -347,6 +521,11 @@ export function createAgentAnalysisStore({
         const snapshot = await transaction.get(reference);
         if (!snapshot.exists) throw new AgentAnalysisNotFoundError();
         const data = snapshot.data() ?? {};
+        if (data.attemptId !== null && data.attemptId !== undefined
+          && data.attemptId !== attemptId) {
+          throw new AgentAnalysisStateError(attemptId === null
+            ? "attempt-required" : "stale-attempt", "provider-started");
+        }
         if (data.status !== "analyzing") throw new AgentAnalysisStateError(data.status ?? null, "provider-started");
         const runs = [...runsOf(data)];
         const current = runs.at(-1);
@@ -372,6 +551,7 @@ export function createAgentAnalysisStore({
       const current = runsOf(data).at(-1) ?? {};
       return Object.freeze({
         status: data.status ?? null,
+        attemptId: data.attemptId ?? null,
         runId: current.runId ?? null,
         responseId: data.providerRunId === current.runId ? data.providerResponseId ?? null : null,
         dueAt: data.collectionDueAt ?? null,
@@ -382,7 +562,7 @@ export function createAgentAnalysisStore({
       });
     },
 
-    async claimCollection({ ownerKey, analysisId, runId }) {
+    async claimCollection({ ownerKey, analysisId, attemptId = null, runId }) {
       identity(ownerKey, analysisId);
       const reference = analyses(ownerKey).doc(analysisId);
       return firestore.runTransaction(async (transaction) => {
@@ -391,7 +571,9 @@ export function createAgentAnalysisStore({
         const data = snapshot.data() ?? {};
         const current = runsOf(data).at(-1) ?? {};
         if (data.status !== "analyzing") return Object.freeze({ claimed: false, reason: "terminal" });
-        if (current.runId !== runId || data.providerRunId !== runId) {
+        if (current.runId !== runId || data.providerRunId !== runId
+          || (data.attemptId ?? null) !== attemptId
+          || (current.attemptId ?? null) !== attemptId) {
           return Object.freeze({ claimed: false, reason: "stale-run" });
         }
         if (!PROVIDER_RESPONSE_ID.test(data.providerResponseId ?? "")) {
@@ -409,13 +591,15 @@ export function createAgentAnalysisStore({
         const nextLease = new Date(now.getTime() + COLLECTION_LEASE_MS);
         transaction.update(reference, { collectionLeaseUntil: nextLease });
         return Object.freeze({ claimed: true, ownerKey, analysisId, runId,
+          attemptId,
           responseId: data.providerResponseId, leaseUntil: nextLease,
           mode: data.providerMode ?? data.mode ?? "areaScan",
           diagnostics: diagnosticSummary(current.diagnostics) });
       });
     },
 
-    async rescheduleCollection({ ownerKey, analysisId, runId, diagnostics = {} }) {
+    async rescheduleCollection({ ownerKey, analysisId, attemptId = null, runId,
+      diagnostics = {} }) {
       identity(ownerKey, analysisId);
       const reference = analyses(ownerKey).doc(analysisId);
       return firestore.runTransaction(async (transaction) => {
@@ -424,7 +608,9 @@ export function createAgentAnalysisStore({
         const data = snapshot.data() ?? {};
         const runs = [...runsOf(data)];
         const current = runs.at(-1);
-        if (data.status !== "analyzing" || current?.runId !== runId || data.providerRunId !== runId) {
+        if (data.status !== "analyzing" || current?.runId !== runId
+          || data.providerRunId !== runId || (data.attemptId ?? null) !== attemptId
+          || (current.attemptId ?? null) !== attemptId) {
           return Object.freeze({ scheduled: false, reason: "stale-run" });
         }
         runs[runs.length - 1] = { ...current,
@@ -435,7 +621,8 @@ export function createAgentAnalysisStore({
       });
     },
 
-    markAnalyzed({ ownerKey, analysisId, report, model, mode, runId, diagnostics = {} }) {
+    markAnalyzed({ ownerKey, analysisId, attemptId = null, report, model, mode,
+      runId, diagnostics = {} }) {
       return transition(ownerKey, analysisId, "analyzed", (data) => ({
         report, model: model ?? null, mode: mode ?? null,
         analyzedAt: serverTimestamp(), failureReason: null,
@@ -443,15 +630,16 @@ export function createAgentAnalysisStore({
           status: "analyzed", report, diagnostics: diagnosticSummary(diagnostics),
           model: model ?? null, mode: mode ?? null, failureReason: null
         }, runId)
-      }), runId);
+      }), runId, attemptId === null ? null : attempt(attemptId));
     },
 
-    markFailed({ ownerKey, analysisId, reason, runId, diagnostics = {} }) {
+    markFailed({ ownerKey, analysisId, attemptId = null, reason, runId,
+      diagnostics = {} }) {
       const failureReason = typeof reason === "string" ? reason : "unknown";
       return transition(ownerKey, analysisId, "failed", (data) => ({
         failureReason, report: null, analyzedAt: serverTimestamp(),
         runs: closeOpenRun(data, { status: "failed", failureReason, report: null, diagnostics: diagnosticSummary(diagnostics) }, runId)
-      }), runId);
+      }), runId, attemptId === null ? null : attempt(attemptId));
     },
 
     async read({ ownerKey, analysisId }) {
@@ -467,7 +655,12 @@ export function createAgentAnalysisStore({
       const data = snapshot.data() ?? {};
       return Object.freeze({ analysisId, status: data.status ?? null,
         fileName: data.fileName ?? null, mediaType: data.mediaType ?? null,
-        expectedByteLength: data.expectedByteLength ?? null });
+        expectedByteLength: data.expectedByteLength ?? null,
+        attemptId: data.attemptId ?? null, version: versionOf(data),
+        sourceComplete: data.sourceComplete === true,
+        taskName: data.taskName ?? null, taskAttemptId: data.taskAttemptId ?? null,
+        uploadSessionUri: data.uploadSessionUri ?? null,
+        providerResponseId: data.providerResponseId ?? null });
     },
 
     async list({ ownerKey, limit = 100 }) {

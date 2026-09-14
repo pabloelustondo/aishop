@@ -7,7 +7,7 @@ const OWNER = "e".repeat(64);
 const ID = "01J8Z6M4QK7R9V2X5T3B0C1D2E";
 const RUN = "56fe7ad1-7a4f-4ba8-86a6-04cfd701de2b";
 const DUE = new Date("2026-09-13T15:00:30.000Z");
-const INPUT = { ownerKey: OWNER, analysisId: ID, runId: RUN };
+const INPUT = { ownerKey: OWNER, analysisId: ID, attemptId: null, runId: RUN };
 const REPORT = { summary: "one product", identifiedProducts: [{ name: "CeraVe",
   count: 3, visibleEvidence: ["front label"], confidence: "high" }],
 uncertainItems: [] };

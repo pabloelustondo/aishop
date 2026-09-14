@@ -52,8 +52,8 @@ export function createAgentAnalysisCollector({ analysisStore, analyzer,
   }
 
   return Object.freeze({
-    async collect({ ownerKey, analysisId, runId }) {
-      const identity = { ownerKey, analysisId, runId };
+    async collect({ ownerKey, analysisId, runId, attemptId = null }) {
+      const identity = { ownerKey, analysisId, runId, attemptId };
       const claim = await analysisStore.claimCollection(identity);
       if (!claim.claimed) {
         emit("collection.skipped", { ...identity, reason: claim.reason });

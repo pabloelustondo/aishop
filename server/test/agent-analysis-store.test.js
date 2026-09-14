@@ -72,11 +72,15 @@ test("creates a private video reservation and advances its durable preparation s
     expectedByteLength: 9_999 });
   const data = created.calls.find(([kind]) => kind === "create")[1];
   assert.equal(data.status, "uploading");
+  assert.equal(typeof data.attemptId, "string");
+  assert.equal(data.version, 1);
+  assert.equal(data.sourceComplete, false);
   assert.equal(data.expectedByteLength, 9_999);
   assert.deepEqual(data.frames, []);
 
   const processing = harness(data);
-  await processing.store.markVideoProcessing({ ownerKey: OWNER, analysisId: ID });
+  await processing.store.markVideoProcessing({ ownerKey: OWNER, analysisId: ID,
+    attemptId: data.attemptId });
   assert.equal(processing.calls.find(([kind]) => kind === "update")[2].status,
     "processing");
 
@@ -84,6 +88,7 @@ test("creates a private video reservation and advances its durable preparation s
     byteLength: 123, path: "private/path" };
   const ready = harness({ ...data, status: "processing" });
   await ready.store.markVideoReady({ ownerKey: OWNER, analysisId: ID,
+    attemptId: data.attemptId,
     sha256: "e".repeat(64), byteLength: 9_999, width: 1080, height: 1920,
     durationMs: 2_000, frames: [frame] });
   const patch = ready.calls.find(([kind]) => kind === "update")[2];
@@ -91,6 +96,88 @@ test("creates a private video reservation and advances its durable preparation s
   assert.equal(patch.durationMs, 2_000);
   assert.equal(patch.frames[0].path, "private/path",
     "the server retains the immutable object identity");
+});
+
+test("rejects settlement from a stale video attempt", async () => {
+  const current = "attempt-current";
+  const { store, calls } = harness({ status: "processing", ownerKey: OWNER,
+    mediaType: "video/mp4", attemptId: current });
+
+  await assert.rejects(store.markVideoReady({ ownerKey: OWNER, analysisId: ID,
+    attemptId: "attempt-stale", sha256: "e".repeat(64), byteLength: 9_999,
+    width: 1080, height: 1920, durationMs: 2_000, frames: [] }),
+  AgentAnalysisStateError);
+  assert.equal(calls.some(([kind]) => kind === "update"), false);
+});
+
+test("a modern video settlement cannot omit its attempt fence", async () => {
+  const { store, calls } = harness({ status: "processing", ownerKey: OWNER,
+    mediaType: "video/mp4", attemptId: "attempt-current" });
+  await assert.rejects(store.markVideoReady({ ownerKey: OWNER, analysisId: ID,
+    sha256: "e".repeat(64), byteLength: 9_999, width: 1080, height: 1920,
+    durationMs: 2_000, frames: [] }), AgentAnalysisStateError);
+  assert.equal(calls.some(([kind]) => kind === "update"), false);
+});
+
+test("persists a task identity only for the current processing attempt", async () => {
+  const existing = { status: "processing", attemptId: "attempt-current",
+    version: 2 };
+  const current = harness(existing);
+  await current.store.recordVideoTask({ ownerKey: OWNER, analysisId: ID,
+    attemptId: "attempt-current", taskName: "locations/test/tasks/video-current" });
+  const patch = current.calls.find(([kind]) => kind === "update")[2];
+  assert.equal(patch.taskAttemptId, "attempt-current");
+  assert.equal(patch.version, 3);
+
+  const stale = harness(existing);
+  await assert.rejects(stale.store.recordVideoTask({ ownerKey: OWNER,
+    analysisId: ID, attemptId: "attempt-stale",
+    taskName: "locations/test/tasks/video-stale" }), AgentAnalysisStateError);
+  assert.equal(stale.calls.some(([kind]) => kind === "update"), false);
+});
+
+test("cancellation is versioned, durable, and refuses settled records", async () => {
+  const active = harness({ status: "processing", attemptId: "attempt-current",
+    version: 4, taskName: "locations/test/tasks/video-current" });
+  const cancelled = await active.store.cancel({ ownerKey: OWNER, analysisId: ID,
+    expectedVersion: 4 });
+  assert.equal(cancelled.cancelled, true);
+  assert.equal(cancelled.version, 5);
+  assert.equal(cancelled.taskName, "locations/test/tasks/video-current");
+  const patch = active.calls.find(([kind]) => kind === "update")[2];
+  assert.equal(patch.status, "cancelled");
+  assert.equal(patch.cancelledFrom, "processing");
+  assert.equal(patch.cancelledAttemptId, "attempt-current");
+  assert.equal(patch.attemptId, null);
+
+  const changed = await harness({ status: "processing", version: 5 }).store
+    .cancel({ ownerKey: OWNER, analysisId: ID, expectedVersion: 4 });
+  assert.deepEqual(changed, { cancelled: false, reason: "changed",
+    status: "processing", version: 5 });
+  const settled = await harness({ status: "analyzed", version: 6 }).store
+    .cancel({ ownerKey: OWNER, analysisId: ID });
+  assert.equal(settled.reason, "already-settled");
+});
+
+test("restart creates a new attempt only when source evidence is complete", async () => {
+  const previous = "attempt-previous";
+  const ready = harness({ status: "cancelled", cancelledAttemptId: previous,
+    attemptId: null, version: 3, sourceComplete: true,
+    frames: [{ index: 0, path: "old-attempt/frame.jpg" }] });
+  const restarted = await ready.store.restartCancelled({ ownerKey: OWNER,
+    analysisId: ID, expectedVersion: 3 });
+  assert.equal(restarted.restarted, true);
+  assert.equal(restarted.status, "processing");
+  assert.notEqual(restarted.attemptId, previous);
+  const patch = ready.calls.find(([kind]) => kind === "update")[2];
+  assert.equal(patch.version, 4);
+  assert.equal(patch.taskName, null);
+  assert.deepEqual(patch.frames, []);
+
+  const incomplete = harness({ status: "cancelled", version: 2,
+    sourceComplete: false });
+  await assert.rejects(incomplete.store.restartCancelled({ ownerKey: OWNER,
+    analysisId: ID }), AgentAnalysisStateError);
 });
 
 test("public video summaries expose sample evidence but no storage identity", async () => {

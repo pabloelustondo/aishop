@@ -374,5 +374,16 @@ export function createOpenAIBackgroundAnalyzer({
     return { deleted: call.payload?.deleted === true };
   }
 
-  return Object.freeze({ start, retrieve, delete: remove, configuration });
+  async function cancel({ responseId: held, mode = ANALYSIS_MODES.areaScan,
+    onDiagnostics = () => {} }) {
+    const id = responseId(held);
+    const call = await request({ method: "POST",
+      url: `${RESPONSES_URL}/${id}/cancel`, mode, onDiagnostics });
+    try {
+      return { cancelled: call.payload?.status === "cancelled",
+        status: call.payload?.status ?? null };
+    } finally { call.notify(); }
+  }
+
+  return Object.freeze({ start, retrieve, cancel, delete: remove, configuration });
 }

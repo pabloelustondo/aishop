@@ -109,7 +109,8 @@ export function createAgentAnalysisRunner({
   }
 
   return Object.freeze({
-    async run({ ownerKey, analysisId, context = null, diagnosticContext = {}, signal }) {
+    async run({ ownerKey, analysisId, attemptId = null, context = null,
+      diagnosticContext = {}, signal }) {
       const started = performance.now();
       const detail = sanitizeDiagnostics({ ...configuration, ...diagnosticContext, analysisId, attempt: 1 });
       const correlation = { ...diagnosticContext, analysisId };
@@ -134,7 +135,8 @@ export function createAgentAnalysisRunner({
         }
       }
       try {
-        const reserved = await stage("reservation", () => analysisStore.markAnalyzing({ ownerKey, analysisId, context, diagnostics: detail }));
+        const reserved = await stage("reservation", () => analysisStore.markAnalyzing({
+          ownerKey, analysisId, attemptId, context, diagnostics: detail }));
         Object.assign(detail, sanitizeDiagnostics({ ...reserved?.diagnostics, runId: reserved?.runId, runNumber: reserved?.runNumber, trigger: reserved?.trigger }));
         emit("run.started");
         let stageName = "source_read";
@@ -145,7 +147,7 @@ export function createAgentAnalysisRunner({
             || record?.mediaType === "video/quicktime";
           const sources = video
             ? await stage(stageName, () => evidenceStore.readFrames({ ownerKey,
-              analysisId, frames: record.frames }))
+              analysisId, attemptId, frames: record.frames }))
             : [await stage(stageName, () => evidenceStore.readSource({ ownerKey, analysisId }))];
           const mode = video ? ANALYSIS_MODES.videoAreaScan : IMAGE_MODE;
           stageName = "provider_start";
@@ -162,7 +164,8 @@ export function createAgentAnalysisRunner({
           emit("provider.started", { durationMs: durations.provider_start });
           stageName = "provider_id_settlement";
           const pending = await stage(stageName, () => analysisStore.markProviderStarted({
-            ownerKey, analysisId, runId: reserved?.runId, responseId: provider.responseId,
+            ownerKey, analysisId, attemptId, runId: reserved?.runId,
+            responseId: provider.responseId,
             mode,
             diagnostics: { ...detail, memory: sampler.capture(),
               durations: { ...durations, ...detail.durations } }
@@ -170,7 +173,7 @@ export function createAgentAnalysisRunner({
           stageName = "task_dispatch";
           try {
             await stage(stageName, () => taskEnqueuer.enqueue({ ownerKey, analysisId,
-              runId: reserved?.runId, dueAt: pending.dueAt }));
+              attemptId, runId: reserved?.runId, dueAt: pending.dueAt }));
           } catch (error) {
             Object.assign(detail, { failureClass: "task_dispatch_failed" });
             emit("task.dispatch_failed", { stage: stageName });
@@ -192,7 +195,8 @@ export function createAgentAnalysisRunner({
           if (!uncertainProviderStart && stageName !== "provider_id_settlement") {
             try {
               await stage("settlement", () => analysisStore.markFailed({ ownerKey,
-                analysisId, runId: reserved?.runId, reason: failureReason(error),
+                analysisId, attemptId, runId: reserved?.runId,
+                reason: failureReason(error),
                 diagnostics: { ...detail, memory: sampler.capture(),
                   durations: { ...durations, ...detail.durations } } }));
               emit("run.failed", { durationMs: performance.now() - started });

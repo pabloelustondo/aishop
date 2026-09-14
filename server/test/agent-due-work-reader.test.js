@@ -33,7 +33,7 @@ function document({ ownerKey = OWNER, id = ID, runId = RUN,
 test("queries only due analyzing work in oldest-first order", async () => {
   const { calls, reader } = harness([document()]);
   assert.deepEqual(await reader.list(), [{ ownerKey: OWNER, analysisId: ID,
-    runId: RUN, dueAt: DUE }]);
+    attemptId: null, runId: RUN, dueAt: DUE }]);
   assert.deepEqual(calls, [
     ["collectionGroup", "analyses"],
     ["where", "status", "==", "analyzing"],

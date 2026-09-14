@@ -6,6 +6,7 @@ import { AgentVideoError } from "../src/agent-video-media.js";
 
 const OWNER = "a".repeat(64);
 const ID = "video-analysis";
+const ATTEMPT = "attempt-current";
 const VIDEO = new URL("fixtures/video/three-frame.mov", import.meta.url);
 const JPEG = new URL("../contracts/vista-server-endpoint-agent-handoff-v0.1/fixtures/valid/accepted-detail.jpg", import.meta.url);
 
@@ -13,7 +14,7 @@ function harness(initial = "processing", { inspectError } = {}) {
   const calls = [];
   let status = initial;
   const upload = () => ({ analysisId: ID, status, fileName: "shelf.mov",
-    mediaType: "video/quicktime", expectedByteLength: 123 });
+    mediaType: "video/quicktime", expectedByteLength: 123, attemptId: ATTEMPT });
   const analysisStore = {
     readVideoUpload: async input => { calls.push(["read", input]); return upload(); },
     markVideoReady: async input => { calls.push(["ready", input]); status = "uploaded"; },
@@ -21,7 +22,7 @@ function harness(initial = "processing", { inspectError } = {}) {
   };
   const evidenceStore = {
     downloadSource: async ({ destination }) => { calls.push(["download"]); await copyFile(VIDEO, destination); },
-    storeFrame: async input => { calls.push(["frame", input.index]); return {
+    storeFrame: async input => { calls.push(["frame", input]); return {
       index: input.index, timestampMs: input.timestampMs, path: `frame-${input.index}`,
       sha256: "b".repeat(64), byteLength: input.bytes.length
     }; }
@@ -38,19 +39,23 @@ function harness(initial = "processing", { inspectError } = {}) {
 
 test("processes one video into immutable frames then starts one analysis", async () => {
   const { calls, process } = harness();
-  const result = await process({ ownerKey: OWNER, analysisId: ID });
+  const result = await process({ ownerKey: OWNER, analysisId: ID,
+    attemptId: ATTEMPT });
   assert.deepEqual(result, { processed: true, reason: "analysis-started" });
   assert.deepEqual(calls.map(([name]) => name),
-    ["read", "download", "frame", "ready", "read", "run"]);
+    ["read", "download", "read", "frame", "ready", "read", "run"]);
   const ready = calls.find(([name]) => name === "ready")[1];
   assert.equal(ready.frames.length, 1);
   assert.equal(ready.sha256.length, 64);
+  assert.equal(ready.attemptId, ATTEMPT);
+  assert.equal(calls.find(([name]) => name === "frame")[1].attemptId, ATTEMPT);
   assert.ok((await readFile(JPEG)).length === ready.frames[0].byteLength);
 });
 
 test("a replay after analysis starts is a harmless no-op", async () => {
   const { calls, process } = harness("analyzing");
-  assert.deepEqual(await process({ ownerKey: OWNER, analysisId: ID }),
+  assert.deepEqual(await process({ ownerKey: OWNER, analysisId: ID,
+    attemptId: ATTEMPT }),
     { processed: false, reason: "already-started" });
   assert.deepEqual(calls.map(([name]) => name), ["read"]);
 });
@@ -58,7 +63,8 @@ test("a replay after analysis starts is a harmless no-op", async () => {
 test("a validation failure settles the video without provider spend", async () => {
   const failure = new AgentVideoError("video_invalid");
   const { calls, process } = harness("processing", { inspectError: failure });
-  await assert.rejects(process({ ownerKey: OWNER, analysisId: ID }), failure);
+  await assert.rejects(process({ ownerKey: OWNER, analysisId: ID,
+    attemptId: ATTEMPT }), failure);
   assert.deepEqual(calls.map(([name]) => name), ["read", "download", "failed"]);
 });
 
@@ -67,6 +73,14 @@ test("a transient processing fault remains retryable", async () => {
     code: "storage_unavailable"
   });
   const { calls, process } = harness("processing", { inspectError: failure });
-  await assert.rejects(process({ ownerKey: OWNER, analysisId: ID }), failure);
+  await assert.rejects(process({ ownerKey: OWNER, analysisId: ID,
+    attemptId: ATTEMPT }), failure);
   assert.deepEqual(calls.map(([name]) => name), ["read", "download"]);
+});
+
+test("a stale processing attempt cannot write frames or start analysis", async () => {
+  const { calls, process } = harness();
+  assert.deepEqual(await process({ ownerKey: OWNER, analysisId: ID,
+    attemptId: "attempt-stale" }), { processed: false, reason: "stale-attempt" });
+  assert.deepEqual(calls.map(([name]) => name), ["read"]);
 });

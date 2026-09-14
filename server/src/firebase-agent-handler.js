@@ -51,13 +51,12 @@ export function createFirebaseAgentHandler({
         preprocessingVersion: "original-image-auto-detail"
       }), environment, ...releaseMetadata }
   });
+  const videoTasks = videoTaskEnqueuer ?? createAgentVideoTaskEnqueuer();
   const handler = createAgentAPIHandler({
     evidenceStore: services.evidenceStore,
     analysisStore: services.analysisStore,
     verifyIdToken: services.verifyIdToken,
-    videoTaskEnqueuer: videoTaskEnqueuer ?? { enqueue: input =>
-      createAgentVideoTaskEnqueuer().enqueue(input) },
-    runner,
+    videoTaskEnqueuer: videoTasks, providerControl: analyzer, runner,
     logger, diagnostics
   });
   return (request, response) => handler(request, response, request[API_PROCESS_CONTEXT]);
