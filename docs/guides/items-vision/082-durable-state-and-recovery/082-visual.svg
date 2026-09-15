@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Vision Agent Durable State and Recovery</title>
+  <desc id="desc">The video record moves from uploading through processing and analysis to a report. Cancellation and failure are visible states. Session renewal applies during upload; eligible cancelled video can restart with a new attempt. Version and attempt fences reject late work.</desc>
+  <defs>
+    <style>text{font-family:Arial,Helvetica,sans-serif;fill:#172D43}.title{font-size:47px;font-weight:700}.state{font-size:25px;font-weight:700}.label{font-size:23px;font-weight:700}.small{font-size:20px;fill:#52657A}</style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L12 6 L0 12 Z" fill="#087E8B"/></marker>
+  </defs>
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <rect x="72" y="68" width="66" height="7" fill="#087E8B"/>
+  <text x="72" y="132" class="title">Vision Agent Durable State and Recovery</text>
+  <text x="72" y="177" font-size="22" fill="#52657A">The server owns progress after accepted upload and analysis work.</text>
+
+  <text x="80" y="255" font-size="20" font-weight="700" fill="#087E8B">NORMAL VIDEO STATE</text>
+  <path d="M92 330 H1477" stroke="#087E8B" stroke-width="4" marker-end="url(#arrow)"/>
+  <circle cx="136" cy="330" r="22" fill="#087E8B"/>
+  <circle cx="452" cy="330" r="22" fill="#087E8B"/>
+  <circle cx="760" cy="330" r="22" fill="#087E8B"/>
+  <circle cx="1072" cy="330" r="22" fill="#087E8B"/>
+  <circle cx="1400" cy="330" r="22" fill="#087E8B"/>
+  <text x="85" y="390" class="state">uploading</text>
+  <text x="395" y="390" class="state">processing</text>
+  <text x="704" y="390" class="state">uploaded</text>
+  <text x="1015" y="390" class="state">analyzing</text>
+  <text x="1352" y="390" class="state">analyzed</text>
+  <text x="704" y="421" class="small">brief frame-ready state</text>
+
+  <path d="M950 330 V456 H495 M950 456 H1105" stroke="#9B80C9" stroke-width="3" fill="none"/>
+  <text x="671" y="444" font-size="18" fill="#7657AE">alternative outcomes</text>
+  <text x="575" y="489" class="label" fill="#7657AE">failed</text>
+  <text x="915" y="489" class="label" fill="#7657AE">cancelled</text>
+  <text x="80" y="556" class="label">Recovery depends on the last confirmed state</text>
+  <path d="M80 576 H1520" stroke="#D7E3EA" stroke-width="2"/>
+  <text x="100" y="636" class="label">During uploading</text>
+  <text x="100" y="668" class="small">renew Storage session</text>
+  <text x="100" y="699" class="small">or create a fresh record</text>
+  <text x="550" y="636" class="label">During active work</text>
+  <text x="550" y="668" class="small">cancel with latest version</text>
+  <text x="550" y="699" class="small">retain evidence and history</text>
+  <text x="1020" y="636" class="label">After eligible cancellation</text>
+  <text x="1020" y="668" class="small">restart complete video source</text>
+  <text x="1020" y="699" class="small">new attempt; frames re-extracted</text>
+
+  <rect x="72" y="747" width="1456" height="68" rx="8" fill="#EAF2F1" stroke="#B6DAD5" stroke-width="2"/>
+  <text x="98" y="790" class="label">Version + attemptId + runId fence late workers: old attempt A cannot settle new attempt B.</text>
+  <text x="80" y="849" class="small">Known gaps: general stalled-work sweep, video /run attempt propagation, and original-source download.</text>
+  <text x="1495" y="849" font-size="23" text-anchor="end" fill="#52657A">082</text>
+</svg>

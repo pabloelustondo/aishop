@@ -41,3 +41,21 @@ Pablo selected `/Users/paboelustodo/Downloads/IMG_3381.MOV` and supplied:
 
 Reservation succeeded. No bytes or model analysis are proven by this response.
 The private session URL was not included in the evidence.
+
+## Post-ACL-fix reservation
+
+After deployment of API revision `api-00029-mum` (independently reported ACTIVE)
+and a new sign-in, Pablo reserved the same MOV file again. Supplied output:
+
+```json
+{
+  "httpStatus": 201,
+  "analysisId": "0621956927cd49e4b59b43704b2a0b67",
+  "status": "uploading",
+  "hasUploadSession": true,
+  "error": null
+}
+```
+
+Fresh reservation passed. Transfer remains pending for this new session.
+The earlier session and its failure evidence remain unchanged.

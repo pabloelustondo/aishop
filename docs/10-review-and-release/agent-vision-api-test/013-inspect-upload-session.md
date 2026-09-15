@@ -1,6 +1,6 @@
 # Test 013 — Inspect the existing Storage upload session
 
-Result: diagnostic captured — HTTP 400 identifies an ACL/uniform-access conflict.
+Result: post-fix HTTP 200 confirms completion; original ACL conflict retained below.
 
 ## Purpose and command
 
@@ -43,3 +43,15 @@ After deployment, test a fresh session; the old session may retain the ACL optio
 No executable code or bucket permissions were changed in this diagnostic.
 
 Reference: [Uniform bucket-level access](https://docs.cloud.google.com/storage/docs/uniform-bucket-level-access).
+
+## Post-fix verification
+
+After the fresh reservation and transfer for `0621956927cd49e4b59b43704b2a0b67`,
+Pablo ran the same status script and supplied:
+
+```json
+{"httpStatus":200,"range":null,"storageCode":null,"message":null}
+```
+
+Storage reports upload completion. No retry of video bytes was needed.
+This validates transfer with the corrected session, not frame extraction or GPT analysis.

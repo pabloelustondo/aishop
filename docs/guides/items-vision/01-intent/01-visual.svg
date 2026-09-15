@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
-  <title id="title">VISTA Agentic Items Vision: from image to item report</title>
+  <title id="title">VISTA Agentic Visual Products Recognition: from image to item report</title>
   <desc id="desc">The browser sends a shelf photo to the server API. The server coordinates OpenAI analysis and saves images in Cloud Storage and records in Firestore. The user reads the saved report in the browser. This is a simplified architecture view.</desc>
   <!-- Editable source. Render this SVG to 01-visual.png at 1600 by 900. -->
   <defs>
@@ -15,7 +15,7 @@
   <rect width="1600" height="900" fill="#F8FAFC"/>
   <rect x="72" y="70" width="64" height="7" fill="#087E8B"/>
   <text x="72" y="133" font-size="48" font-weight="700">From image to item report</text>
-  <text x="72" y="182" font-size="27" fill="#52657A">VISTA Agentic Items Vision</text>
+  <text x="72" y="182" font-size="27" fill="#52657A">VISTA Agentic Visual Products Recognition</text>
 
   <!-- Browser boundary: both uploading and reading belong to the user interface. -->
   <rect x="72" y="259" width="340" height="483" rx="12" fill="#EDF5FD" stroke="#B8D1E7" stroke-width="2"/>

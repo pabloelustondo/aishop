@@ -6,7 +6,7 @@ import { Presentation, PresentationFile } from "@oai/artifact-tool";
 const workspaceDir = "/Users/paboelustodo/-PROJECTS/aishop";
 const skillDir = "/Users/paboelustodo/.codex/plugins/cache/openai-primary-runtime/presentations/26.904.11930/skills/presentations";
 const buildDir = path.join(workspaceDir, ".codex-presentation-build/items-vision-complete");
-const finalPath = path.join(workspaceDir, "output/presentation/VISTA-Agentic-Items-Vision-Complete-Draft-v3.pptx");
+const finalPath = path.join(workspaceDir, "output/presentation/VISTA-Agentic-Visual-Products-Recognition-Complete-Draft.pptx");
 const runtimePython = "/Users/paboelustodo/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3";
 const { resolvePresentationFont, finalizePresentation } = await import(
   pathToFileURL(path.join(skillDir, "container_tools/artifact_tool_utils.mjs")).href,
@@ -68,7 +68,8 @@ function addTitleTextSlide(slide, title, blocks, code) {
   box(slide, 0, 0, 1600, 900, C.navy);
   box(slide, 0, 0, 30, 900, C.teal);
   textBox(slide, "AI SHOP · VISTA · SDLC2", 110, 100, 900, 42, 20, "#8FD0C8", true);
-  textBox(slide, title, 110, 235, 1300, 140, 60, C.white, true);
+  const coverTitle = title === "VISTA Agentic Visual Products Recognition" ? "VISTA Agentic Visual\nProducts Recognition" : title;
+  textBox(slide, coverTitle, 110, 235, 1300, 140, 60, C.white, true);
   const subtitle = blocks.flatMap(b => [b.heading, ...b.items]).filter(Boolean).join("\n");
   textBox(slide, subtitle, 115, 410, 1050, 180, 30, "#D9E5E8", false);
   box(slide, 110, 670, 900, 5, C.gold);
@@ -140,7 +141,7 @@ for (const [folder, code, visualRel] of concepts) {
 
 await fs.mkdir(buildDir, { recursive: true });
 await fs.mkdir(path.dirname(finalPath), { recursive: true });
-const candidatePath = path.join(buildDir, "candidate-v3.pptx");
+const candidatePath = path.join(buildDir, "candidate-visual-products-recognition.pptx");
 await (await PresentationFile.exportPptx(presentation)).save(candidatePath);
 
 const result = await finalizePresentation({
@@ -157,6 +158,6 @@ const result = await finalizePresentation({
   requiredNativeTableOwnerSlides: [],
   fontPolicy: { basis: "design", families: [family] },
   verifyArtifactToolImport: true,
-  receiptPath: path.join(buildDir, "VISTA-Agentic-Items-Vision-Complete-Draft-v3.validation.json"),
+  receiptPath: path.join(buildDir, "VISTA-Agentic-Visual-Products-Recognition-Complete-Draft.validation.json"),
 });
 console.log(JSON.stringify({ finalPath, family, result }, null, 2));

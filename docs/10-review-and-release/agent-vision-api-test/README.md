@@ -24,8 +24,14 @@ the response, and record a bounded conclusion before advancing.
 | [009 — Team Agent grants](009-team-agent-access.md) | Grant Agent access to six selected accounts | Success — operator-provided results |
 | [010 — Admin list](010-admin-list.md) | Can the token read the cross-user Admin list? | PASS — 200; 13 records on returned page |
 | [011 — Reserve video](011-reserve-video.md) | Can the API reserve a fresh video upload? | PASS — 201; uploading |
-| [012 — Transfer video](012-transfer-video.md) | Can Storage accept the complete video? | FAIL — 400; invalid |
-| [013 — Inspect upload session](013-inspect-upload-session.md) | What state does Storage report after failure? | 400 — legacy ACL conflicts with uniform bucket access |
+| [012 — Transfer video](012-transfer-video.md) | Can Storage accept the complete video? | Post-fix completion verified by 013; original 400 retained |
+| [013 — Inspect upload session](013-inspect-upload-session.md) | What state does Storage report after transfer? | PASS — post-fix 200; original ACL conflict retained |
+| [014 — Complete video](014-complete-video.md) | Can the API start processing the stored video? | PASS — 200; processing acknowledged |
+| [015 — Video status](015-video-status.md) | Has background processing finished? | PASS — analyzed; report present; no failure |
+| [016 — Read report](016-read-report.md) | Can the completed report be retrieved and reviewed? | PASS — report retrieved; accuracy review pending |
+| [017 — Verify original](017-verify-original.md) | Does the downloaded original match the local video? | FAIL — HTTP 500; comparison skipped |
+| [018 — Inspect download error](018-read-download-error.md) | What error did the source endpoint return? | Empty body confirmed — server logs needed |
+| [019 — Browser video check](019-browser-video-check.md) | Does the hosted Agent display a completed video report? | PASS — user report and screenshot; playback unverified |
 
 ## Evidence conventions
 

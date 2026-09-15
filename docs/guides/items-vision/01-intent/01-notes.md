@@ -1,6 +1,6 @@
 # 01 — Intent: Items Vision — From Image to Item Report
 
-VISTA Agentic Items Vision is the proposed name of this presentation.
+VISTA Agentic Visual Products Recognition is the presentation title.
 It explains AI Shop's image uploader and analyser implementation.
 The intended outcome is simple: understand how a photo becomes an item report.
 The audience should follow the story without needing to read source code.

@@ -1,6 +1,10 @@
 # Vision Agent API guide
 
-Source reviewed: commit `a7f9d3c`, 2026-09-15.
+Start with the [developer guide](developer-guide.md): purpose, architecture,
+every Vision Agent/Admin endpoint and the tested curl walkthrough.
+
+The original reference chapters were reviewed at `a7f9d3c`; the developer guide
+adds the September 15 live results and ACL correction. Older gap notes are snapshots.
 These documents describe the current implementation, not a new API proposal.
 They are drafts for Claude and Pablo to review; approval is Pablo's commit.
 
@@ -26,10 +30,12 @@ The environment is TEST: Firebase project `aishop-99d36`.
 No production environment is declared. This guide excludes the separate
 reviewer `/inspections`, VISTA package-ingest and legacy analysis APIs.
 
-Run shell blocks in order in the same macOS zsh terminal; curl and jq are required.
+For the saved test scripts, enter Bash and follow the developer guide one step at a time.
+Older inline reference recipes use zsh conventions; curl and jq are required.
 Stop on an unexpected response. Never carry an invalid ID into later commands.
 Use a fresh record first, then separate disposable records for recovery tests.
 POST and PUT tests create state; completion/run/restart may incur provider cost.
 GET status calls observe state and never initiate provider work.
 Do not share passwords, tokens, upload URLs, source bytes or unsanitized logs.
-The commands are instructions: they were not executed against live data here.
+Live execution outcomes are recorded in the linked test collection; untested recipes
+must not be treated as successful tests.

@@ -1,6 +1,6 @@
 # Test 012 — Transfer the reserved video to Storage
 
-Result: FAIL — operator-supplied HTTP 400, Storage code invalid.
+Result: post-fix upload completion confirmed by status query; original 400 retained.
 Environment: TEST, aishop-99d36.
 
 ## Purpose and command
@@ -39,3 +39,13 @@ The parsed code does not establish whether the cause is request shape, length,
 session state or another validation error. No detailed message was captured.
 Do not infer successful transfer or proceed to the completion endpoint.
 Next: inspect this session without sending video bytes or reserving another one.
+
+## Post-fix transfer
+
+Pablo transferred the same MOV using fresh analysis
+`0621956927cd49e4b59b43704b2a0b67` after deployment of the ACL correction.
+The transfer script initially printed nothing: its jq XML fallback could produce
+an empty stream for responses without an error. The parser was corrected.
+No HTTP result is inferred from that blank output and the transfer was not repeated.
+The subsequent Test 013 status query returned HTTP 200 with no error,
+confirming the session had completed its upload. AI processing is not yet tested.

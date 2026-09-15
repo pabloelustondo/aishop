@@ -9,7 +9,9 @@ aishop_transfer_video() {
     echo 'Video size changed since reservation; stop and inspect.' >&2; return 1;
   }
   # Keep the private session URL out of process arguments; reject config metacharacters.
-  [[ "$UPLOAD_URL" == https://* && "$UPLOAD_URL" != *$'\n'* && "$UPLOAD_URL" != *$'\r'* && "$UPLOAD_URL" != *'"'* && "$UPLOAD_URL" != *'\'* ]] || return 1
+  [[ "$UPLOAD_URL" == https://* && "$UPLOAD_URL" != *$'\n'* && "$UPLOAD_URL" != *$'\r'* && "$UPLOAD_URL" != *'"'* && "$UPLOAD_URL" != *'\'* ]] || {
+    echo 'Invalid session URL format; no request sent.' >&2; return 1;
+  }
   reply=$(printf 'url = "%s"\n' "$UPLOAD_URL" |
     curl --config - --silent --show-error --connect-timeout 10 --max-time 300 \
       -X PUT -H "Content-Type: $MEDIA" \
@@ -20,6 +22,9 @@ aishop_transfer_video() {
   printf '%s' "$reply" | jq -Rrs 'split("\nHTTP status: ") as $p |
     {httpStatus:($p[1]|tonumber),
      storageCode:((try ($p[0]|fromjson|.error.errors[0].reason // .error.code) catch null)
-       // (try ($p[0]|capture("<Code>(?<code>[^<]+)</Code>").code) catch null))}'
+       // (try ($p[0]|capture("<Code>(?<code>[^<]+)</Code>").code) catch null) // null),
+     message:((try ($p[0]|fromjson|.error.message) catch null)
+       // (try ($p[0]|capture("<Message>(?<message>[^<]+)</Message>").message) catch null) // null
+       | if type == "string" then gsub("https?://[^[:space:]<>]+"; "[URL redacted]") else . end)}'
 }
 aishop_transfer_video
