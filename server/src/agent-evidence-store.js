@@ -101,7 +101,8 @@ export function createAgentEvidenceStore({ bucket, fetchImpl = fetch,
       }
       try {
         const [uri] = await bucket.file(path).createResumableUpload({
-          origin, private: true, preconditionOpts: { ifGenerationMatch: 0 },
+          // Uniform bucket-level access rejects legacy per-object ACL options.
+          origin, preconditionOpts: { ifGenerationMatch: 0 },
           metadata: { contentType: mediaType, contentLength: byteLength,
             cacheControl: "private, no-store", metadata: { ownerKey,
               analysisId, expectedByteLength: String(byteLength) } }

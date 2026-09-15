@@ -92,7 +92,7 @@ test("reads stored bytes back with their recorded media type", async () => {
   assert.equal(source.sha256, createHash("sha256").update(JPEG).digest("hex"));
 });
 
-test("creates one private origin-bound resumable video session", async () => {
+test("creates an origin-bound resumable video session without legacy ACL options", async () => {
   const capture = {};
   const bucket = { file: path => ({ createResumableUpload: async options => {
     capture.path = path; capture.options = options;
@@ -104,7 +104,10 @@ test("creates one private origin-bound resumable video session", async () => {
     origin: "https://aishop-99d36.web.app" });
   assert.equal(session.uri, "https://storage.invalid/private-session");
   assert.equal(capture.options.origin, "https://aishop-99d36.web.app");
-  assert.equal(capture.options.private, true);
+  for (const key of ["private", "public", "predefinedAcl", "acl"]) {
+    assert.equal(Object.hasOwn(capture.options, key), false, `must omit ${key}`);
+  }
+  assert.equal(Object.hasOwn(capture.options.metadata, "acl"), false);
   assert.equal(capture.options.preconditionOpts.ifGenerationMatch, 0);
   assert.equal(capture.options.metadata.contentType, "video/quicktime");
   assert.equal(capture.options.metadata.metadata.expectedByteLength, "5000");
