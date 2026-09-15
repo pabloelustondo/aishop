@@ -27,5 +27,11 @@ manual smoke testing and regression before a sprint branch is promoted.
 4. Preserve failures and analysis/request references; never copy secrets or tokens.
 5. Recommend promotion only when required cases pass or accepted risks are recorded.
 
+## Automated API pass
+
+`agent-api-curl-suite.sh` runs the documented API contract against TEST from a
+terminal and reports every check; see [its notes](agent-api-curl-suite.md).
+Run it before the manual cases so the API is proven before a person judges results.
+
 Manual QA complements `./e2e/server/run.zsh`; neither result authorizes a merge,
 deployment or release by itself.

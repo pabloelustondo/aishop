@@ -1,42 +1,40 @@
-# 031 - A Correct Answer Needs a Correct Reference
+# 031 - One Shelf, Three Different Readings
 
-The repository contains valuable visual-analysis baselines.
-It also records why those baselines cannot yet support a formal accuracy score.
+This slide uses the actual dense pharmacy shelf and recorded analysis artifacts.
+The concrete disagreement explains why benchmark design matters.
 
-## Human verification comes first
-The current tabletop and dense-shelf references began as GPT outputs obtained by hand.
-They were not approved as human ground truth.
-A reviewer still needs to validate identities and quantities against the original images.
-The benchmark must preserve that reviewed reference as a versioned artifact.
+## The original evidence
+All three readings use the same 1152 by 1536 shelf photograph.
+It contains small labels, occlusion, stacked products, edge cropping, and a carton.
+Those conditions make both identification and counting difficult.
 
-## Settle the counting contract
-Front facings and visible physical units answer different business questions.
-A facing counts a product front on the active display plane.
-Visible-unit counting may also include packages stacked or positioned behind it.
-The dense-shelf reference reports 94 visible units across 42 groups.
-An independent reading estimated about 57 facings plus 21 units in stacks.
-Neither total can score the other until the metric is fixed.
+## Reading 1: provisional reference
+The numbered overlay maps 42 product groups across four shelf regions.
+Its associated GPT report counts 94 visible physical units.
+This reference was obtained by hand from GPT and is not human-approved ground truth.
 
-## Settle identification depth
-A broad product family can be correct while its brand, variant, or size is wrong.
-The benchmark should state whether it requires family, product, variant, size, or SKU.
-Visual similarity cannot prove an exact SKU without readable labels, catalog data, or barcode evidence.
+## Reading 2: Agent first run
+The deployed Agent returned 23 product rows totalling 62 facings.
+It also recorded three uncertain entries.
+The run completed and produced a reviewable report, but benchmark parity was not demonstrated.
+Some products were missed, grouped differently, or given an incorrect brand name.
 
-## Preserve uncertainty and provenance
-Partial and cropped products should remain marked as partial.
-Unreadable identity should become unknown rather than a confident invented name.
-Count confidence and identification confidence should remain separate.
-Each reported quantity should link to visible source objects or a declared no-localization reason.
+## Reading 3: independent visual review
+A separate shelf-by-shelf reading estimated about 57 front facings.
+It also identified 21 units stacked behind those fronts.
+That reading remained a model-assisted opinion rather than verified ground truth.
 
-## Current contract gaps
-The dense reference contains 42 groups while the current response schema caps rows at 40.
-This is a contract decision, not a model-quality finding.
-The application, benchmark, and scoring tool must use compatible definitions.
+## Why the totals disagree
+The provisional reference counts visible physical units.
+The Agent contract asks for front facings.
+The independent reading reports both measures separately.
+Product grouping and identity depth also differ across the readings.
 
-## Transition
-Once the reference and contract agree, controlled model comparisons become meaningful.
-The next slide separates those quality experiments from system-reliability tests.
+Dividing 62 by 94 would produce a misleading number, not an accuracy score.
+The comparison must first fix the counting rule and required identification level.
+A human reviewer must then validate the reference against the source photograph.
 
 ## Visual direction
-Show the original evidence, human-verified reference, AI result, and comparison in sequence.
-Place the counting contract underneath as the rule that governs every comparison.
+Show the actual photograph, numbered overlay, and Agent screenshot prominently.
+Use the real totals as evidence, with a warning that they answer different questions.
+Keep the conclusion simple: define and verify the reference before scoring the model.

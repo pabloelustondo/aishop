@@ -1,11 +1,12 @@
-# A Correct Answer Needs a Correct Reference
+# One Shelf, Three Different Readings
 
-Accuracy cannot be calculated until the benchmark defines what counts.
+The same dense shelf produced three incompatible descriptions.
 
-- Use a human-verified inventory as the reference.
-- Choose the metric: front facings, visible units, or both.
-- Define required identity: family, product, variant, size, or SKU.
-- Mark partial, cropped, unknown, and uncertain products explicitly.
-- Link each reported quantity to visible source objects.
+- Provisional GPT reference: 42 product groups and 94 visible units.
+- Agent first run: 23 rows, 62 facings, and 3 uncertain entries.
+- Independent visual read: about 57 facings plus 21 stacked units.
 
-Current GPT reference reports are useful baselines, but they are not ground truth.
+These totals answer different counting questions.
+They cannot be converted into an accuracy percentage.
+
+A human-verified reference and an agreed counting contract must come first.
