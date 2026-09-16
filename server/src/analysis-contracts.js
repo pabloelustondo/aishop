@@ -4,6 +4,7 @@ import { VISTA_CATALOG, catalogProductIds, catalogRoster } from "./vista-catalog
 export const ANALYSIS_MODES = Object.freeze({
   targetProduct: "targetProduct",
   areaScan: "areaScan",
+  videoAreaScan: "videoAreaScan",
   /// Closed world: the answer may only name products the catalog knows, or
   /// refuse. A separate mode rather than a flag on `areaScan`, because AI
   /// Shop's own app asks the open-world question about any shelf anywhere and
@@ -137,6 +138,19 @@ export const ANALYSIS_CONTRACTS = Object.freeze({
       "Do not invent brands, prices, product details, or buying conclusions."
     ].join(" ")
   },
+  [ANALYSIS_MODES.videoAreaScan]: {
+    schemaName: "video_area_scan_report",
+    schema: areaScanSchema,
+    instruction: [
+      "Analyze the ordered timestamped frames as samples from one continuous shelf video.",
+      "Identify every distinct product visible across the sampled frames using only visible evidence.",
+      "Count unique physical front-facing units across the whole video, not observations per frame.",
+      "Adjacent or overlapping frames can show the same facing repeatedly; count that facing only once by comparing its shelf position, neighbours, packaging and motion continuity.",
+      "When cross-frame identity is uncertain, do not increase a count; describe the uncertainty separately.",
+      "Count only sampled visible evidence and never infer products from moments between frames.",
+      "Do not invent brands, prices, product details, or buying conclusions."
+    ].join(" ")
+  },
   [ANALYSIS_MODES.areaScanCatalog]: {
     schemaName: "area_scan_catalog_report",
     schema: catalogScanSchema,
@@ -180,7 +194,8 @@ export function assertValidReport(mode, report) {
     && ["good_buy", "bad_buy", "insufficient_evidence"].includes(report.conclusion)
     && typeof report.conclusionReason === "string"
     && confidenceValues.includes(report.confidence);
-  const validArea = mode === ANALYSIS_MODES.areaScan
+  const validArea = [ANALYSIS_MODES.areaScan,
+    ANALYSIS_MODES.videoAreaScan].includes(mode)
     && report && typeof report.summary === "string"
     && Array.isArray(report.identifiedProducts) && report.identifiedProducts.length <= 40
     && report.identifiedProducts.every((item) => item && typeof item.name === "string"

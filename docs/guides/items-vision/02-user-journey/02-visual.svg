@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Two product use cases share one vision foundation</title>
+  <desc id="desc">AI Shop uses an iPhone-led shopping experience. VISTA currently uses the manual web Vision Agent for shelf inspection and intends to connect a separate iPhone app. Both paths share server capabilities.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#52657A"/></marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #172D43; }
+      .heading { font-size: 28px; font-weight: 700; }
+      .body { font-size: 20px; fill: #52657A; }
+      .label { font-size: 17px; font-weight: 700; letter-spacing: 0.5px; }
+      .inverse { fill: #FFFFFF; }
+      .inverseBody { fill: #D7E4EA; }
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <rect x="72" y="70" width="64" height="7" fill="#087E8B"/>
+  <text x="72" y="136" font-size="47" font-weight="700">Two Product Use Cases Share One Vision Foundation</text>
+  <text x="72" y="181" font-size="24" fill="#52657A">Related visual intelligence, different users and decisions</text>
+
+  <path d="M800 240 V645" stroke="#D2DEE4" stroke-width="3"/>
+
+  <text x="100" y="263" class="label" fill="#1F6685">AI SHOP · EARLIER PRODUCT PATH</text>
+  <text x="100" y="311" class="heading">iPhone-led shopping experience</text>
+  <rect x="100" y="349" width="150" height="252" rx="25" fill="#EAF3F8" stroke="#1F6685" stroke-width="3"/>
+  <rect x="119" y="382" width="112" height="158" rx="8" fill="#FFFFFF"/>
+  <circle cx="175" cy="570" r="12" fill="none" stroke="#1F6685" stroke-width="3"/>
+  <path d="M142 493 H208 M151 487 V448 H171 V487 M181 487 V460 H201 V487" fill="none" stroke="#1F6685" stroke-width="4"/>
+  <text x="290" y="396" class="heading">Shopper scans a product or shelf</text>
+  <text x="290" y="436" class="body">On-device image processing</text>
+  <text x="290" y="472" class="body">Server-side AI when needed</text>
+  <path d="M250 510 H652" stroke="#52657A" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="290" y="556" class="heading">Better-informed shopping decisions</text>
+
+  <text x="862" y="263" class="label" fill="#7651A7">VISTA · SHELF INSPECTION</text>
+  <text x="862" y="311" class="heading">Products, facings, and reviewable evidence</text>
+  <rect x="862" y="356" width="292" height="112" rx="14" fill="#E7F3F1" stroke="#087E8B" stroke-width="3"/>
+  <text x="890" y="400" class="heading">Web Vision Agent</text>
+  <text x="890" y="432" class="body"><tspan x="890">Current manual path</tspan><tspan x="890" dy="27">Photo and video</tspan></text>
+  <rect x="1232" y="356" width="268" height="112" rx="14" fill="#F0ECF9" stroke="#7651A7" stroke-width="3" stroke-dasharray="10 8"/>
+  <text x="1260" y="400" class="heading">VISTA iPhone</text>
+  <text x="1260" y="437" class="body">Intended integration</text>
+  <path d="M1232 490 H1162" stroke="#7651A7" stroke-width="3" stroke-dasharray="8 7" marker-end="url(#arrow)"/>
+  <text x="862" y="525" class="body">Store teams capture shelf evidence during inspections.</text>
+  <text x="862" y="565" class="body">The shared analysis path supports consistent review.</text>
+
+  <path d="M382 601 V646 M1036 601 V646" stroke="#52657A" stroke-width="3" marker-end="url(#arrow)"/>
+  <rect x="72" y="646" width="1456" height="126" rx="18" fill="#172D43"/>
+  <text x="100" y="694" font-size="27" font-weight="700" class="inverse">Common server capabilities</text>
+  <text x="100" y="738" font-size="21" class="inverseBody">Secure access</text>
+  <text x="380" y="738" font-size="21" class="inverseBody">Evidence intake</text>
+  <text x="690" y="738" font-size="21" class="inverseBody">AI coordination</text>
+  <text x="1020" y="738" font-size="21" class="inverseBody">Saved results</text>
+  <text x="1308" y="738" font-size="21" class="inverseBody">Human review</text>
+
+  <text x="72" y="829" font-size="22" fill="#52657A">Shared server behaviour supports both products while preserving their different purposes.</text>
+  <text x="1528" y="829" text-anchor="end" font-size="24" fill="#52657A">02</text>
+</svg>

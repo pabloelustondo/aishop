@@ -1,0 +1,13 @@
+[
+  {
+    "origin": [
+      "https://aishop-99d36.web.app",
+      "https://aishop-99d36.firebaseapp.com",
+      "http://127.0.0.1:5000",
+      "http://localhost:5000"
+    ],
+    "method": ["PUT"],
+    "responseHeader": ["Content-Type", "Content-Range", "Range", "x-goog-resumable"],
+    "maxAgeSeconds": 3600
+  }
+]

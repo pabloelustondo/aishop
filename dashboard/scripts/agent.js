@@ -21,18 +21,43 @@
 const BASE = "/v1/agent/analyses";
 export const OBSERVATION_INTERVAL_MS = 15_000;
 export const OBSERVATION_CEILING_MS = 10 * 60_000;
+export const VIDEO_CHUNK_BYTES = 8 * 1024 * 1024;
+export const VIDEO_UPLOAD_RECOVERY_ATTEMPTS = 3;
+const ACTIVE_STATES = new Set(["uploading", "processing", "analyzing"]);
 
 export function shouldPollAnalyses(analyses, { visible = true,
   elapsedMs = 0 } = {}) {
   return visible && elapsedMs < OBSERVATION_CEILING_MS
     && Array.isArray(analyses)
-    && analyses.some(analysis => analysis?.status === "analyzing");
+    && analyses.some(analysis => ACTIVE_STATES.has(analysis?.status));
 }
 
 export function activityLabel(analyses) {
+  const processing = Array.isArray(analyses)
+    ? analyses.filter(analysis => analysis?.status === "processing").length : 0;
+  const uploading = Array.isArray(analyses)
+    ? analyses.filter(analysis => analysis?.status === "uploading").length : 0;
   const count = Array.isArray(analyses)
     ? analyses.filter(analysis => analysis?.status === "analyzing").length : 0;
+  if (processing > 0) return `Preparing ${processing} ${processing === 1 ? "video" : "videos"}`;
+  if (uploading > 0) return `${uploading} ${uploading === 1 ? "upload needs" : "uploads need"} attention`;
   return count === 0 ? "Idle" : `Analysing ${count} ${count === 1 ? "image" : "images"}`;
+}
+
+export function uploadControlState({ analysisCount = 0, uploadInFlight = false,
+  composerOpen = false } = {}) {
+  const nothing = analysisCount === 0;
+  return Object.freeze({
+    formHidden: uploadInFlight || (!nothing && !composerOpen),
+    triggerHidden: nothing || uploadInFlight || composerOpen
+  });
+}
+
+export function canRetryAnalysis(analysis) {
+  if (analysis?.status !== "failed") return false;
+  const video = analysis.mediaType === "video/mp4"
+    || analysis.mediaType === "video/quicktime";
+  return !video || (analysis.frames?.length ?? 0) > 0;
 }
 
 /** Mirrors the server's own ceiling, so the refusal happens before the call. */
@@ -49,7 +74,10 @@ const view = {
   form: element("upload-form"), file: element("file"), submit: element("submit"),
   uploadAnother: element("upload-another"), refresh: element("refresh"),
   live: element("live"), liveText: element("live-text"),
-  uploadProgress: element("upload-progress"), list: element("analyses"),
+  uploadProgress: element("upload-progress"),
+  uploadProgressText: element("upload-progress-text"),
+  uploadProgressBar: element("upload-progress-bar"), list: element("analyses"),
+  cancelTransfer: element("cancel-transfer"),
   empty: element("empty"), message: element("message")
 };
 
@@ -176,6 +204,9 @@ export function refinementNote(value) {
 }
 
 const STATUS_LABEL = Object.freeze({
+  uploading: "Upload incomplete",
+  cancelled: "Cancelled",
+  processing: "Preparing video",
   uploaded: "Stored, not yet analysed",
   analyzing: "Analysing",
   analyzed: "Analysed",
@@ -211,7 +242,64 @@ let objectURLs = [];
 let observationTimer = null;
 let observationStartedAt = null;
 let uploadInFlight = false;
+let uploadComposerOpen = false;
 let displayedAnalyses = [];
+let uploadChoice = null;
+let activeTransfer = null;
+const recoveryBusy = new Set();
+
+export function recoveryActions(analysis) {
+  if (analysis?.status === "uploading") return ["resume", "cancel", "fresh"];
+  if (["processing", "analyzing", "uploaded"].includes(analysis?.status)) return ["cancel"];
+  if (analysis?.status === "cancelled") {
+    const video = ["video/mp4", "video/quicktime"].includes(analysis.mediaType);
+    return video && ["processing", "uploaded", "analyzing"].includes(analysis.cancelledFrom)
+      ? ["restart"] : ["fresh"];
+  }
+  return [];
+}
+
+function forgetAnalysis(analysisId) {
+  try {
+    for (const key of Object.keys(localStorage)) {
+      if (!key.startsWith("aishop-video:")) continue;
+      try {
+        if (JSON.parse(localStorage.getItem(key))?.analysisId === analysisId) localStorage.removeItem(key);
+      } catch {}
+    }
+  } catch {}
+}
+
+function chooseRecovery(analysis, mode) {
+  uploadChoice = { analysis, mode };
+  uploadComposerOpen = true;
+  view.file.value = "";
+  view.submit.textContent = mode === "resume" ? "Resume upload" : "Start fresh";
+  syncUploadControls();
+  say(mode === "resume" ? `Select ${analysis.fileName} and press Resume upload.`
+    : "Choose a file and press Start fresh. The incomplete upload will be cancelled first.");
+  view.form.scrollIntoView({ behavior: "smooth", block: "center" });
+  view.file.focus();
+}
+
+async function recoverAnalysis(analysis, operation) {
+  if (recoveryBusy.has(analysis.analysisId)) return;
+  recoveryBusy.add(analysis.analysisId);
+  if (operation === "cancel" && activeTransfer?.analysisId === analysis.analysisId) activeTransfer.controller.abort();
+  render(displayedAnalyses);
+  try {
+    const result = await request("POST", `${BASE}/${analysis.analysisId}/${operation}`,
+      Number.isInteger(analysis.version) ? { json: { version: analysis.version } } : {});
+    if (result.analysis?.status !== "uploading") forgetAnalysis(analysis.analysisId);
+    const failed = Object.values(result.cleanup ?? {}).some(value => ["failed", "unavailable"].includes(value));
+    say(result.outcome === "changed" || result.outcome === "already-settled"
+      ? "The record changed before this action completed. Its latest status is shown below."
+      : operation === "restart" ? "Analysis restarted using the stored video."
+        : failed ? "Cancelled. Some background cleanup could not finish; the record remains cancelled."
+          : "Cancelled. The record remains in your history.");
+  } catch (error) { say(error.message, true, error.requestId); }
+  finally { recoveryBusy.delete(analysis.analysisId); await refresh().catch(() => {}); }
+}
 
 function stopObservation() {
   if (observationTimer !== null) clearTimeout(observationTimer);
@@ -224,7 +312,7 @@ function scheduleObservation(analyses) {
   observationTimer = null;
   const visible = document.visibilityState !== "hidden";
   const now = Date.now();
-  if (analyses.some(analysis => analysis?.status === "analyzing")) {
+  if (analyses.some(analysis => ACTIVE_STATES.has(analysis?.status))) {
     observationStartedAt ??= now;
   } else {
     observationStartedAt = null;
@@ -254,18 +342,22 @@ function evidenceImage(analysis) {
   const figure = document.createElement("div");
   figure.className = "evidence";
 
-  const image = document.createElement("img");
-  image.alt = `The photograph analysed as ${analysis.fileName ?? analysis.analysisId}`;
-  image.loading = "lazy";
-  figure.appendChild(image);
+  const video = analysis.mediaType === "video/mp4" || analysis.mediaType === "video/quicktime";
+  const media = document.createElement(video ? "video" : "img");
+  if (video) { media.controls = true; media.preload = "metadata"; }
+  else { media.alt = `The photograph analysed as ${analysis.fileName ?? analysis.analysisId}`; media.loading = "lazy"; }
+  figure.appendChild(media);
   sourceURL(analysis.analysisId)
-    .then((url) => { if (url) image.src = url; })
-    .catch(() => { image.replaceWith(textNode("p", "The image could not be loaded.", "meta")); });
+    .then((url) => { if (url) media.src = url; })
+    .catch(() => { media.replaceWith(textNode("p", "The source could not be loaded.", "meta")); });
 
   const dimensions = analysis.width && analysis.height
     ? `${analysis.width} × ${analysis.height}` : null;
   figure.appendChild(textNode("p",
-    [dimensions, "the image these counts came from"].filter(Boolean).join(" · "), "imgmeta"));
+    [dimensions, analysis.durationMs ? `${Math.round(analysis.durationMs / 1000)} s` : null,
+      analysis.frames?.length ? `${analysis.frames.length} sampled frames` : null,
+      video ? "the video these counts came from" : "the image these counts came from"]
+      .filter(Boolean).join(" · "), "imgmeta"));
 
   if (analysis.status === "analyzed" && analysis.report?.summary) {
     figure.appendChild(textNode("p", analysis.report.summary, "summary"));
@@ -412,7 +504,18 @@ function actionStrip(analysis) {
 
   const actions = document.createElement("div");
   actions.className = "actions";
-  if (analysis.status === "failed" || analysis.status === "uploaded") {
+  for (const action of recoveryActions(analysis)) {
+    const label = action === "resume" ? "Resume upload" : action === "fresh" ? "Start fresh"
+      : action === "restart" ? "Restart analysis" : analysis.status === "uploading" ? "Cancel upload" : "Cancel analysis";
+    const button = textNode("button", label);
+    button.type = "button";
+    button.disabled = recoveryBusy.has(analysis.analysisId) || uploadInFlight;
+    button.addEventListener("click", () => action === "resume" || action === "fresh"
+      ? chooseRecovery(analysis, action) : recoverAnalysis(analysis, action));
+    actions.appendChild(button);
+  }
+  if (canRetryAnalysis(analysis)
+    || analysis.status === "uploaded") {
     // Retry repeats the failed run's input, note included. On `uploaded` the
     // automatic run never started — a dropped connection, a closed tab.
     const label = analysis.status === "failed" ? "Retry" : "Analyse";
@@ -427,20 +530,28 @@ function actionStrip(analysis) {
   return strip;
 }
 
-function analysisWaitingPanel() {
+function analysisWaitingPanel(analysis) {
   const panel = document.createElement("div");
   panel.className = "analysis-waiting";
   panel.setAttribute("role", "status");
   const spinner = textNode("span", "", "progress-spinner");
   spinner.setAttribute("aria-hidden", "true");
   const copy = document.createElement("div");
+  const preparing = analysis?.status === "processing";
+  const uploading = analysis?.status === "uploading";
   copy.append(
-    textNode("p", "ANALYSIS IN PROGRESS", "eyebrow"),
-    textNode("h2", "Analysing this shelf…"),
-    textNode("p", "This can take a minute or two. You may safely leave or refresh this page."),
-    textNode("p", "Checking automatically every 15 seconds.", "meta")
+    textNode("p", uploading ? "ACTION NEEDED" : preparing ? "VIDEO PREPARATION" : "ANALYSIS IN PROGRESS", "eyebrow"),
+    textNode("h2", uploading ? "This upload is incomplete"
+      : preparing ? "Preparing video frames…" : "Analysing this shelf…"),
+    textNode("p", uploading
+      ? "Resume with the original file, cancel this upload, or start fresh using the buttons below."
+      : "This can take a minute or two. You may safely leave or refresh this page."),
+    textNode("p", uploading ? "Waiting here will not resume the transfer."
+      : "Checking automatically every 15 seconds.", "meta")
   );
-  panel.append(spinner, copy);
+  if (!uploading) panel.append(spinner);
+  else panel.classList.add("recovery-panel");
+  panel.append(copy);
   return panel;
 }
 
@@ -464,14 +575,26 @@ function card(analysis) {
 
   const body = document.createElement("div");
   body.className = "analysis-body";
-  body.appendChild(evidenceImage(analysis));
+  const videoActive = (analysis.mediaType === "video/mp4"
+    || analysis.mediaType === "video/quicktime") && ACTIVE_STATES.has(analysis.status);
+  if (!videoActive && analysis.status !== "cancelled") body.appendChild(evidenceImage(analysis));
 
   const rows = document.createElement("div");
   rows.className = "rows";
   if (analysis.status === "analyzed" && analysis.report) {
     rows.appendChild(facingsTable(analysis.report));
-  } else if (analysis.status === "analyzing") {
-    rows.appendChild(analysisWaitingPanel());
+  } else if (ACTIVE_STATES.has(analysis.status)) {
+    rows.appendChild(analysisWaitingPanel(analysis));
+  } else if (analysis.status === "cancelled") {
+    rows.appendChild(textNode("p", "Cancelled. This record is kept as history. Use the actions below to continue.", "analysis-failure"));
+  } else if (analysis.status === "failed") {
+    const videoPreparationFailed = (analysis.mediaType === "video/mp4"
+      || analysis.mediaType === "video/quicktime")
+      && (analysis.frames?.length ?? 0) === 0;
+    rows.appendChild(textNode("p", videoPreparationFailed
+      ? "This video could not be prepared. Upload a new video to try again."
+      : "The analysis failed. You can retry this saved evidence.",
+    "analysis-failure"));
   }
   body.appendChild(rows);
   section.appendChild(body);
@@ -496,14 +619,26 @@ function card(analysis) {
 function render(analyses) {
   releaseImages();
   displayedAnalyses = analyses;
+  for (const analysis of analyses) {
+    if (analysis.status !== "uploading") {
+      forgetAnalysis(analysis.analysisId);
+      if (activeTransfer?.analysisId === analysis.analysisId) activeTransfer.controller.abort();
+    }
+  }
   if (!uploadInFlight) view.uploadProgress.hidden = true;
   view.list.replaceChildren(...analyses.map(card));
   const nothing = analyses.length === 0;
   view.empty.hidden = !nothing;
-  view.form.hidden = uploadInFlight || !nothing;
-  view.uploadAnother.hidden = nothing;
+  syncUploadControls();
   busy(activityLabel(analyses));
   scheduleObservation(analyses);
+}
+
+function syncUploadControls() {
+  const state = uploadControlState({ analysisCount: displayedAnalyses.length,
+    uploadInFlight, composerOpen: uploadComposerOpen });
+  view.form.hidden = state.formHidden;
+  view.uploadAnother.hidden = state.triggerHidden;
 }
 
 /**
@@ -552,13 +687,261 @@ async function run(analysisId, context, button) {
   }
 }
 
-async function upload(file) {
+async function upload(file, choice) {
+  if (file.type === "video/mp4" || file.type === "video/quicktime"
+    || /\.(mov|mp4)$/i.test(file.name)) return uploadVideo(file, choice);
+  if (choice?.mode === "resume") throw new Error("Select the original video to resume.");
+  if (choice?.mode === "fresh") await cancelForFresh(choice.analysis);
   const body = new FormData();
   body.append("file", file, file.name);
   busy("Uploading");
   say("");
   const created = await request("POST", BASE, { body });
   await run(created.analysis.analysisId, null, null);
+}
+
+function sessionKey(file) {
+  return `aishop-video:${file.name}:${file.size}:${file.type}:${file.lastModified ?? 0}`;
+}
+function heldSession(file) {
+  try { return JSON.parse(localStorage.getItem(sessionKey(file))); } catch { return null; }
+}
+function holdSession(file, session) {
+  try { localStorage.setItem(sessionKey(file), JSON.stringify(session)); } catch {}
+}
+function releaseSession(file) { try { localStorage.removeItem(sessionKey(file)); } catch {} }
+
+function nextOffset(response) {
+  const range = response.headers.get("Range") ?? response.headers.get("range");
+  const match = range && /bytes=0-(\d+)/.exec(range);
+  return match ? Number(match[1]) + 1 : range ? null : 0;
+}
+
+export function safeStorageCode(text) {
+  if (typeof text !== "string" || text.length === 0) return null;
+  let candidate = /<Code>([^<]+)<\/Code>/.exec(text)?.[1] ?? null;
+  if (!candidate) {
+    try { candidate = JSON.parse(text)?.error?.status ?? JSON.parse(text)?.error?.code ?? null; }
+    catch {}
+  }
+  if (typeof candidate === "string" && /^[A-Za-z0-9_.-]{1,80}$/.test(candidate)) {
+    return candidate;
+  }
+  const reason = text.toLowerCase();
+  if (reason.includes("content-range")) return "content_range_invalid";
+  if (reason.includes("content-length") || reason.includes("request body")
+    || reason.includes("bytes in the request")) return "content_length_mismatch";
+  if (reason.includes("precondition")) return "precondition_failed";
+  if (reason.includes("upload session") || reason.includes("upload id")) {
+    return "upload_session_invalid";
+  }
+  if (reason.includes("invalid request")) return "invalid_upload_request";
+  return null;
+}
+
+export class VideoUploadTransportError extends Error {
+  constructor(message, { status = null, storageCode = null } = {}) {
+    const detail = status === null ? "" : ` Storage returned ${status}${storageCode
+      ? ` (${storageCode})` : ""}.`;
+    super(`${message}${detail}`);
+    this.name = "VideoUploadTransportError";
+    this.status = status;
+    this.storageCode = storageCode;
+    this.expired = status === 404 || status === 410;
+    this.restartable = Number.isInteger(status) && status >= 400 && status < 500;
+  }
+}
+
+export function shouldRenewVideoUpload(error, alreadyRenewed = false) {
+  return error instanceof VideoUploadTransportError
+    && error.expired && !alreadyRenewed;
+}
+
+async function storageError(response, message) {
+  let text = "";
+  try { text = (await response.text()).slice(0, 4096); } catch {}
+  return new VideoUploadTransportError(message, {
+    status: response.status, storageCode: safeStorageCode(text)
+  });
+}
+
+async function inspectVideoUpload(file, uri, fetchImpl) {
+  let response;
+  try {
+    response = await fetchImpl(uri, { method: "PUT",
+      headers: { "Content-Range": `bytes */${file.size}` }, body: new Blob([]) });
+  } catch {
+    throw new VideoUploadTransportError("The resumable upload could not be inspected.");
+  }
+  if (response.status === 200 || response.status === 201) return file.size;
+  if (response.status !== 308) {
+    throw await storageError(response, "The resumable upload could not be inspected.");
+  }
+  const offset = nextOffset(response);
+  if (!Number.isInteger(offset) || offset < 0 || offset > file.size) {
+    throw new VideoUploadTransportError("Storage returned an invalid upload position.", {
+      status: response.status
+    });
+  }
+  return offset;
+}
+
+export async function uploadVideoChunks(file, uri, onProgress = () => {},
+  fetchImpl = fetch, knownOffset = null) {
+  let offset = Number.isInteger(knownOffset)
+    ? knownOffset : await inspectVideoUpload(file, uri, fetchImpl);
+  if (offset < 0 || offset > file.size) {
+    throw new VideoUploadTransportError("The upload position is invalid.");
+  }
+  let recoveries = 0;
+  onProgress(offset / file.size);
+  while (offset < file.size) {
+    const end = Math.min(file.size, offset + VIDEO_CHUNK_BYTES);
+    let response;
+    try {
+      response = await fetchImpl(uri, { method: "PUT", headers: {
+        "Content-Range": `bytes ${offset}-${end - 1}/${file.size}`
+      }, body: file.slice(offset, end) });
+    } catch {
+      if (++recoveries > VIDEO_UPLOAD_RECOVERY_ATTEMPTS) {
+        throw new VideoUploadTransportError("The video upload repeatedly lost its connection.");
+      }
+      offset = await inspectVideoUpload(file, uri, fetchImpl);
+      onProgress(offset / file.size);
+      continue;
+    }
+    if (response.status === 200 || response.status === 201) {
+      offset = file.size;
+    } else if (response.status === 308) {
+      const confirmed = nextOffset(response);
+      if (!Number.isInteger(confirmed) || confirmed < 0 || confirmed > file.size) {
+        throw new VideoUploadTransportError("Storage returned an invalid upload position.", {
+          status: response.status
+        });
+      }
+      recoveries = confirmed > offset ? 0 : recoveries + 1;
+      if (recoveries > VIDEO_UPLOAD_RECOVERY_ATTEMPTS) {
+        throw new VideoUploadTransportError("The video upload made no progress.", {
+          status: response.status
+        });
+      }
+      offset = confirmed;
+    } else if (response.status >= 500 && response.status <= 599
+      && ++recoveries <= VIDEO_UPLOAD_RECOVERY_ATTEMPTS) {
+      offset = await inspectVideoUpload(file, uri, fetchImpl);
+    } else {
+      throw await storageError(response,
+        "The video upload was interrupted. Select the same file to resume.");
+    }
+    onProgress(offset / file.size);
+  }
+}
+
+export async function prepareVideoRecovery(file, choice, saved, api) {
+  if (!choice && saved?.analysisId) {
+    const current = await api("GET", `${BASE}/${saved.analysisId}`);
+    if (current.analysis?.status === "uploading") {
+      return { needsChoice: current.analysis };
+    }
+    return { session: null };
+  }
+  if (choice?.mode === "resume") {
+    const current = await api("GET", `${BASE}/${choice.analysis.analysisId}`);
+    if (current.analysis?.status !== "uploading") throw new Error("This upload is no longer resumable. Refresh to see its current status.");
+    if (file.name !== current.analysis.fileName
+      || (Number.isInteger(current.analysis.expectedByteLength) && file.size !== current.analysis.expectedByteLength)) {
+      throw new Error("Select the original video with the same name and size to resume.");
+    }
+    if (saved?.analysisId !== current.analysis.analysisId || !saved?.uri) {
+      throw new Error("This browser has no saved session for that video. Use Start fresh to recover.");
+    }
+    return { session: saved };
+  }
+  return { session: null };
+}
+
+async function cancelForFresh(analysis) {
+  if (analysis.status === "cancelled") { forgetAnalysis(analysis.analysisId); return; }
+  const current = await request("GET", `${BASE}/${analysis.analysisId}`);
+  if (current.analysis?.status === "cancelled") { forgetAnalysis(analysis.analysisId); return; }
+  if (current.analysis?.status !== "uploading") throw new Error("This upload has advanced. Refresh before starting another analysis.");
+  const result = await request("POST", `${BASE}/${analysis.analysisId}/cancel`,
+    { json: { version: current.analysis.version } });
+  if (result.analysis?.status !== "cancelled") throw new Error("The record changed. Refresh and try again.");
+  forgetAnalysis(analysis.analysisId);
+}
+
+async function uploadVideo(file, choice) {
+  const prepared = await prepareVideoRecovery(file, choice, heldSession(file), request);
+  if (prepared.needsChoice) {
+    chooseRecovery(prepared.needsChoice, "resume");
+    throw new Error("An incomplete upload already exists. Choose Resume upload or Start fresh on its card.");
+  }
+  if (choice?.mode === "fresh") await cancelForFresh(choice.analysis);
+  let session = prepared.session;
+  if (!session) releaseSession(file);
+  let knownOffset = null;
+  if (!session?.uri || !session?.analysisId) {
+    const created = await request("POST", "/v1/agent/video-uploads", { json: {
+      fileName: file.name, mediaType: file.type === "video/quicktime"
+        || file.name.toLowerCase().endsWith(".mov") ? "video/quicktime" : "video/mp4",
+      byteLength: file.size
+    } });
+    session = { analysisId: created.analysis.analysisId, uri: created.upload.uri };
+    holdSession(file, session);
+    knownOffset = 0;
+  }
+  view.uploadProgressBar.hidden = false;
+  const controller = new AbortController();
+  activeTransfer = { analysisId: session.analysisId, controller };
+  view.cancelTransfer.hidden = false;
+  const transferFetch = (uri, options) => {
+    controller.signal.throwIfAborted();
+    return fetch(uri, { ...options, signal: controller.signal });
+  };
+  let renewed = false;
+  try {
+  while (true) {
+    try {
+      await uploadVideoChunks(file, session.uri, ratio => {
+        const percent = Math.round(ratio * 100);
+        view.uploadProgressBar.value = percent;
+        view.uploadProgressText.textContent = `Uploading video securely… ${percent}%`;
+      }, transferFetch, knownOffset);
+      break;
+    } catch (error) {
+      if (controller.signal.aborted) throw new Error("The transfer stopped. Check the record below for its current status.");
+      if (!shouldRenewVideoUpload(error, renewed)) {
+        if (error instanceof VideoUploadTransportError && error.restartable) {
+          releaseSession(file);
+        }
+        throw error;
+      }
+      let replacement;
+      try {
+        replacement = await request("POST",
+          `/v1/agent/video-uploads/${session.analysisId}/session`);
+      } catch (renewalError) {
+        releaseSession(file);
+        throw renewalError;
+      }
+      session = { analysisId: session.analysisId, uri: replacement.upload.uri };
+      holdSession(file, session);
+      renewed = true;
+      knownOffset = 0;
+      view.uploadProgressBar.value = 0;
+      view.uploadProgressText.textContent = "The secure upload session was rejected. Restarting transfer…";
+    }
+  }
+  controller.signal.throwIfAborted();
+  await request("POST", `/v1/agent/video-uploads/${session.analysisId}/complete`);
+  releaseSession(file);
+  view.uploadProgressText.textContent = "Video stored. Preparing representative frames…";
+  await refresh();
+  } finally {
+    activeTransfer = null;
+    view.cancelTransfer.hidden = true;
+  }
 }
 
 function start() {
@@ -571,31 +954,56 @@ function start() {
     event.preventDefault();
     const [file] = view.file.files;
     if (!file) return;
+    const choice = uploadChoice;
     uploadInFlight = true;
+    uploadComposerOpen = false;
     view.submit.disabled = true;
     view.submit.textContent = "Uploading…";
     view.form.setAttribute("aria-busy", "true");
     view.form.hidden = true;
     view.uploadProgress.hidden = false;
+    view.uploadProgressBar.hidden = true;
+    view.uploadProgressBar.value = 0;
+    view.uploadProgressText.textContent = "Uploading securely. Please keep this page open until it is stored.";
     try {
-      await upload(file);
+      await upload(file, choice);
+      uploadChoice = null;
       view.form.reset();
     } catch (error) {
+      uploadComposerOpen = true;
       say(error.message, true, error.requestId);
-      view.form.hidden = false;
       busy(activityLabel(displayedAnalyses));
     } finally {
       uploadInFlight = false;
       view.submit.disabled = false;
-      view.submit.textContent = "Upload and analyse";
+      view.submit.textContent = uploadChoice?.mode === "resume" ? "Resume upload"
+        : uploadChoice?.mode === "fresh" ? "Start fresh" : "Upload and analyse";
       view.form.removeAttribute("aria-busy");
       view.uploadProgress.hidden = true;
+      await refresh().catch(() => {});
+      syncUploadControls();
     }
   });
 
   view.uploadAnother.addEventListener("click", () => {
-    view.form.hidden = false;
+    uploadChoice = null;
+    view.submit.textContent = "Upload and analyse";
+    uploadComposerOpen = true;
+    syncUploadControls();
     view.file.focus();
+  });
+
+  view.cancelTransfer.addEventListener("click", async () => {
+    const transfer = activeTransfer;
+    if (!transfer) return;
+    transfer.controller.abort();
+    view.cancelTransfer.disabled = true;
+    try {
+      const current = await request("GET", `${BASE}/${transfer.analysisId}`);
+      if (current.analysis?.status === "uploading") await recoverAnalysis(current.analysis, "cancel");
+      else await refresh();
+    } catch (error) { say(error.message, true, error.requestId); }
+    finally { view.cancelTransfer.disabled = false; }
   });
 
   view.refresh.addEventListener("click", () => {
@@ -664,7 +1072,10 @@ function start() {
     view.notAuthorized.hidden = true;
     view.allRuns.hidden = true;
     if (!signedIn) {
+      activeTransfer?.controller.abort();
+      uploadChoice = null;
       stopObservation();
+      uploadComposerOpen = false;
       releaseImages();
       view.list.replaceChildren();
       view.form.hidden = true;

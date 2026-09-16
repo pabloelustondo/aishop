@@ -4,6 +4,7 @@ import { getFunctions } from "firebase-admin/functions";
 const OWNER_KEY = /^[0-9a-f]{64}$/;
 const ANALYSIS_ID = /^[0-9A-Za-z_-]{1,64}$/;
 const RUN_ID = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const ATTEMPT_ID = /^[0-9A-Za-z_-]{1,64}$/;
 
 export const AGENT_COLLECTION_FUNCTION =
   "locations/northamerica-northeast1/functions/collectAgentAnalysis";
@@ -18,7 +19,7 @@ function scheduledDate(value) {
   return date;
 }
 
-function taskInput({ ownerKey, analysisId, runId, dueAt } = {}) {
+function taskInput({ ownerKey, analysisId, attemptId = null, runId, dueAt } = {}) {
   if (typeof ownerKey !== "string" || !OWNER_KEY.test(ownerKey)) {
     throw new TypeError("A lowercase hex owner key is required.");
   }
@@ -28,7 +29,11 @@ function taskInput({ ownerKey, analysisId, runId, dueAt } = {}) {
   if (typeof runId !== "string" || !RUN_ID.test(runId)) {
     throw new TypeError("A run identifier is required.");
   }
-  return { ownerKey, analysisId, runId, dueAt: scheduledDate(dueAt) };
+  if (attemptId !== null && !ATTEMPT_ID.test(attemptId ?? "")) {
+    throw new TypeError("A video attempt identifier is required.");
+  }
+  return { ownerKey, analysisId, attemptId, runId,
+    dueAt: scheduledDate(dueAt) };
 }
 
 function taskId({ ownerKey, analysisId, runId, dueAt }) {
@@ -53,7 +58,8 @@ export function createAgentTaskEnqueuer({ queue } = {}) {
     async enqueue(input) {
       const normalized = taskInput(input);
       const payload = Object.freeze({ ownerKey: normalized.ownerKey,
-        analysisId: normalized.analysisId, runId: normalized.runId });
+        analysisId: normalized.analysisId, attemptId: normalized.attemptId,
+        runId: normalized.runId });
       const options = { id: taskId(normalized), scheduleTime: normalized.dueAt,
         dispatchDeadlineSeconds: AGENT_TASK_DISPATCH_DEADLINE_SECONDS };
       try {

@@ -4,7 +4,7 @@ import { createAgentCollectionTaskHandler, createAgentReconciler,
   readCollectionTaskPayload } from "../src/agent-background-functions.js";
 
 const INPUT = { ownerKey: "e".repeat(64), analysisId: "analysis_1",
-  runId: "56fe7ad1-7a4f-4ba8-86a6-04cfd701de2b" };
+  attemptId: null, runId: "56fe7ad1-7a4f-4ba8-86a6-04cfd701de2b" };
 const DUE = new Date("2026-09-13T15:00:15.000Z");
 
 test("private task handler accepts exactly the fixed payload", async () => {

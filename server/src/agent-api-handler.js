@@ -12,10 +12,13 @@ import {
   AgentEvidenceUnavailableError
 } from "./agent-evidence-store.js";
 import { AgentUploadError, MAX_CONTEXT_CHARS, readAgentUpload } from "./agent-upload-request.js";
+import { AgentVideoError, MAX_VIDEO_BYTES, VIDEO_MEDIA_TYPES } from "./agent-video-media.js";
 import { ProviderError } from "./errors.js";
 import { sendBytes, sendJson } from "./http-json.js";
+import { pipeline } from "node:stream/promises";
 
 const BASE = "/v1/agent/analyses";
+const VIDEO_BASE = "/v1/agent/video-uploads";
 
 /** Server-generated, and shaped so no caller-supplied value can imitate one. */
 const ANALYSIS_ID = /^[0-9A-Za-z_-]{1,64}$/;
@@ -89,6 +92,7 @@ function serialize(value) {
 function toAgentError(error) {
   if (error instanceof AgentAPIError) return error;
   if (error instanceof AgentUploadError) return agentError(error.code, error);
+  if (error instanceof AgentVideoError) return agentError(error.code, error);
   if (error instanceof AgentAnalysisNotFoundError) return agentError("analysis_not_found");
   // Deliberately 400, not the 409 the other state refusals use: the record is
   // not in the wrong state, the request is missing the thing that would make
@@ -142,7 +146,8 @@ function readContext(request) {
  * from any token they hold.
  */
 export function createAgentAPIHandler({
-  evidenceStore, analysisStore, runner, verifyIdToken,
+  evidenceStore, analysisStore, runner, verifyIdToken, videoTaskEnqueuer,
+  providerControl,
   newAnalysisId = () => randomUUID().replaceAll("-", ""),
   logger = console, diagnostics = createDiagnostics(event => logger.error(event)), project = process.env.GCLOUD_PROJECT,
   readMemory = () => process.memoryUsage()
@@ -219,6 +224,201 @@ export function createAgentAPIHandler({
     } }];
   }
 
+  function readVideoUploadRequest(request) {
+    const raw = request.rawBody;
+    if (!raw || raw.length === 0 || raw.length > MAX_CONTEXT_REQUEST_BYTES) {
+      throw new AgentVideoError("video_invalid");
+    }
+    let payload;
+    try { payload = JSON.parse(Buffer.isBuffer(raw) ? raw.toString("utf8") : String(raw)); }
+    catch (error) { throw new AgentVideoError("video_invalid", error); }
+    const fileName = typeof payload?.fileName === "string" ? payload.fileName.trim() : "";
+    const mediaType = typeof payload?.mediaType === "string" ? payload.mediaType.toLowerCase() : "";
+    const byteLength = payload?.byteLength;
+    if (!fileName || fileName.length > 240 || fileName.includes("/") || fileName.includes("\\")
+      || !VIDEO_MEDIA_TYPES.includes(mediaType) || !Number.isInteger(byteLength)
+      || byteLength < 12 || byteLength > MAX_VIDEO_BYTES) {
+      throw new AgentVideoError(byteLength > MAX_VIDEO_BYTES
+        ? "file_too_large" : VIDEO_MEDIA_TYPES.includes(mediaType)
+          ? "video_invalid" : "media_type_unsupported");
+    }
+    const origin = typeof request.headers?.origin === "string" ? request.headers.origin : null;
+    if (!origin || !/^https?:\/\/[^/]+$/.test(origin)) throw new AgentVideoError("video_invalid");
+    return { fileName, mediaType, byteLength, origin };
+  }
+
+  async function createVideoUpload(request, ownerKey, timed, diagnosticContext) {
+    if (typeof evidenceStore.createVideoUploadSession !== "function"
+      || typeof analysisStore.createVideoUpload !== "function") {
+      throw agentError("unexpected_server_error");
+    }
+    const input = await timed("validation", () => readVideoUploadRequest(request));
+    const analysisId = newAnalysisId();
+    diagnosticContext.analysisId = analysisId;
+    const created = await timed("record_create", () => analysisStore.createVideoUpload({
+      ownerKey, analysisId, fileName: input.fileName, mediaType: input.mediaType,
+      expectedByteLength: input.byteLength
+    }));
+    try {
+      const session = await timed("upload_session_create", () =>
+        evidenceStore.createVideoUploadSession({ ownerKey, analysisId,
+          mediaType: input.mediaType, byteLength: input.byteLength, origin: input.origin }));
+      await timed("upload_session_record", () =>
+        analysisStore.recordVideoUploadSession?.({ ownerKey, analysisId,
+          attemptId: created.attemptId, uploadSessionUri: session.uri }));
+      return [201, { analysis: { analysisId, status: "uploading",
+        fileName: input.fileName, mediaType: input.mediaType,
+        expectedByteLength: input.byteLength, version: created.version },
+      upload: { uri: session.uri } }];
+    } catch (error) {
+      await analysisStore.markVideoFailed?.({ ownerKey, analysisId,
+        attemptId: created.attemptId, reason: "storage_unavailable" }).catch(() => {});
+      throw error;
+    }
+  }
+
+  async function renewVideoUpload(request, ownerKey, analysisId, timed) {
+    if (typeof evidenceStore.createVideoUploadSession !== "function"
+      || typeof analysisStore.readVideoUpload !== "function") {
+      throw agentError("unexpected_server_error");
+    }
+    const origin = typeof request.headers?.origin === "string" ? request.headers.origin : null;
+    if (!origin || !/^https?:\/\/[^/]+$/.test(origin)) throw new AgentVideoError("video_invalid");
+    const upload = await timed("record_read", () =>
+      analysisStore.readVideoUpload({ ownerKey, analysisId }));
+    if (upload.status !== "uploading") throw agentError("analysis_state_invalid");
+    const session = await timed("upload_session_create", () =>
+      evidenceStore.createVideoUploadSession({ ownerKey, analysisId,
+        mediaType: upload.mediaType, byteLength: upload.expectedByteLength, origin }));
+    await timed("upload_session_record", () =>
+      analysisStore.recordVideoUploadSession?.({ ownerKey, analysisId,
+        attemptId: upload.attemptId, uploadSessionUri: session.uri }));
+    return [201, { analysis: { analysisId, status: upload.status,
+      fileName: upload.fileName, mediaType: upload.mediaType,
+      expectedByteLength: upload.expectedByteLength }, upload: { uri: session.uri } }];
+  }
+
+  async function completeVideoUpload(ownerKey, analysisId, timed) {
+    if (typeof analysisStore.readVideoUpload !== "function"
+      || typeof analysisStore.markVideoProcessing !== "function"
+      || typeof evidenceStore.describeSource !== "function"
+      || typeof videoTaskEnqueuer?.enqueue !== "function") {
+      throw agentError("unexpected_server_error");
+    }
+    const upload = await timed("record_read", () =>
+      analysisStore.readVideoUpload({ ownerKey, analysisId }));
+    if (!["uploading", "processing"].includes(upload.status)) {
+      const record = await analysisStore.read({ ownerKey, analysisId });
+      return [200, { analysis: serialize(record) }];
+    }
+    const source = await timed("source_verify", () =>
+      evidenceStore.describeSource({ ownerKey, analysisId }));
+    if (source.mediaType !== upload.mediaType
+      || source.byteLength !== upload.expectedByteLength) {
+      throw new AgentVideoError("video_invalid");
+    }
+    if (upload.status === "uploading") {
+      await timed("record_processing", () =>
+        analysisStore.markVideoProcessing({ ownerKey, analysisId,
+          attemptId: upload.attemptId }));
+    }
+    const task = await timed("processing_dispatch", () =>
+      videoTaskEnqueuer.enqueue({ ownerKey, analysisId,
+        attemptId: upload.attemptId }));
+    try {
+      await timed("processing_task_record", () =>
+        analysisStore.recordVideoTask?.({ ownerKey, analysisId,
+          attemptId: upload.attemptId, taskName: task.taskName }));
+    } catch (error) {
+      await videoTaskEnqueuer.delete?.(task.taskName).catch(() => {});
+      throw error;
+    }
+    const record = await analysisStore.read({ ownerKey, analysisId });
+    return [200, { analysis: serialize(record) }];
+  }
+
+  function expectedVersion(request) {
+    if (!request.rawBody || request.rawBody.length === 0) return null;
+    let input;
+    try { input = JSON.parse(Buffer.from(request.rawBody).toString("utf8")); }
+    catch (error) { throw agentError("context_invalid", error); }
+    if (!input || typeof input !== "object" || Array.isArray(input)
+      || Object.keys(input).some(key => key !== "version")
+      || !Number.isInteger(input.version) || input.version < 0) {
+      throw agentError("context_invalid");
+    }
+    return input.version;
+  }
+
+  async function cancelAnalysis(request, ownerKey, analysisId, timed) {
+    if (typeof analysisStore.cancel !== "function") {
+      throw agentError("unexpected_server_error");
+    }
+    const result = await timed("cancellation_settlement", () => analysisStore.cancel({
+      ownerKey, analysisId, expectedVersion: expectedVersion(request) }));
+    if (!result.cancelled || result.reason === "already-cancelled") {
+      const record = await analysisStore.read({ ownerKey, analysisId });
+      return [200, { outcome: result.reason, analysis: serialize(record) }];
+    }
+    const cleanup = {};
+    if (result.cancelledFrom === "uploading" && result.uploadSessionUri) {
+      try {
+        await evidenceStore.invalidateVideoUploadSession?.({
+          uri: result.uploadSessionUri });
+        cleanup.uploadSession = "invalidated";
+      } catch { cleanup.uploadSession = "failed"; }
+    }
+    if (result.cancelledFrom === "processing" && result.taskName) {
+      try {
+        await videoTaskEnqueuer.delete?.(result.taskName);
+        cleanup.task = "deleted";
+      } catch { cleanup.task = "failed"; }
+    }
+    if (result.cancelledFrom === "analyzing" && result.providerResponseId) {
+      if (typeof providerControl?.cancel === "function") {
+        try {
+          await providerControl.cancel({ responseId: result.providerResponseId });
+          cleanup.providerCancel = "requested";
+        } catch { cleanup.providerCancel = "failed"; }
+      } else cleanup.providerCancel = "unavailable";
+      if (typeof providerControl?.delete === "function") {
+        try {
+          await providerControl.delete({ responseId: result.providerResponseId });
+          cleanup.providerDelete = "requested";
+        } catch { cleanup.providerDelete = "failed"; }
+      } else cleanup.providerDelete = "unavailable";
+    }
+    await analysisStore.recordCancellationCleanup?.({ ownerKey, analysisId,
+      version: result.version, cleanup }).catch(() => {});
+    const record = await analysisStore.read({ ownerKey, analysisId });
+    return [200, { outcome: "cancelled", cleanup, analysis: serialize(record) }];
+  }
+
+  async function restartAnalysis(request, ownerKey, analysisId, timed) {
+    if (typeof analysisStore.restartCancelled !== "function") {
+      throw agentError("unexpected_server_error");
+    }
+    const restarted = await timed("restart_settlement", () =>
+      analysisStore.restartCancelled({ ownerKey, analysisId,
+        expectedVersion: expectedVersion(request) }));
+    if (!restarted.restarted) {
+      const record = await analysisStore.read({ ownerKey, analysisId });
+      return [200, { outcome: restarted.reason, analysis: serialize(record) }];
+    }
+    const task = await timed("processing_dispatch", () => videoTaskEnqueuer.enqueue({
+      ownerKey, analysisId, attemptId: restarted.attemptId }));
+    try {
+      await timed("processing_task_record", () => analysisStore.recordVideoTask?.({
+        ownerKey, analysisId, attemptId: restarted.attemptId,
+        taskName: task.taskName }));
+    } catch (error) {
+      await videoTaskEnqueuer.delete?.(task.taskName).catch(() => {});
+      throw error;
+    }
+    const record = await analysisStore.read({ ownerKey, analysisId });
+    return [200, { outcome: "restarted", analysis: serialize(record) }];
+  }
+
   async function run(request, ownerKey, analysisId, diagnosticContext, signal) {
     const context = readContext(request);
     const record = await runner.run({ ownerKey, analysisId, context, diagnosticContext, signal });
@@ -237,6 +437,16 @@ export function createAgentAPIHandler({
   async function source(ownerKey, analysisId, response) {
     const record = await analysisStore.read({ ownerKey, analysisId });
     if (!record) throw agentError("analysis_not_found");
+    if ((record.mediaType === "video/mp4" || record.mediaType === "video/quicktime")
+      && typeof evidenceStore.sourceStream === "function"
+      && typeof evidenceStore.describeSource === "function") {
+      const metadata = await evidenceStore.describeSource({ ownerKey, analysisId });
+      response.writeHead(200, { "Cache-Control": "private, no-store",
+        "Content-Type": metadata.mediaType, "Content-Length": metadata.byteLength,
+        "Accept-Ranges": "none" });
+      await pipeline(evidenceStore.sourceStream({ ownerKey, analysisId }), response);
+      return null;
+    }
     const evidence = await evidenceStore.readSource({ ownerKey, analysisId });
     sendBytes(response, evidence);
     return null;
@@ -257,6 +467,20 @@ export function createAgentAPIHandler({
   }
 
   function route(method, path) {
+    if (path === VIDEO_BASE) {
+      if (method === "POST") return { operation: "video-create", route: `POST ${VIDEO_BASE}` };
+      throw agentError("method_not_allowed");
+    }
+    if (path.startsWith(`${VIDEO_BASE}/`)) {
+      const [analysisId, tail, ...extra] = path.slice(VIDEO_BASE.length + 1).split("/");
+      if (!ANALYSIS_ID.test(analysisId)) throw agentError("analysis_not_found");
+      if (!new Set(["complete", "session"]).has(tail) || extra.length > 0) {
+        throw agentError("not_found");
+      }
+      if (method !== "POST") throw agentError("method_not_allowed");
+      return { operation: tail === "complete" ? "video-complete" : "video-session",
+        analysisId, route: `POST ${VIDEO_BASE}/{analysisId}/${tail}` };
+    }
     if (path === BASE) {
       if (method === "POST") return { operation: "upload", route: `POST ${BASE}` };
       if (method === "GET") return { operation: "list", route: `GET ${BASE}` };
@@ -267,7 +491,7 @@ export function createAgentAPIHandler({
     const rest = path.slice(BASE.length + 1).split("/");
     const [analysisId, tail, ...extra] = rest;
     if (extra.length > 0
-      || (tail !== undefined && tail !== "run" && tail !== "source")) {
+      || (tail !== undefined && !new Set(["run", "source", "cancel", "restart"]).has(tail))) {
       throw agentError("not_found");
     }
     // Checked before any lookup, so a crafted identifier is refused rather
@@ -281,6 +505,11 @@ export function createAgentAPIHandler({
     if (tail === "source") {
       if (method !== "GET") throw agentError("method_not_allowed");
       return { operation: "source", analysisId, route: `GET ${BASE}/{analysisId}/source` };
+    }
+    if (tail === "cancel" || tail === "restart") {
+      if (method !== "POST") throw agentError("method_not_allowed");
+      return { operation: tail, analysisId,
+        route: `POST ${BASE}/{analysisId}/${tail}` };
     }
     if (method !== "GET") throw agentError("method_not_allowed");
     return { operation: "read", analysisId, route: `GET ${BASE}/{analysisId}` };
@@ -340,6 +569,11 @@ export function createAgentAPIHandler({
         return;
       }
       const [status, body] = operation === "upload" ? await upload(request, ownerKey, timed, diagnosticContext, cancellation.signal)
+        : operation === "video-create" ? await createVideoUpload(request, ownerKey, timed, diagnosticContext)
+          : operation === "video-session" ? await renewVideoUpload(request, ownerKey, analysisId, timed)
+          : operation === "video-complete" ? await completeVideoUpload(ownerKey, analysisId, timed)
+        : operation === "cancel" ? await cancelAnalysis(request, ownerKey, analysisId, timed)
+          : operation === "restart" ? await restartAnalysis(request, ownerKey, analysisId, timed)
         : operation === "run" ? await run(request, ownerKey, analysisId, diagnosticContext, cancellation.signal)
           : operation === "read" ? await read(ownerKey, analysisId)
             : await list(ownerKey);

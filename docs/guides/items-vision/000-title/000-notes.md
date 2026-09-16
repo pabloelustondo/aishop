@@ -1,4 +1,4 @@
-# 000 — VISTA Agentic Items Vision
+# 000 — VISTA Agentic Visual Products Recognition
 
 Welcome to the technical introduction to VISTA's image uploader and analyser.
 We will follow a shelf photo from the user's upload to a reviewable item report.

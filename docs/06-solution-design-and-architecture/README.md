@@ -10,6 +10,8 @@ rationale.
 - [02](architecture-02-audit-storage-and-human-review.md) — audit storage and human review
 - [03](architecture-03-customer-and-reviewer-access.md) — customer and reviewer access
 - [04](architecture-04-agent-upload-path.md)–[07](architecture-07-agent-analysis-steps.md) — the agent upload path: shape, run decision, upload steps, analysis steps
+- [13](architecture-13-long-running-analysis-dilemma.md)–[15](architecture-15-option-b-queue-and-worker.md) — server-owned background analysis
+- [16](architecture-16-agent-video-analysis.md) — resumable video upload, deterministic frames and analysis
 
 ## Proposed, not built
 

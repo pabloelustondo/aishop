@@ -332,17 +332,28 @@ export function createOpenAIBackgroundAnalyzer({
   }
 
   async function start({ imageBase64, mediaType, mode = ANALYSIS_MODES.targetProduct,
-    context = null, onDiagnostics = () => {} }) {
+    images, context = null, onDiagnostics = () => {} }) {
     const contract = ANALYSIS_CONTRACTS[mode];
     if (!contract) throw new ProviderError("invalid-mode");
     const note = typeof context === "string" && context.trim() !== "" ? context.trim() : null;
+    const supplied = Array.isArray(images) && images.length > 0
+      ? images : [{ imageBase64, mediaType, timestampMs: null }];
+    if (supplied.some(image => typeof image?.imageBase64 !== "string"
+      || typeof image?.mediaType !== "string")) throw new ProviderError("invalid-mode");
+    const visualInputs = supplied.flatMap((image, index) => [
+      ...(image.timestampMs === null || image.timestampMs === undefined ? [] : [{
+        type: "input_text", text: `Sampled video frame ${index + 1} at ${Number(image.timestampMs)} ms.`
+      }]),
+      { type: "input_image",
+        image_url: `data:${image.mediaType};base64,${image.imageBase64}`, detail: "auto" }
+    ]);
     const call = await request({ method: "POST", url: RESPONSES_URL, mode, onDiagnostics, body: {
       model, background: true, store: true,
       text: { format: { type: "json_schema", name: contract.schemaName, strict: true, schema: contract.schema } },
       input: [{ role: "user", content: [
         { type: "input_text", text: contract.instruction },
         ...(note ? [{ type: "input_text", text: `Additional instruction from the person requesting this analysis: ${note}` }] : []),
-        { type: "input_image", image_url: `data:${mediaType};base64,${imageBase64}`, detail: "auto" }
+        ...visualInputs
       ] }]
     } });
     try { return interpret(call.payload, mode, call.diagnostics); }
@@ -363,5 +374,16 @@ export function createOpenAIBackgroundAnalyzer({
     return { deleted: call.payload?.deleted === true };
   }
 
-  return Object.freeze({ start, retrieve, delete: remove, configuration });
+  async function cancel({ responseId: held, mode = ANALYSIS_MODES.areaScan,
+    onDiagnostics = () => {} }) {
+    const id = responseId(held);
+    const call = await request({ method: "POST",
+      url: `${RESPONSES_URL}/${id}/cancel`, mode, onDiagnostics });
+    try {
+      return { cancelled: call.payload?.status === "cancelled",
+        status: call.payload?.status ?? null };
+    } finally { call.notify(); }
+  }
+
+  return Object.freeze({ start, retrieve, cancel, delete: remove, configuration });
 }

@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Vision Agent Video Processing Pipeline</title>
+  <desc id="desc">The public client reserves, uploads bytes to Storage and completes. Private Cloud Tasks invokes a video worker, FFmpeg samples timestamped frames, OpenAI runs one background response, and a collector settles Firestore. Client GET reads saved state.</desc>
+  <defs>
+    <style>text{font-family:Arial,Helvetica,sans-serif;fill:#172D43}.title{font-size:47px;font-weight:700}.label{font-size:24px;font-weight:700}.small{font-size:20px;fill:#52657A}.stage{font-size:22px;font-weight:700}</style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L12 6 L0 12 Z" fill="#087E8B"/></marker>
+  </defs>
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <rect x="72" y="68" width="66" height="7" fill="#087E8B"/>
+  <text x="72" y="132" class="title">Vision Agent Video Processing Pipeline</text>
+  <text x="72" y="176" font-size="22" fill="#52657A">A completed transfer becomes durable background work.</text>
+
+  <text x="80" y="249" font-size="20" font-weight="700" fill="#087E8B">PUBLIC REQUEST ORDER · CLIENT DRIVES EACH CALL</text>
+  <path d="M80 266 H1518" stroke="#B6DAD5" stroke-width="2"/>
+  <text x="105" y="337" class="label">Client</text>
+  <text x="105" y="374" class="small">reserve an analysis ID</text>
+  <path d="M331 346 H393" stroke="#087E8B" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="428" y="337" class="label">Agent API</text>
+  <text x="428" y="374" class="small">create uploading record</text>
+  <path d="M705 346 H768" stroke="#087E8B" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="802" y="337" class="label">Cloud Storage</text>
+  <text x="802" y="374" class="small">PUT original video bytes</text>
+  <path d="M1106 346 H1168" stroke="#087E8B" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="1205" y="337" class="label">Complete API</text>
+  <text x="1205" y="374" class="small">verify; return processing</text>
+
+  <path d="M80 444 H1518" stroke="#D7E3EA" stroke-width="2"/>
+  <text x="80" y="482" font-size="20" font-weight="700" fill="#087E8B">PRIVATE BACKGROUND WORKFLOW</text>
+  <path d="M1280 395 V515 H160 V550" stroke="#087E8B" stroke-width="3" fill="none" marker-end="url(#arrow)"/>
+  <text x="93" y="591" class="stage">Cloud Tasks</text>
+  <text x="93" y="623" class="small">owner · analysis · attempt</text>
+  <path d="M319 600 H381" stroke="#087E8B" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="415" y="591" class="stage">processAgentVideo</text>
+  <text x="415" y="623" class="small">FFmpeg samples frames</text>
+  <path d="M709 600 H773" stroke="#087E8B" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="806" y="591" class="stage">OpenAI background response</text>
+  <text x="806" y="623" class="small">one shelf scan · timestamped JPEGs</text>
+  <path d="M1162 600 H1222" stroke="#087E8B" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="1255" y="591" class="stage">Collector</text>
+  <text x="1255" y="623" class="small">settle in Firestore</text>
+
+  <rect x="72" y="687" width="1456" height="106" rx="8" fill="#EAF2F1" stroke="#B6DAD5" stroke-width="2"/>
+  <text x="100" y="731" class="label">Firestore holds status, frames, runs and report</text>
+  <text x="100" y="765" class="small">Client GET reads the saved state. Refresh does not cancel accepted analysis.</text>
+  <text x="1467" y="730" font-size="19" fill="#52657A" text-anchor="end">Reconciler schedules overdue collection</text>
+  <text x="80" y="843" class="small">Deduplicated facing counts remain a quality claim until checked against a human video reference.</text>
+  <text x="1495" y="843" font-size="23" text-anchor="end" fill="#52657A">081</text>
+</svg>

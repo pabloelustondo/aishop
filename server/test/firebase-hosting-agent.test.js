@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import test from "node:test";
 
 const SOURCE = "/v1/agent/analyses{,/**}";
+const VIDEO_SOURCE = "/v1/agent/video-uploads{,/**}";
 
 const configuration = () => JSON.parse(
   readFileSync(new URL("../../firebase.json", import.meta.url))
@@ -21,12 +22,14 @@ test("hosting rewrites the agent analyses endpoint and its sub-paths to the Toro
   });
 });
 
-test("no narrower agent rewrite shadows it", () => {
+test("only the two complete agent namespaces are rewritten", () => {
   const agent = configuration().hosting.rewrites
     .filter(({ source }) => source.startsWith("/v1/agent"));
   // Hosting applies the first matching rewrite, so an earlier exact-path
   // entry would silently take the collection route back.
-  assert.deepEqual(agent.map(({ source }) => source), [SOURCE]);
+  assert.deepEqual(agent.map(({ source }) => source), [VIDEO_SOURCE, SOURCE]);
+  for (const rewrite of agent) assert.deepEqual(rewrite.function,
+    { functionId: "api", region: "northamerica-northeast2" });
 });
 
 test("the agent page is served by hosting and never rewritten to the function", () => {

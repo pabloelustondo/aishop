@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">AI Shop through the 12-step SDLC2 lifecycle</title>
+  <desc id="desc">A continuous lifecycle groups twelve SDLC2 steps into Understand, Evaluate, Build, and Operate and Learn. A return line shows that operational learning informs the next cycle.</desc>
+  <defs>
+    <marker id="arrow" markerWidth="11" markerHeight="11" refX="9" refY="5.5" orient="auto" markerUnits="userSpaceOnUse">
+      <path d="M0 0 L11 5.5 L0 11 Z" fill="#087E8B"/>
+    </marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #172D43; }
+      .phase { font-size: 25px; font-weight: 700; letter-spacing: 0.6px; }
+      .number { font-size: 24px; font-weight: 700; fill: #FFFFFF; }
+      .step { font-size: 19px; font-weight: 700; }
+      .small { font-size: 18px; fill: #52657A; }
+    </style>
+  </defs>
+
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <rect x="72" y="70" width="64" height="7" fill="#087E8B"/>
+  <text x="72" y="136" font-size="47" font-weight="700">AI Shop Through the 12-Step SDLC2 Lifecycle</text>
+  <text x="72" y="184" font-size="25" fill="#52657A">A working application and a practical architecture case study</text>
+
+  <rect x="72" y="245" width="356" height="414" rx="18" fill="#EAF3F8"/>
+  <rect x="438" y="245" width="356" height="414" rx="18" fill="#E7F3F1"/>
+  <rect x="804" y="245" width="356" height="414" rx="18" fill="#FFF3E2"/>
+  <rect x="1170" y="245" width="358" height="414" rx="18" fill="#F0ECF9"/>
+
+  <text x="100" y="292" class="phase">UNDERSTAND</text>
+  <text x="466" y="292" class="phase">EVALUATE</text>
+  <text x="832" y="292" class="phase">BUILD</text>
+  <text x="1198" y="292" class="phase">OPERATE AND LEARN</text>
+
+  <path d="M128 332 H1472" fill="none" stroke="#087E8B" stroke-width="5" marker-end="url(#arrow)"/>
+  <circle cx="250" cy="332" r="11" fill="#1F6685"/>
+  <circle cx="616" cy="332" r="11" fill="#087E8B"/>
+  <circle cx="982" cy="332" r="11" fill="#C67B22"/>
+  <circle cx="1349" cy="332" r="11" fill="#7651A7"/>
+
+  <g>
+    <path d="M128 375 V590" stroke="#A9C7D7" stroke-width="3"/>
+    <circle cx="128" cy="392" r="23" fill="#1F6685"/><text x="128" y="400" text-anchor="middle" class="number">1</text>
+    <text x="166" y="387" class="step"><tspan x="166">Business and Technical</tspan><tspan x="166" dy="25">Context</tspan></text>
+    <circle cx="128" cy="478" r="23" fill="#1F6685"/><text x="128" y="486" text-anchor="middle" class="number">2</text>
+    <text x="166" y="485" class="step">Intent</text>
+    <circle cx="128" cy="564" r="23" fill="#1F6685"/><text x="128" y="572" text-anchor="middle" class="number">3</text>
+    <text x="166" y="559" class="step"><tspan x="166">Use Cases and</tspan><tspan x="166" dy="25">System Model</tspan></text>
+  </g>
+
+  <g>
+    <path d="M494 375 V590" stroke="#A5CEC9" stroke-width="3"/>
+    <circle cx="494" cy="392" r="23" fill="#087E8B"/><text x="494" y="400" text-anchor="middle" class="number">4</text>
+    <text x="532" y="387" class="step"><tspan x="532">Benchmarks and</tspan><tspan x="532" dy="25">Test Strategy</tspan></text>
+    <circle cx="494" cy="478" r="23" fill="#087E8B"/><text x="494" y="486" text-anchor="middle" class="number">5</text>
+    <text x="532" y="473" class="step"><tspan x="532">High-Level</tspan><tspan x="532" dy="25">Architecture</tspan></text>
+    <circle cx="494" cy="564" r="23" fill="#087E8B"/><text x="494" y="572" text-anchor="middle" class="number">6</text>
+    <text x="532" y="559" class="step"><tspan x="532">Working Proof</tspan><tspan x="532" dy="25">of Concept</tspan></text>
+  </g>
+
+  <g>
+    <path d="M860 375 V590" stroke="#E3C28E" stroke-width="3"/>
+    <circle cx="860" cy="392" r="23" fill="#C67B22"/><text x="860" y="400" text-anchor="middle" class="number">7</text>
+    <text x="898" y="399" class="step">Planning</text>
+    <circle cx="860" cy="478" r="23" fill="#C67B22"/><text x="860" y="486" text-anchor="middle" class="number">8</text>
+    <text x="898" y="473" class="step"><tspan x="898">Low-Level Design</tspan><tspan x="898" dy="25">and Specifications</tspan></text>
+    <circle cx="860" cy="564" r="23" fill="#C67B22"/><text x="860" y="572" text-anchor="middle" class="number">9</text>
+    <text x="898" y="559" class="step"><tspan x="898">Build, Code,</tspan><tspan x="898" dy="25">and Test</tspan></text>
+  </g>
+
+  <g>
+    <path d="M1226 375 V590" stroke="#C6B6DC" stroke-width="3"/>
+    <circle cx="1226" cy="392" r="23" fill="#7651A7"/><text x="1226" y="400" text-anchor="middle" class="number">10</text>
+    <text x="1264" y="376" class="step"><tspan x="1264">Deployment, Infrastructure,</tspan><tspan x="1264" dy="25">and Operational Reality</tspan></text>
+    <circle cx="1226" cy="478" r="23" fill="#7651A7"/><text x="1226" y="486" text-anchor="middle" class="number">11</text>
+    <text x="1264" y="473" class="step"><tspan x="1264">Review, Human QA,</tspan><tspan x="1264" dy="25">and Release</tspan></text>
+    <circle cx="1226" cy="564" r="23" fill="#7651A7"/><text x="1226" y="572" text-anchor="middle" class="number">12</text>
+    <text x="1264" y="559" class="step"><tspan x="1264">Observability</tspan><tspan x="1264" dy="25">and Learning</tspan></text>
+  </g>
+
+  <path d="M1462 585 C1462 708 128 708 128 585" fill="none" stroke="#087E8B" stroke-width="3" stroke-dasharray="9 9" marker-end="url(#arrow)"/>
+  <text x="800" y="730" text-anchor="middle" class="small">Operational evidence informs the next architecture decision</text>
+
+  <text x="72" y="817" font-size="24" fill="#52657A">AI Shop demonstrates the application and the evidence used to evaluate its architecture.</text>
+  <text x="1528" y="817" text-anchor="end" font-size="24" fill="#52657A">005</text>
+</svg>

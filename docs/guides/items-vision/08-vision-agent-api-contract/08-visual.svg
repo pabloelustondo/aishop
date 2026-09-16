@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Vision Agent API Contract</title>
+  <desc id="desc">An authenticated Agent creates a JPEG or video analysis record through different operations. Video bytes use a private Storage session. Both workflows use the same analysis detail GET. Admin reads have a separate claim.</desc>
+  <defs>
+    <style>text{font-family:Arial,Helvetica,sans-serif;fill:#172D43}.title{font-size:48px;font-weight:700}.lane{font-size:25px;font-weight:700}.route{font-size:25px;font-weight:700}.minor{font-size:20px;fill:#52657A}.note{font-size:22px}</style>
+    <marker id="arrow" markerWidth="12" markerHeight="12" refX="10" refY="6" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L12 6 L0 12 Z" fill="#087E8B"/></marker>
+  </defs>
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <rect x="72" y="68" width="66" height="7" fill="#087E8B"/>
+  <text x="72" y="133" class="title">Vision Agent API Contract</text>
+  <text x="72" y="178" font-size="23" fill="#52657A">API prefix: /v1/agent. Video bytes use the separate Storage session URI.</text>
+  <rect x="72" y="215" width="1456" height="78" rx="7" fill="#E8F2F0" stroke="#B6DAD5" stroke-width="2"/>
+  <text x="105" y="264" font-size="26" font-weight="700" fill="#087E8B">Firebase ID token + agent: true</text>
+  <text x="670" y="264" class="note">Server derives owner key; clients cannot select another owner.</text>
+
+  <text x="82" y="351" class="lane">JPEG PHOTO</text>
+  <path d="M81 369 H1519" stroke="#087E8B" stroke-width="3"/>
+  <text x="100" y="432" class="route">POST /analyses</text>
+  <text x="100" y="464" class="minor">one multipart JPEG · record created</text>
+  <path d="M475 432 H535" stroke="#087E8B" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="570" y="432" class="route">run=true or POST /analyses/{id}/run</text>
+  <text x="570" y="464" class="minor">eligible first run or refinement</text>
+  <path d="M1060 432 H1120" stroke="#087E8B" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="1150" y="432" class="route">GET /analyses/{id}</text>
+  <text x="1150" y="464" class="minor">saved status and report</text>
+
+  <text x="82" y="556" class="lane">VIDEO</text>
+  <path d="M81 574 H1519" stroke="#087E8B" stroke-width="3"/>
+  <text x="100" y="636" class="route">POST /video-uploads</text>
+  <text x="100" y="668" class="minor">reserve ID and Storage session</text>
+  <path d="M438 636 H500" stroke="#087E8B" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="535" y="636" class="route">PUT upload.uri</text>
+  <text x="535" y="668" class="minor">direct to Cloud Storage</text>
+  <path d="M798 636 H857" stroke="#087E8B" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="890" y="622" font-size="20" font-weight="700">POST /video-uploads/{id}</text>
+  <text x="890" y="648" font-size="20" font-weight="700">/complete</text>
+  <text x="890" y="679" class="minor">verify bytes; start processing</text>
+  <path d="M1201 636 H1253" stroke="#087E8B" stroke-width="3" marker-end="url(#arrow)"/>
+  <text x="1285" y="636" class="route">GET /analyses/{id}</text>
+  <text x="1285" y="668" class="minor">poll durable result</text>
+
+  <path d="M72 734 H1528" stroke="#D7E3EA" stroke-width="2"/>
+  <text x="80" y="794" class="note">Admin cross-user reads require the separate admin: true claim.</text>
+  <text x="80" y="829" class="minor">Original-source video download returned 500 in the recorded live test.</text>
+  <text x="1495" y="843" font-size="23" text-anchor="end" fill="#52657A">08</text>
+</svg>

@@ -1,4 +1,5 @@
 import { createHash, randomUUID } from "node:crypto";
+import { pipeline } from "node:stream/promises";
 import { createDiagnostics, sanitizeDiagnostics } from "./agent-diagnostics.js";
 import { AdminAPIError, adminError, adminErrorBody } from "./admin-api-error.js";
 import { serializeRecord } from "./agent-api-handler.js";
@@ -103,6 +104,16 @@ export function createAdminAPIHandler({
   async function source(ownerKey, analysisId, response) {
     const record = await reader.read({ ownerKey, analysisId });
     if (!record) throw adminError("analysis_not_found");
+    if ((record.mediaType === "video/mp4" || record.mediaType === "video/quicktime")
+      && typeof evidenceStore.sourceStream === "function"
+      && typeof evidenceStore.describeSource === "function") {
+      const metadata = await evidenceStore.describeSource({ ownerKey, analysisId });
+      response.writeHead(200, { "Cache-Control": "private, no-store",
+        "Content-Type": metadata.mediaType, "Content-Length": metadata.byteLength,
+        "Accept-Ranges": "none" });
+      await pipeline(evidenceStore.sourceStream({ ownerKey, analysisId }), response);
+      return;
+    }
     sendBytes(response, await evidenceStore.readSource({ ownerKey, analysisId }));
   }
 

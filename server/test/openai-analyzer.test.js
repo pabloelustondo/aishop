@@ -67,6 +67,28 @@ test("background start stores the response without an output cap", async () => {
   assert.equal(PROVIDER_CONTROL_TIMEOUT_MS, 15_000);
 });
 
+test("background video start sends ordered timestamped frames under the video contract", async () => {
+  let requestBody;
+  const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "test",
+    fetchImpl: async (_url, options) => {
+      requestBody = JSON.parse(options.body);
+      return responseJson({ id: "resp_video", status: "queued", model: DEFAULT_MODEL });
+    } });
+  await analyzer.start({ mode: ANALYSIS_MODES.videoAreaScan, images: [
+    { ...image, timestampMs: 0 }, { ...image, timestampMs: 1_500 }
+  ] });
+  const content = requestBody.input[0].content;
+  assert.equal(content[0].text, ANALYSIS_CONTRACTS.videoAreaScan.instruction);
+  assert.deepEqual(content.slice(1).map(item => item.type),
+    ["input_text", "input_image", "input_text", "input_image"]);
+  assert.match(content[1].text, /frame 1 at 0 ms/);
+  assert.match(content[3].text, /frame 2 at 1500 ms/);
+  assert.equal(requestBody.text.format.name, "video_area_scan_report");
+  assert.equal(requestBody.text.format.strict, true);
+  assert.deepEqual(requestBody.text.format.schema,
+    ANALYSIS_CONTRACTS.areaScan.schema);
+});
+
 test("background retrieve preserves pending and validates completed strict output", async () => {
   const replies = [
     { id: "resp_job", status: "in_progress" },
@@ -85,6 +107,15 @@ test("background retrieve preserves pending and validates completed strict outpu
   assert.equal(calls[0].options.method, "GET");
 });
 
+test("background retrieve validates a completed video report with the shared area schema", async () => {
+  const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "test",
+    fetchImpl: async () => responseJson({ id: "resp_video", status: "completed",
+      output_text: JSON.stringify(areaReport) }) });
+  const completed = await analyzer.retrieve({ responseId: "resp_video",
+    mode: ANALYSIS_MODES.videoAreaScan });
+  assert.deepEqual(completed.report, areaReport);
+});
+
 test("background delete uses the provider response endpoint", async () => {
   let request;
   const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "test", fetchImpl: async (url, options) => {
@@ -96,6 +127,20 @@ test("background delete uses the provider response endpoint", async () => {
   assert.equal(request.options.method, "DELETE");
 });
 
+test("background cancel uses the provider cancellation endpoint", async () => {
+  let request;
+  const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "test",
+    fetchImpl: async (url, options) => {
+      request = { url, options };
+      return responseJson({ id: "resp_cancel", status: "cancelled" });
+    } });
+  assert.deepEqual(await analyzer.cancel({ responseId: "resp_cancel" }),
+    { cancelled: true, status: "cancelled" });
+  assert.equal(request.url,
+    "https://api.openai.com/v1/responses/resp_cancel/cancel");
+  assert.equal(request.options.method, "POST");
+});
+
 test("each background control call enforces its transport deadline", async () => {
   const fetchImpl = (_url, { signal }) => new Promise((_resolve, reject) => signal.addEventListener("abort", () => {
     const error = new Error("aborted"); error.name = "AbortError"; reject(error);
@@ -103,6 +148,7 @@ test("each background control call enforces its transport deadline", async () =>
   const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "test", fetchImpl, timeoutMs: 5 });
   await assert.rejects(analyzer.start(image), error => error instanceof ProviderError && error.kind === "timeout");
   await assert.rejects(analyzer.retrieve({ responseId: "resp_job" }), error => error instanceof ProviderError && error.kind === "timeout");
+  await assert.rejects(analyzer.cancel({ responseId: "resp_job" }), error => error instanceof ProviderError && error.kind === "timeout");
   await assert.rejects(analyzer.delete({ responseId: "resp_job" }), error => error instanceof ProviderError && error.kind === "timeout");
 });
 

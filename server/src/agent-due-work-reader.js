@@ -46,7 +46,8 @@ export function createAgentDueWorkReader({ firestore, clock = () => new Date() }
           || data.providerRunId !== currentRunId
           || (leaseUntil !== null && leaseUntil > now.getTime())) return [];
         return [Object.freeze({ ownerKey, analysisId: document.id,
-          runId: data.providerRunId, dueAt: data.collectionDueAt })];
+          attemptId: data.attemptId ?? null, runId: data.providerRunId,
+          dueAt: data.collectionDueAt })];
       });
     }
   });

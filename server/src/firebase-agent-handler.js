@@ -3,6 +3,7 @@ import * as firebaseLogger from "firebase-functions/logger";
 import { createDiagnostics } from "./agent-diagnostics.js";
 import { createAgentAnalysisRunner } from "./agent-analysis-runner.js";
 import { createAgentTaskEnqueuer } from "./agent-task-enqueuer.js";
+import { createAgentVideoTaskEnqueuer } from "./agent-video-task-enqueuer.js";
 import { createAgentAPIHandler } from "./agent-api-handler.js";
 import { createFirebaseAgentServices } from "./firebase-services.js";
 import { ProviderError } from "./errors.js";
@@ -23,7 +24,7 @@ function unconfiguredAnalyzer() {
 export function createFirebaseAgentHandler({
   logger = firebaseLogger, apiKey = null, model, fetchImpl, services: providedServices,
   environment = process.env.FUNCTIONS_EMULATOR === "true" ? "emulator" : "test",
-  release, releaseKind, taskEnqueuer
+  release, releaseKind, taskEnqueuer, videoTaskEnqueuer
 } = {}) {
   const releaseMetadata = release
     ? { release, releaseKind: releaseKind ?? "override" }
@@ -50,11 +51,12 @@ export function createFirebaseAgentHandler({
         preprocessingVersion: "original-image-auto-detail"
       }), environment, ...releaseMetadata }
   });
+  const videoTasks = videoTaskEnqueuer ?? createAgentVideoTaskEnqueuer();
   const handler = createAgentAPIHandler({
     evidenceStore: services.evidenceStore,
     analysisStore: services.analysisStore,
     verifyIdToken: services.verifyIdToken,
-    runner,
+    videoTaskEnqueuer: videoTasks, providerControl: analyzer, runner,
     logger, diagnostics
   });
   return (request, response) => handler(request, response, request[API_PROCESS_CONTEXT]);

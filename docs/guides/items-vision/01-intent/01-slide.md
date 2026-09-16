@@ -1,4 +1,4 @@
-# VISTA Agentic Items Vision
+# VISTA Agentic Visual Products Recognition
 
 ## From image to item report
 

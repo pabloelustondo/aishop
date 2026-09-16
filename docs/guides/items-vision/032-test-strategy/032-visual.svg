@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="900" viewBox="0 0 1600 900" role="img" aria-labelledby="title desc">
+  <title id="title">Vision quality and system reliability need different tests</title>
+  <desc id="desc">Two parallel test rails cover controlled vision-quality experiments and system-reliability checks. Both merge into evidence for human release review.</desc>
+  <defs>
+    <marker id="tealArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#087E8B"/></marker>
+    <marker id="purpleArrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto" markerUnits="userSpaceOnUse"><path d="M0 0 L10 5 L0 10 Z" fill="#7651A7"/></marker>
+    <style>
+      text { font-family: Arial, Helvetica, sans-serif; fill: #172D43; }
+      .heading { font-size: 26px; font-weight: 700; }
+      .body { font-size: 18px; fill: #52657A; }
+      .number { font-size: 21px; font-weight: 700; fill: #FFFFFF; }
+      .teal { fill: #087E8B; }
+      .purple { fill: #7651A7; }
+      .inverse { fill: #FFFFFF; }
+      .accentInverse { fill: #8FD0C8; }
+    </style>
+  </defs>
+  <rect width="1600" height="900" fill="#F8FAFC"/>
+  <rect x="72" y="70" width="64" height="7" fill="#087E8B"/>
+  <text x="72" y="136" font-size="46" font-weight="700">Vision Quality and System Reliability Need Different Tests</text>
+  <text x="72" y="181" font-size="24" fill="#52657A">Two evidence paths support one human release decision</text>
+
+  <text x="82" y="282" class="heading teal">VISION QUALITY</text>
+  <path d="M235 340 H1232" stroke="#087E8B" stroke-width="5" marker-end="url(#tealArrow)"/>
+  <circle cx="260" cy="340" r="27" fill="#087E8B"/><text x="260" y="348" text-anchor="middle" class="number">1</text>
+  <circle cx="520" cy="340" r="27" fill="#087E8B"/><text x="520" y="348" text-anchor="middle" class="number">2</text>
+  <circle cx="780" cy="340" r="27" fill="#087E8B"/><text x="780" y="348" text-anchor="middle" class="number">3</text>
+  <circle cx="1040" cy="340" r="27" fill="#087E8B"/><text x="1040" y="348" text-anchor="middle" class="number">4</text>
+  <text x="205" y="397" class="body"><tspan x="205">Freeze evidence</tspan><tspan x="205" dy="24">and contract</tspan></text>
+  <text x="465" y="397" class="body"><tspan x="465">Change one</tspan><tspan x="465" dy="24">factor</tspan></text>
+  <text x="725" y="397" class="body"><tspan x="725">Score errors and</tspan><tspan x="725" dy="24">uncertainty</tspan></text>
+  <text x="985" y="397" class="body"><tspan x="985">Record cost and</tspan><tspan x="985" dy="24">review effort</tspan></text>
+
+  <text x="82" y="524" class="heading purple">SYSTEM RELIABILITY</text>
+  <path d="M235 582 H1232" stroke="#7651A7" stroke-width="5" marker-end="url(#purpleArrow)"/>
+  <circle cx="260" cy="582" r="27" fill="#7651A7"/><text x="260" y="590" text-anchor="middle" class="number">1</text>
+  <circle cx="520" cy="582" r="27" fill="#7651A7"/><text x="520" y="590" text-anchor="middle" class="number">2</text>
+  <circle cx="780" cy="582" r="27" fill="#7651A7"/><text x="780" y="590" text-anchor="middle" class="number">3</text>
+  <circle cx="1040" cy="582" r="27" fill="#7651A7"/><text x="1040" y="590" text-anchor="middle" class="number">4</text>
+  <text x="205" y="639" class="body"><tspan x="205">Access and</tspan><tspan x="205" dy="24">evidence upload</tspan></text>
+  <text x="465" y="639" class="body"><tspan x="465">Durable progress</tspan><tspan x="465" dy="24">and saved result</tspan></text>
+  <text x="725" y="639" class="body"><tspan x="725">Refine, retry,</tspan><tspan x="725" dy="24">and diagnose</tspan></text>
+  <text x="985" y="639" class="body"><tspan x="985">Video provenance</tspan><tspan x="985" dy="24">and recovery</tspan></text>
+
+  <path d="M1232 340 C1290 340 1280 454 1322 454 M1232 582 C1290 582 1280 494 1322 494" fill="none" stroke="#52657A" stroke-width="3" marker-end="url(#tealArrow)"/>
+  <rect x="1322" y="381" width="206" height="184" rx="18" fill="#172D43"/>
+  <text x="1425" y="430" text-anchor="middle" font-size="20" font-weight="700" class="accentInverse">BOTH REQUIRED</text>
+  <text x="1425" y="472" text-anchor="middle" font-size="22" font-weight="700" class="inverse"><tspan x="1425">Evidence for</tspan><tspan x="1425" dy="29">human release</tspan><tspan x="1425" dy="29">review</tspan></text>
+
+  <text x="72" y="790" font-size="21" fill="#52657A">Automated success does not establish visual accuracy or human acceptance.</text>
+  <text x="1528" y="790" text-anchor="end" font-size="24" fill="#52657A">032</text>
+</svg>

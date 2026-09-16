@@ -1,52 +1,45 @@
-# 02 — One Photo, From Upload to Report
+# 02 - Main Use Cases and System Model
 
-## Core message
-Follow one shelf photo through a complete user journey.
-The user submits evidence, waits for analysis, and reviews the saved observations.
-The photo remains the reference for understanding and checking the report.
+AI Shop and VISTA are related iPhone-led product experiences.
+They serve different people and decisions while sharing much of the server foundation.
+This slide introduces those use cases before the presentation explains implementation details.
 
-## The starting point
-Imagine a retail team member who wants to understand a photographed shelf.
-They have a JPEG image and access to the browser's Agent page.
-Their question is: which products are visible, and how many facings can we see?
-A facing is a visible product front; hidden stock cannot be counted from this view.
-This is an illustrative scenario, not a measured result from a particular store.
+## Use case 1: AI Shop shopping experience
+A shopper uses the AI Shop iPhone app while considering a product or shelf.
+The phone captures visual evidence and can perform part of the image processing locally.
+Server-side AI adds capabilities that are better protected, coordinated, or processed remotely.
+The result helps the shopper make a better-informed purchasing decision.
 
-## 1 — Choose and upload
-The user signs in with an account authorised to use the Agent.
-They select the shelf photo and upload it.
-The server checks access and validates the upload before accepting it.
-It saves the original image and creates an analysis record with its own identifier.
-That record connects the photo, processing status, and eventual report.
+This is the earlier AI Shop product path.
+Its iPhone client and individual server endpoints remain relevant to the complete product intent.
+Later slides should state which functions are implemented and which remain immature.
 
-## 2 — Start analysis
-The browser automatically requests the first analysis after a successful upload.
-Uploading the evidence and analysing it are separate operations behind the interface.
-The server retrieves the saved photo and submits it to the AI provider.
-The instructions ask the model to identify products and count visible facings.
-The user does not need to understand these API calls to follow the workflow.
+## Use case 2: VISTA shelf inspection
+A retail team uses VISTA to inspect products and presentation across store shelves.
+The goal is to identify visible products, count facings, and retain evidence for review.
+Today, a person can upload a shelf photograph or video manually through `agent.html`.
+The web Agent provides the more robust current analysis and review workflow.
 
-## 3 — Follow progress
-Analysis can take time, so the interface shows the recorded processing state.
-The background implementation keeps coordination on the server.
-Server-side tasks collect the provider's outcome and save it to the analysis record.
-Reading progress does not itself request a new AI analysis.
-The browser presents the status and result returned by the server.
+The intended destination is integration with the separate VISTA iPhone application.
+That application would capture shelf evidence during an inspection and use the same server capabilities.
+The presentation must label this integration as intended until end-to-end evidence confirms it.
 
-## 4 — Review the report
-When analysis succeeds, the user reads identified products and facing counts.
-They compare the observations with the source photo available in the interface.
-Small labels, occlusion, and similar packaging can make recognition uncertain.
-When refinement is available, the user adds a note explaining what to reconsider.
-If a run fails, the interface records the failure and offers retry where allowed.
+## Shared system model
+Both use cases need secure access, image intake, AI coordination, and result handling.
+The server protects provider credentials and centralises reusable analysis behaviour.
+Shared capabilities reduce duplicated implementation across AI Shop and VISTA.
+The products can still use different prompts, records, interfaces, and decision outputs.
 
-## Intended visual
-Use four large cards in a left-to-right journey: Upload, Analyse, Wait, Review.
-Place short user-facing captions above a thin band explaining the server's work.
-Carry the same small shelf-photo symbol from the upload card to the report card.
-Add one subtle return arrow from Review to Analyse, labelled “Refine with a note”.
-Keep detailed endpoints and infrastructure boxes for the architecture section.
+Common infrastructure does not make the two products identical.
+AI Shop supports shopper decisions.
+VISTA supports shelf and store inspection work.
 
-## Evidence boundary
-This walkthrough follows the current browser and server implementation.
-Deployment and observed end-to-end behaviour are covered in Operational Reality.
+## Transition
+The next slides can follow each user path in more detail.
+The Low-Level Design and Architecture section will focus on the web Vision Agent.
+It will also show how the earlier endpoints and iPhone clients relate to the common server.
+
+## Visual direction
+Place the shared vision service as one horizontal foundation.
+Above it, show the AI Shop iPhone shopper path and the VISTA inspection path.
+Within VISTA, distinguish the current manual web Agent from the intended iPhone integration.
