@@ -1,6 +1,6 @@
-# Sprint 015 — Client Upload Events
+# Deferred Proposal — Client Upload Events
 
-Status: Proposed; approval is Pablo's commit. Drafted 2026-09-14.
+Status: deferred, sprint unassigned; formerly Sprint 015. Reprioritized by Pablo on 2026-09-16.
 
 ## Problem
 

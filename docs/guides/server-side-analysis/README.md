@@ -3,6 +3,10 @@
 Guía para entender el reconocimiento de una fotografía ya guardada mediante
 `POST /v1/agent/analyses/{id}/run`, antes de leer los archivos completos.
 
+[Sprint 015](../../07-planning/sprints/sprint-015-agent-photo-run-refactor/01-sprint-plan.md)
+propone profundizar solo en este recorrido para la revisión personal de Pablo.
+La reorganización global de 90 archivos queda diferida; no es alcance de este sprint.
+
 ## Lectura recomendada
 
 1. [Recorrido paso a paso y funciones del código](analysis-run-functions.md).

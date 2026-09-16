@@ -17,9 +17,10 @@ Dates, effort and sprint assignments require scope review; none are committed he
 | Scheduling open | Numbered visual findings | One circle per product group, linked to its visible count in the findings table |
 | Scheduling open | User/role administration | Authorized administrators manage application access safely |
 
-The five sequential feature workstreams were discussed as candidate Sprints 015–019.
-Those numbers are provisional: immediate testing/benchmark scope may change scheduling.
-Do not create or rename sprint packages solely from this table.
+Pablo assigned [Sprint 015](../sprints/sprint-015-agent-photo-run-refactor/01-sprint-plan.md)
+to refactoring/documenting only the stored-photo `/run` path on 2026-09-16.
+This review-focused increment precedes new features; previous candidate numbers 015–019
+are superseded, not new assignments. Testing/benchmark work remains open.
 
 ## Immediate priority
 

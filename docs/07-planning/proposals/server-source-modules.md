@@ -1,7 +1,9 @@
 # Proposal — Organize server source into modules
 
-Status: proposed for review; sprint unassigned.
+Status: broad reorganization deferred; not the scope of Sprint 015.
 Requested by Pablo on 2026-09-16; target confirmed as `server/src`.
+The [focused Sprint 015](../sprints/sprint-015-agent-photo-run-refactor/01-sprint-plan.md)
+covers only the stored-JPEG `/run` path and necessary dependencies.
 
 ## Purpose
 
