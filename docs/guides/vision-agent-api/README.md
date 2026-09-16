@@ -10,6 +10,9 @@ They are drafts for Claude and Pablo to review; approval is Pablo's commit.
 
 ## Read in order
 
+For the comparison baseline, see [existing YOLO application](existing-yolo-application/README.md):
+screenshots, catalog inspection and proposed catalog-scoped benchmark rules.
+
 1. [Architecture](01-architecture.md): purpose, user journey and responsibilities.
 2. [Endpoint map](02-endpoints.md): public routes and private workers.
 3. [Authentication and setup](03-authentication.md): terminal-only setup.

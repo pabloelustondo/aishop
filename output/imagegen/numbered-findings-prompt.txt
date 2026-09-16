@@ -1,0 +1,16 @@
+Use case: precise-object-edit.
+Asset type: illustrative numbered shelf-finding mockup.
+Input image 1 is the edit target: a screenshot with ANTES on the left and DESPUES on the right.
+Use only the LEFT / ANTES shelf photograph, approximately x=132..868, y=210..1190 in the 1822x1230 original. Do not include or combine the right photo.
+Preserve the photographed shelf, all products, their positions, packaging, visible text, lighting, and perspective. Do not invent, remove, duplicate, enhance, or rearrange any bottle. Crop out the website chrome, but retain the full left shelf photo.
+Add exactly ONE small thin bright yellow-green ring around the label/body of the FRONT RIGHT pale mint-green Vitacilina Nutritivo bottle on the MIDDLE shelf. It is immediately left of the front purple bottle, to the right of the other mint bottle; center approximately (527,727) in the original screenshot. Attach a small high-contrast round badge numbered "1" next to the ring. Do not mark the second mint bottle. Do not mark other groups.
+Layout: clean landscape report, source photo on the left and a compact findings table on a white panel at right. The ring and badge should remain small and not obscure the bottle identity.
+Exact heading: "Numbered findings — example"
+Above photo: "ANTES · front-row facings only"
+Table column headings: "#" | "Product group" | "Visible facings"
+Exactly one table row: "1" | "Vitacilina Nutritivo family" | "2"
+Below table: "One marker represents the group, not every bottle."
+Next note: "Exact SKU unconfirmed: the two bottles may be shampoo and conditioner."
+Footer: "Illustrative mockup — not a validated detection result."
+Count refers ONLY to the two pale mint-green front-facing bottles in the LEFT image. Do not use stock or sales values from any table and do not count hidden bottles.
+Simple professional typography, readable table, no extra decorative elements or markers.

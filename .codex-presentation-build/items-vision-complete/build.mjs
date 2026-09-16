@@ -6,7 +6,8 @@ import { Presentation, PresentationFile } from "@oai/artifact-tool";
 const workspaceDir = "/Users/paboelustodo/-PROJECTS/aishop";
 const skillDir = "/Users/paboelustodo/.codex/plugins/cache/openai-primary-runtime/presentations/26.904.11930/skills/presentations";
 const buildDir = path.join(workspaceDir, ".codex-presentation-build/items-vision-complete");
-const finalPath = path.join(workspaceDir, "output/presentation/VISTA-Agentic-Visual-Products-Recognition-Complete-Draft.pptx");
+const finalPath = path.join(workspaceDir, "output/presentation/VISTA-Agentic-Visual-Products-Recognition-All-Slides-v2.pptx");
+const includeTextSlides = process.env.ITEMS_VISION_INCLUDE_TEXT_SLIDES !== "false";
 const runtimePython = "/Users/paboelustodo/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/bin/python3";
 const { resolvePresentationFont, finalizePresentation } = await import(
   pathToFileURL(path.join(skillDir, "container_tools/artifact_tool_utils.mjs")).href,
@@ -22,6 +23,10 @@ const concepts = [
   ["03-benchmark-purpose", "03", ".codex-presentation-build/items-vision-complete/rendered/03-benchmark-purpose-03-visual.png"],
   ["031-vision-quality-benchmark", "031", ".codex-presentation-build/items-vision-complete/rendered/031-vision-quality-benchmark-031-visual.png"],
   ["032-test-strategy", "032", ".codex-presentation-build/items-vision-complete/rendered/032-test-strategy-032-visual.png"],
+  ["04-high-level-architecture", "04", ".codex-presentation-build/items-vision-complete/04-preview.png"],
+  ["08-vision-agent-api-contract", "08", ".codex-presentation-build/items-vision-complete/08-preview.png"],
+  ["081-video-processing-pipeline", "081", ".codex-presentation-build/items-vision-complete/081-preview.png"],
+  ["082-durable-state-and-recovery", "082", ".codex-presentation-build/items-vision-complete/082-preview.png"],
 ];
 
 const C = { bg: "#F7F5EF", navy: "#172D43", teal: "#087E8B", gold: "#D5A11E", ink: "#263746", muted: "#61717E", white: "#FFFFFF", pale: "#EAF2F1" };
@@ -125,17 +130,19 @@ for (const [folder, code, visualRel] of concepts) {
   const notes = await fs.readFile(path.join(base, `${code}-notes.md`), "utf8");
   const parsed = parseMarkdown(md);
 
-  const textSlide = presentation.slides.add();
-  if (code === "000") addTitleTextSlide(textSlide, parsed.title, parsed.blocks, code);
-  else addBodyTextSlide(textSlide, parsed.title, parsed.blocks, code);
-  textSlide.speakerNotes.textFrame.setText(notes);
-  textSlide.speakerNotes.setVisible(true);
+  if (includeTextSlides) {
+    const textSlide = presentation.slides.add();
+    if (code === "000") addTitleTextSlide(textSlide, parsed.title, parsed.blocks, code);
+    else addBodyTextSlide(textSlide, parsed.title, parsed.blocks, code);
+    textSlide.speakerNotes.textFrame.setText("Editable text companion. The full presenter notes are attached to the following image slide.");
+    textSlide.speakerNotes.setVisible(true);
+  }
 
   const visualSlide = presentation.slides.add();
   visualSlide.background.fill = C.bg;
   const bytes = new Uint8Array(await fs.readFile(path.join(workspaceDir, visualRel)));
   visualSlide.images.add({ blob: bytes, contentType: "image/png", alt: `${parsed.title} visual`, fit: "contain", position: { left: 0, top: 0, width: 1600, height: 900 } });
-  visualSlide.speakerNotes.textFrame.setText(`Visual companion for ${parsed.title}.\n\nContinue the explanation from the preceding editable text slide. This slide is the rendered visual artifact from ${folder}/${code}-visual. The source narrative and detailed presenter guidance remain in the preceding slide notes.`);
+  visualSlide.speakerNotes.textFrame.setText(notes);
   visualSlide.speakerNotes.setVisible(true);
 }
 
@@ -145,7 +152,7 @@ const candidatePath = path.join(buildDir, "candidate-visual-products-recognition
 await (await PresentationFile.exportPptx(presentation)).save(candidatePath);
 
 const result = await finalizePresentation({
-  explicitTotalSlideCount: 16,
+  explicitTotalSlideCount: concepts.length * (includeTextSlides ? 2 : 1),
   requiredNativeTableOwnerSlides: [],
   requiredNativeChartOwnerSlides: [],
   workspaceDir,
@@ -158,6 +165,6 @@ const result = await finalizePresentation({
   requiredNativeTableOwnerSlides: [],
   fontPolicy: { basis: "design", families: [family] },
   verifyArtifactToolImport: true,
-  receiptPath: path.join(buildDir, "VISTA-Agentic-Visual-Products-Recognition-Complete-Draft.validation.json"),
+  receiptPath: path.join(buildDir, "VISTA-Agentic-Visual-Products-Recognition-All-Slides-v2.validation.json"),
 });
 console.log(JSON.stringify({ finalPath, family, result }, null, 2));
