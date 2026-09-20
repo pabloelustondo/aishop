@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AIShop iPhone - Camera Guidance Mockup</title>
+  <style>
+    :root {
+      --ink: #171a1d;
+      --paper: #f3f0e8;
+      --paper-deep: #e5dfd3;
+      --blue: #3b82f6;
+      --amber: #f2a626;
+      --green: #47c968;
+      --coral: #ef6f51;
+      --white: #fff;
+      --phone-width: min(390px, calc(100vw - 48px));
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--ink);
+      background:
+        linear-gradient(90deg, transparent 31px, rgba(23, 26, 29, 0.045) 32px, transparent 33px),
+        linear-gradient(rgba(23, 26, 29, 0.035) 1px, transparent 1px),
+        var(--paper);
+      background-size: 64px 100%, 100% 32px, auto;
+      font-family: "Avenir Next", Avenir, sans-serif;
+    }
+
+    button { font: inherit; }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 32px 0 48px;
+    }
+
+    .page-header {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 28px;
+      align-items: end;
+      border-bottom: 2px solid var(--ink);
+      padding-bottom: 18px;
+    }
+
+    .eyebrow,
+    .meta {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      max-width: 720px;
+      margin: 5px 0 0;
+      font-family: "Iowan Old Style", Georgia, serif;
+      font-size: clamp(38px, 6vw, 68px);
+      font-weight: 600;
+      line-height: 0.98;
+    }
+
+    .meta {
+      max-width: 220px;
+      color: #565b60;
+      line-height: 1.5;
+      text-align: right;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(320px, 1fr) minmax(430px, 1.2fr);
+      gap: clamp(32px, 7vw, 86px);
+      align-items: center;
+      padding: 40px 0;
+    }
+
+    .control-panel {
+      align-self: stretch;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .control-panel h2 {
+      margin: 0 0 12px;
+      font-family: "Iowan Old Style", Georgia, serif;
+      font-size: 34px;
+      font-weight: 600;
+    }
+
+    .control-panel > p {
+      max-width: 510px;
+      margin: 0 0 28px;
+      color: #4d5256;
+      font-size: 17px;
+      line-height: 1.55;
+    }
+
+    .state-picker {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      border-top: 1px solid #9f9a90;
+      border-left: 1px solid #9f9a90;
+    }
+
+    .state-button {
+      min-height: 76px;
+      border: 0;
+      border-right: 1px solid #9f9a90;
+      border-bottom: 1px solid #9f9a90;
+      padding: 10px 8px;
+      color: var(--ink);
+      background: rgba(255, 255, 255, 0.35);
+      cursor: pointer;
+      transition: background 160ms ease, color 160ms ease;
+    }
+
+    .state-button:hover { background: rgba(255, 255, 255, 0.8); }
+    .state-button:focus-visible { outline: 3px solid var(--coral); outline-offset: -4px; }
+    .state-button[aria-selected="true"] { color: var(--white); background: var(--ink); }
+
+    .state-button .symbol {
+      display: block;
+      min-height: 28px;
+      font-family: Georgia, serif;
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .state-button .label {
+      display: block;
+      margin-top: 7px;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .principles {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-top: 28px;
+    }
+
+    .principle {
+      padding-top: 12px;
+      border-top: 4px solid var(--coral);
+    }
+
+    .principle strong { display: block; font-size: 14px; }
+    .principle span { display: block; margin-top: 5px; color: #62666a; font-size: 12px; line-height: 1.4; }
+
+    .device-stage {
+      display: grid;
+      place-items: center;
+      min-height: 780px;
+      padding: 24px;
+      background: #d7d2c8;
+      border: 1px solid #aaa398;
+    }
+
+    .phone {
+      position: relative;
+      width: var(--phone-width);
+      aspect-ratio: 390 / 844;
+      overflow: hidden;
+      border: 8px solid #090a0b;
+      border-radius: 44px;
+      background: #111;
+      box-shadow: 0 28px 56px rgba(23, 26, 29, 0.25);
+      isolation: isolate;
+    }
+
+    .camera-image {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transform: scale(1.06);
+      transition: transform 360ms ease, object-position 360ms ease, filter 240ms ease;
+    }
+
+    .phone[data-state="closer"] .camera-image { transform: scale(0.82); filter: brightness(0.78); }
+    .phone[data-state="farther"] .camera-image { transform: scale(1.34); filter: brightness(0.78); }
+    .phone[data-state="slow"] .camera-image { filter: brightness(0.68) blur(1.5px); }
+    .phone[data-state="hold"] .camera-image { transform: scale(1.12); }
+    .phone[data-state="captured"] .camera-image { transform: scale(1.12); }
+
+    .camera-shade {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(to bottom, rgba(0, 0, 0, 0.72), transparent 24%, transparent 58%, rgba(0, 0, 0, 0.82));
+      z-index: 1;
+    }
+
+    .status-bar {
+      position: absolute;
+      z-index: 5;
+      top: 10px;
+      left: 18px;
+      right: 18px;
+      display: flex;
+      justify-content: space-between;
+      color: var(--white);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .dynamic-island {
+      position: absolute;
+      z-index: 6;
+      top: 8px;
+      left: 50%;
+      width: 112px;
+      height: 30px;
+      border-radius: 18px;
+      background: #050505;
+      transform: translateX(-50%);
+    }
+
+    .app-bar {
+      position: absolute;
+      z-index: 5;
+      top: 48px;
+      left: 18px;
+      right: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      color: var(--white);
+    }
+
+    .back {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border: 1px solid rgba(255, 255, 255, 0.42);
+      border-radius: 50%;
+      background: rgba(0, 0, 0, 0.4);
+      font-size: 20px;
+    }
+
+    .brand { font-family: "Iowan Old Style", Georgia, serif; font-size: 21px; font-weight: 700; }
+
+    .local {
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      padding: 7px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.38);
+      border-radius: 18px;
+      background: rgba(0, 0, 0, 0.44);
+      font-size: 10px;
+      font-weight: 800;
+    }
+
+    .local::before {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--blue);
+      content: "";
+    }
+
+    .target {
+      position: absolute;
+      z-index: 2;
+      top: 37%;
+      left: 50%;
+      width: 62%;
+      height: 31%;
+      border: 3px solid var(--amber);
+      transform: translate(-50%, -50%);
+      transition: border-color 200ms ease, opacity 200ms ease;
+    }
+
+    .target::before,
+    .target::after {
+      position: absolute;
+      background: var(--amber);
+      content: "";
+      transition: background 200ms ease;
+    }
+
+    .target::before { top: 50%; left: -9px; width: calc(100% + 18px); height: 1px; }
+    .target::after { top: -9px; left: 50%; width: 1px; height: calc(100% + 18px); }
+    .phone[data-state="scan"] .target { opacity: 0.25; border-style: dashed; }
+    .phone[data-state="hold"] .target,
+    .phone[data-state="captured"] .target { border-color: var(--green); }
+    .phone[data-state="hold"] .target::before,
+    .phone[data-state="hold"] .target::after,
+    .phone[data-state="captured"] .target::before,
+    .phone[data-state="captured"] .target::after { background: var(--green); }
+
+    .navigation-signal {
+      position: absolute;
+      z-index: 4;
+      top: 49%;
+      left: 50%;
+      display: grid;
+      width: 168px;
+      height: 168px;
+      place-items: center;
+      border: 2px solid rgba(255, 255, 255, 0.7);
+      border-radius: 50%;
+      color: var(--white);
+      background: rgba(9, 10, 11, 0.64);
+      box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+      transform: translate(-50%, -50%);
+    }
+
+    .nav-icon {
+      font-family: Georgia, serif;
+      font-size: 104px;
+      line-height: 1;
+      transform: translateY(-5px);
+    }
+
+    .scan-icon {
+      display: none;
+      width: 94px;
+      height: 48px;
+      border-bottom: 7px solid var(--blue);
+      border-radius: 50%;
+      position: relative;
+    }
+
+    .scan-icon::after {
+      position: absolute;
+      right: -2px;
+      bottom: -13px;
+      width: 22px;
+      height: 22px;
+      border-right: 7px solid var(--blue);
+      border-bottom: 7px solid var(--blue);
+      content: "";
+      transform: rotate(-35deg);
+    }
+
+    .phone[data-state="scan"] .nav-icon { display: none; }
+    .phone[data-state="scan"] .scan-icon { display: block; }
+    .phone[data-state="slow"] .nav-icon {
+      color: var(--amber);
+      font-family: "Avenir Next", Avenir, sans-serif;
+      font-size: 72px;
+      font-weight: 800;
+      transform: none;
+    }
+    .phone[data-state="hold"] .nav-icon,
+    .phone[data-state="captured"] .nav-icon { display: none; }
+
+    .hold-ring {
+      display: none;
+      width: 126px;
+      height: 126px;
+      border-radius: 50%;
+      background: conic-gradient(var(--green) 0 76%, rgba(255, 255, 255, 0.24) 76% 100%);
+      animation: breathe 1.4s ease-in-out infinite;
+    }
+
+    .hold-ring::after {
+      display: grid;
+      width: 104px;
+      height: 104px;
+      margin: 11px;
+      place-items: center;
+      border-radius: 50%;
+      color: var(--white);
+      background: rgba(8, 10, 10, 0.78);
+      content: "3";
+      font-family: "Iowan Old Style", Georgia, serif;
+      font-size: 54px;
+    }
+
+    .phone[data-state="hold"] .hold-ring { display: block; }
+
+    .capture-check {
+      display: none;
+      width: 112px;
+      height: 112px;
+      place-items: center;
+      border-radius: 50%;
+      color: #09250f;
+      background: var(--green);
+      font-size: 72px;
+      font-weight: 800;
+    }
+
+    .phone[data-state="captured"] .capture-check { display: grid; }
+
+    .instruction {
+      position: absolute;
+      z-index: 5;
+      left: 16px;
+      right: 16px;
+      bottom: 34px;
+      min-height: 160px;
+      padding: 22px 20px 18px;
+      color: var(--white);
+      background: rgba(8, 10, 11, 0.86);
+      border-top: 5px solid var(--amber);
+      text-align: center;
+      backdrop-filter: blur(18px);
+    }
+
+    .phone[data-state="scan"] .instruction { border-color: var(--blue); }
+    .phone[data-state="hold"] .instruction,
+    .phone[data-state="captured"] .instruction { border-color: var(--green); }
+
+    .step-label {
+      display: block;
+      color: rgba(255, 255, 255, 0.67);
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .instruction h3 {
+      margin: 7px 0 4px;
+      font-family: "Iowan Old Style", Georgia, serif;
+      font-size: 30px;
+      line-height: 1.05;
+    }
+
+    .instruction p { margin: 0; color: rgba(255, 255, 255, 0.72); font-size: 14px; }
+
+    .motion-meter {
+      display: flex;
+      gap: 5px;
+      justify-content: center;
+      margin-top: 14px;
+    }
+
+    .motion-meter span { width: 32px; height: 4px; background: rgba(255, 255, 255, 0.22); }
+    .motion-meter span.active { background: var(--amber); }
+    .phone[data-state="scan"] .motion-meter span.active { background: var(--blue); }
+    .phone[data-state="slow"] .motion-meter span { background: var(--amber); }
+    .phone[data-state="hold"] .motion-meter span,
+    .phone[data-state="captured"] .motion-meter span { background: var(--green); }
+
+    .capture-mode {
+      position: absolute;
+      z-index: 5;
+      right: 22px;
+      bottom: 208px;
+      display: flex;
+      gap: 7px;
+      align-items: center;
+      padding: 8px 10px;
+      border-radius: 18px;
+      color: var(--white);
+      background: rgba(0, 0, 0, 0.56);
+      font-size: 10px;
+      font-weight: 800;
+      text-transform: uppercase;
+    }
+
+    .capture-mode::before {
+      width: 10px;
+      height: 10px;
+      border: 2px solid var(--white);
+      border-radius: 50%;
+      content: "";
+    }
+
+    .gesture-hint {
+      position: absolute;
+      z-index: 6;
+      bottom: 10px;
+      left: 50%;
+      width: 120px;
+      height: 5px;
+      border-radius: 3px;
+      background: rgba(255, 255, 255, 0.8);
+      transform: translateX(-50%);
+    }
+
+    .phone-flash {
+      position: absolute;
+      z-index: 10;
+      inset: 0;
+      pointer-events: none;
+      background: var(--white);
+      opacity: 0;
+    }
+
+    .phone[data-state="captured"] .phone-flash { animation: flash 500ms ease-out; }
+
+    .flow-note {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      padding: 18px 0 0;
+      border-top: 2px solid var(--ink);
+      color: #4d5256;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .flow-note strong { color: var(--ink); }
+
+    @keyframes breathe {
+      50% { transform: scale(1.045); }
+    }
+
+    @keyframes flash {
+      0% { opacity: 0.94; }
+      100% { opacity: 0; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; }
+    }
+
+    @media (max-width: 860px) {
+      .page { width: min(100% - 24px, 620px); padding-top: 20px; }
+      .page-header { grid-template-columns: 1fr; }
+      .meta { max-width: none; text-align: left; }
+      .workspace { grid-template-columns: 1fr; padding-top: 28px; }
+      .control-panel { order: 2; }
+      .device-stage { order: 1; min-height: auto; padding: 18px 8px; }
+    }
+
+    @media (max-width: 460px) {
+      .page { width: 100%; padding: 0 0 32px; }
+      .page-header, .control-panel, .flow-note { margin-inline: 16px; }
+      .page-header { padding-top: 20px; }
+      .workspace { gap: 28px; }
+      .device-stage { padding: 0; border-inline: 0; }
+      .phone { width: min(100vw, 390px); border-width: 0; border-radius: 0; }
+      .state-picker { grid-template-columns: repeat(3, 1fr); }
+      .principles { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="page-header">
+      <div>
+        <p class="eyebrow">AIShop iPhone · High-level UX proposal</p>
+        <h1>Follow one signal.<br>The camera does the rest.</h1>
+      </div>
+      <p class="meta">Camera-first navigation<br>Automatic evidence capture<br>Proposal · 19 Sep 2026</p>
+    </header>
+
+    <section class="workspace" aria-label="Interactive camera guidance mockup">
+      <div class="control-panel">
+        <h2>Guidance states</h2>
+        <p>Select a state to inspect the signal. Direction lives in the center of the camera view; the words below confirm the same action without competing with it.</p>
+
+        <div class="state-picker" role="tablist" aria-label="Camera guidance states">
+          <button class="state-button" role="tab" aria-selected="false" data-state="scan"><span class="symbol">↔</span><span class="label">Buscar</span></button>
+          <button class="state-button" role="tab" aria-selected="false" data-state="slow"><span class="symbol">Ⅱ</span><span class="label">Más lento</span></button>
+          <button class="state-button" role="tab" aria-selected="false" data-state="left"><span class="symbol">←</span><span class="label">Izquierda</span></button>
+          <button class="state-button" role="tab" aria-selected="true" data-state="right"><span class="symbol">→</span><span class="label">Derecha</span></button>
+          <button class="state-button" role="tab" aria-selected="false" data-state="up"><span class="symbol">↑</span><span class="label">Arriba</span></button>
+          <button class="state-button" role="tab" aria-selected="false" data-state="down"><span class="symbol">↓</span><span class="label">Abajo</span></button>
+          <button class="state-button" role="tab" aria-selected="false" data-state="closer"><span class="symbol">＋</span><span class="label">Acercate</span></button>
+          <button class="state-button" role="tab" aria-selected="false" data-state="farther"><span class="symbol">−</span><span class="label">Alejate</span></button>
+          <button class="state-button" role="tab" aria-selected="false" data-state="hold"><span class="symbol">◎</span><span class="label">Quieto</span></button>
+          <button class="state-button" role="tab" aria-selected="false" data-state="captured"><span class="symbol">✓</span><span class="label">Guardada</span></button>
+        </div>
+
+        <div class="principles" aria-label="Design principles">
+          <div class="principle"><strong>One action</strong><span>No simultaneous directions or competing prompts.</span></div>
+          <div class="principle"><strong>Same location</strong><span>The cue never jumps around the screen.</span></div>
+          <div class="principle"><strong>No shutter</strong><span>Hold progress ends in automatic capture.</span></div>
+        </div>
+      </div>
+
+      <div class="device-stage">
+        <div class="phone" id="phone" data-state="right" aria-live="polite">
+          <img class="camera-image" src="vista-guidance-camera-fixture.jpeg" alt="Live camera view of four product bottles">
+          <div class="camera-shade"></div>
+          <div class="phone-flash"></div>
+          <div class="dynamic-island"></div>
+          <div class="status-bar"><span>9:41</span><span>5G&nbsp;&nbsp;100%</span></div>
+          <div class="app-bar">
+            <span class="back" aria-label="Volver">‹</span>
+            <span class="brand">VISTA</span>
+            <span class="local">LOCAL</span>
+          </div>
+          <div class="target" aria-hidden="true"></div>
+          <div class="navigation-signal" aria-hidden="true">
+            <span class="nav-icon" id="nav-icon">→</span>
+            <span class="scan-icon"></span>
+            <span class="hold-ring"></span>
+            <span class="capture-check">✓</span>
+          </div>
+          <div class="capture-mode">Captura automática</div>
+          <div class="instruction">
+            <span class="step-label" id="step-label">Alineá la zona</span>
+            <h3 id="instruction-title">Mové a la derecha</h3>
+            <p id="instruction-detail">Seguí la flecha lentamente</p>
+            <div class="motion-meter" aria-hidden="true"><span class="active"></span><span class="active"></span><span></span></div>
+          </div>
+          <div class="gesture-hint"></div>
+        </div>
+      </div>
+    </section>
+
+    <footer class="flow-note">
+      <strong>Interaction contract:</strong>
+      <span>Video discovers → excessive motion asks for “más lento” → one cue corrects framing → “quieto” arms capture → the phone saves the high-resolution still → guidance resumes.</span>
+    </footer>
+  </main>
+
+  <script>
+    const states = {
+      scan: { icon: "", step: "Buscá la góndola", title: "Recorré lentamente", detail: "El teléfono te avisará cuando la encuentre" },
+      slow: { icon: "Ⅱ", step: "Movimiento muy rápido", title: "Mové más lento", detail: "Cuando podamos leer la imagen, vuelve la guía" },
+      left: { icon: "←", step: "Alineá la zona", title: "Mové a la izquierda", detail: "Seguí la flecha lentamente" },
+      right: { icon: "→", step: "Alineá la zona", title: "Mové a la derecha", detail: "Seguí la flecha lentamente" },
+      up: { icon: "↑", step: "Alineá la zona", title: "Apuntá más arriba", detail: "Mantené los productos dentro del marco" },
+      down: { icon: "↓", step: "Alineá la zona", title: "Apuntá más abajo", detail: "Mantené los productos dentro del marco" },
+      closer: { icon: "+", step: "Ajustá la distancia", title: "Acercate", detail: "Los productos todavía se ven pequeños" },
+      farther: { icon: "−", step: "Ajustá la distancia", title: "Alejate un poco", detail: "Necesitamos ver la zona completa" },
+      hold: { icon: "", step: "Captura automática", title: "Perfecto. Quedate quieto", detail: "La foto se toma cuando se completa el círculo" },
+      captured: { icon: "", step: "Evidencia guardada", title: "Foto lista", detail: "Podés seguir moviendo el teléfono" }
+    };
+
+    const phone = document.querySelector("#phone");
+    const icon = document.querySelector("#nav-icon");
+    const step = document.querySelector("#step-label");
+    const title = document.querySelector("#instruction-title");
+    const detail = document.querySelector("#instruction-detail");
+    const buttons = [...document.querySelectorAll(".state-button")];
+
+    function selectState(stateName) {
+      const state = states[stateName];
+      phone.dataset.state = stateName;
+      icon.textContent = state.icon;
+      step.textContent = state.step;
+      title.textContent = state.title;
+      detail.textContent = state.detail;
+      phone.setAttribute("aria-label", `${state.title}. ${state.detail}`);
+      buttons.forEach((button) => button.setAttribute("aria-selected", String(button.dataset.state === stateName)));
+    }
+
+    buttons.forEach((button) => button.addEventListener("click", () => selectState(button.dataset.state)));
+  </script>
+</body>
+</html>
