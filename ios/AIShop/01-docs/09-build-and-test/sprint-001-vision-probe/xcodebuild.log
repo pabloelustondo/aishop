@@ -1,0 +1,501 @@
+Command line invocation:
+    /Applications/Xcode-beta.app/Contents/Developer/usr/bin/xcodebuild -scheme AIShopVision -destination "platform=iOS Simulator,id=4C52F187-C1C3-4AF2-AAD7-FC5D690B3092" -derivedDataPath /private/tmp/aishop-sprint001-probe.zXSWem/DerivedData -resultBundlePath /private/tmp/aishop-sprint001-probe.zXSWem/probe.xcresult test CODE_SIGNING_ALLOWED=NO
+
+Build settings from command line:
+    CODE_SIGNING_ALLOWED = NO
+
+Resolve Package Graph
+2026-09-19 23:19:33.110 xcodebuild[21188:8971595] [MT] IDERunDestination: Supported platforms for the buildables in the current scheme is empty.
+
+
+Resolved source packages:
+  AIShopVision: /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My Drive 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+
+Writing result bundle at path:
+	/private/tmp/aishop-sprint001-probe.zXSWem/probe.xcresult
+
+ComputePackagePrebuildTargetDependencyGraph
+
+Prepare packages
+
+CreateBuildRequest
+
+SendProjectDescription
+
+CreateBuildOperation
+
+ComputeTargetDependencyGraph
+note: Building targets in dependency order
+note: Target dependency graph (3 targets)
+    Target 'AIShopVision-product' in project 'AIShopVision'
+        ➜ Explicit dependency on target 'AIShopVision' in project 'AIShopVision'
+    Target 'AIShopVisionTests-product' in project 'AIShopVision'
+        ➜ Explicit dependency on target 'AIShopVision' in project 'AIShopVision'
+    Target 'AIShopVision' in project 'AIShopVision' (no dependencies)
+
+GatherProvisioningInputs
+
+CreateBuildDescription
+
+ExecuteExternalTool /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -v -E -dM -isysroot /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -x c -c /dev/null
+
+ExecuteExternalTool /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc --version
+
+ExecuteExternalTool /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/ld -version_details
+
+Build description signature: 4ae28688a2f98e2649ac065858bb1b29
+Build description path: /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/XCBuildData/4ae28688a2f98e2649ac065858bb1b29.xcbuilddata
+CreateBuildDirectory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-create-build-directory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules
+
+CreateBuildDirectory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/CompilationCache.noindex
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-create-build-directory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/CompilationCache.noindex
+
+CreateBuildDirectory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-create-build-directory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex
+
+ClangStatCache /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKStatCaches.noindex/iphonesimulator27.0-24A5380g-510ffa00bc586f8b550ac1bc3e6d48663243818bda632a4370e1cc7a9fd181c5.sdkstatcache
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang-stat-cache /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -o /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKStatCaches.noindex/iphonesimulator27.0-24A5380g-510ffa00bc586f8b550ac1bc3e6d48663243818bda632a4370e1cc7a9fd181c5.sdkstatcache
+
+CreateBuildDirectory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-create-build-directory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex
+
+CreateBuildDirectory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-create-build-directory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products
+
+CreateBuildDirectory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/PrecompiledHeaders
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-create-build-directory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/PrecompiledHeaders
+
+CreateBuildDirectory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/ExplicitPrecompiledModules
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-create-build-directory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+CreateBuildDirectory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-create-build-directory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+CreateBuildDirectory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-create-build-directory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator
+
+CreateBuildDirectory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-create-build-directory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator
+
+CreateBuildDirectory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/PackageFrameworks
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-create-build-directory /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/PackageFrameworks
+
+MkDir /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    /bin/mkdir -p /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/empty-AIShopVisionTests.plist (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/empty-AIShopVisionTests.plist
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/AIShopVisionTests.DependencyMetadataFileList (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/AIShopVisionTests.DependencyMetadataFileList
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/AIShopVision.modulemap (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/AIShopVision.modulemap
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/AIShopVision.DependencyMetadataFileList (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/AIShopVision.DependencyMetadataFileList
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/AIShopVision.DependencyStaticMetadataFileList (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/AIShopVision.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/AIShopVisionTests.DependencyStaticMetadataFileList (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/AIShopVisionTests.DependencyStaticMetadataFileList
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.SwiftConstValuesFileList (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests-OutputFileMap.json (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests-OutputFileMap.json
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.SwiftFileList (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.SwiftFileList
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests_const_extract_protocols.json (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests_const_extract_protocols.json
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.LinkFileList (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.LinkFileList
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.SwiftFileList (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.SwiftFileList
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.LinkFileList (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.LinkFileList
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision_const_extract_protocols.json (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision_const_extract_protocols.json
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.SwiftConstValuesFileList (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.SwiftConstValuesFileList
+
+WriteAuxiliaryFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-OutputFileMap.json (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    write-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-OutputFileMap.json
+
+Copy /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/AIShopVision.modulemap /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/AIShopVision.modulemap (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/AIShopVision.modulemap /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator
+
+SwiftDriver AIShopVision normal arm64 com.apple.xcode.tools.swift.compiler (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-SwiftDriver -- /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -parse-as-library -module-name AIShopVision -Onone @/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE -DXcode -plugin-path /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -F /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk/Developer/Library/Frameworks -c -j18 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKStatCaches.noindex/iphonesimulator27.0-24A5380g-510ffa00bc586f8b550ac1bc3e6d48663243818bda632a4370e1cc7a9fd181c5.sdkstatcache -output-file-map /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex -sdk-module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -package-name aishopvision -emit-const-values -const-gather-protocols-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision_const_extract_protocols.json -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/DerivedSources-normal/arm64 -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/DerivedSources/arm64 -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-Swift.h -working-directory /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode -experimental-emit-module-separately -disable-cmo
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_Builtin_stdarg-8RTZ4TLYTA7OB5XG7MIQ0WMWD.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/ptrcheck-D46CZEDNJ5B6B29WBQ7ZF4S16.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_Builtin_stdbool-1FOG2DN946Y34AYVTZO2FDMSS.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_AvailabilityInternal-EZEVVFXEN5XRPYPJBAADDA7P0.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/SwiftShims-CDDS6AC3183HAL3EROK3SKO4P.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_SwiftConcurrencyShims-6H0ZV5DQSKC5GV9JE0VDT7Z2G.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_Builtin_float-4PQKCQZ5L402EKI8PODP4YAOK.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/ptrauth-2KBG5ZWY9BFWOIBN4PU62KM24.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_Builtin_stddef-ETWTL07RBWOP15Y9ZISBSX4C0.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_DarwinFoundation1-DEBL3IOIO5LKNRLLPO0TMBQAK.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_DarwinFoundation2-B5ZXX9YITUQT0LZAUZXAT8CB2.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_Builtin_limits-8WZLN6FJHQYD1KIYS5QPLMNHX.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_Builtin_stdint-CG71B5AV5HD5QJNWYACIU5D23.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/string_h-BQB9CX19R1CBDT7I47Z83GR4G.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_Builtin_tgmath-48L24HP4K1OZEN9HM3RQAT8VA.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/sys_types-AAACQE6GP5IDNLJ86QI34QNDH.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_Builtin_stdatomic-7PS73PG9Q4QHIVKSV2KAIBQDP.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_Builtin_intrinsics-75720MI8KC9HX1UC0D0KQK83K.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_DarwinFoundation3-ESR02UZCYA74N5TW2FNHNOVDD.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_Builtin_inttypes-3WBGIBMRQF28TPFAVTMFWNY8Z.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/Darwin-1E9LDR2SF1WQQ23CZVJMBJUCX.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/simd-E8L9M6ZGOB7A0FEMHPVUKE9LB.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/MachO-5K5L58RGI2UGQJCUH0QOO3I5V.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/Compression-80ZH1DJDG3AAAHVM0AZ5NMJ29.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/ObjectiveC-M899BSXLZEAPIFP5QVJJJV4D.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/os_object-D7I7F3K3TE6ZFHOWVRYMFREIW.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/os_workgroup-5HTZO9I1DEWRF2ZIMXK1PVY6R.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/Dispatch-AGVKS1KTN57LE9KKS25QCS57W.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/XPC-1V2AWLHHDNZT3VECF3CY7LHZR.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreFoundation-6Y3FALXUP0Y52OJ06EB4200P0.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/dnssd-CVE9AS3ENTRAE1ORTSVPE4UAA.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/os-6LY3WRV115S0Y2X0S1KP5C13I.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CFNetwork-4TJ7DPP5TA1F18WY9ZSW47UZ9.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreAudioTypes-AR2P7G9086JWV67H6NL5NNCQN.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/Security-CWF271IN9RT5EHZEV05VR9E99.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreGraphics-MQQ1NPRY70TBQN585OLH72BW.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreAudio-AX6S8JMNWE4HXKMQBR7Y5D60R.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/Foundation-707RCKWSQHQVY4DKPGM61NA1L.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/ImageIO-HZW0KVV1EURYN4F19SR1A3FE.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreMIDI-BXFY3SSMX3TOX52H90EHI7W63.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/DataDetection-CMG3FTLD0FKYXZ8IUQOZO2W4W.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/Network-5DHRO7UAPPZPXYFHWN6SX626F.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/OpenGLES-94J9TY8R1MB23TWJAPX4G76C.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/UniformTypeIdentifiers-9SRYRGEC9ZZWWZH8KE0UC1NVV.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/IOSurface-EEHSSE2T33U3GUMFHRWL4NJ0A.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/Metal-AAIY5VOT7M5KJZ87CL8QM1O9R.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/AVRouting-A05NOS8PW10TJ0ZOJ6A3X1ZW1.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/AudioToolbox-BCNIVOFMPXAN57E0JLKGT5BYW.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreVideo-CJ8MJDJ53CUCW0NT1B6M3YI0R.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreML-7SHYMYHD8TNT22R98RZOOX5WE.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreImage-4FZ74N08DAJU57S3ZBZPVOZ4Y.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/Accelerate-4R5PD4SCJHHZS6EJ09MN7AKUS.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreMedia-9XGDDZY33KYUUE9ZZSJXBY5MP.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/QuartzCore-EOP47X991NS6RY6X4CSEDOKI.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/Vision-EYEAFHEBPD9G0WAIRHXWW6UF.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/AVFAudio-1TVCORA8060DM0JEK7TSI016M.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/MediaToolbox-6LI04FI98D3C3KXH005M7FIF2.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/VideoToolbox-DVTI6U1BBT7OZZC6FGC9TFI3Q.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/AVFoundation-3IWNNY1UUD36695C1EDZMEXIM.pcm
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ AIShopVision (in target 'AIShopVision' from project 'AIShopVision')
+
+SwiftCompile normal arm64 (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    
+
+SwiftCompile normal arm64 Compiling\ VisionFeatureAdapter.swift /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/Sources/AIShopVision/VisionFeatureAdapter.swift (in target 'AIShopVision' from project 'AIShopVision')
+
+SwiftCompile normal arm64 /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/Sources/AIShopVision/VisionFeatureAdapter.swift (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-SwiftPerFileCompile VisionFeatureAdapter.swift
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for AIShopVision (in target 'AIShopVision' from project 'AIShopVision')
+
+SwiftDriver\ Compilation\ Requirements AIShopVision normal arm64 com.apple.xcode.tools.swift.compiler (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -parse-as-library -module-name AIShopVision -Onone @/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE -DXcode -plugin-path /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -F /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk/Developer/Library/Frameworks -c -j18 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKStatCaches.noindex/iphonesimulator27.0-24A5380g-510ffa00bc586f8b550ac1bc3e6d48663243818bda632a4370e1cc7a9fd181c5.sdkstatcache -output-file-map /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex -sdk-module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -package-name aishopvision -emit-const-values -const-gather-protocols-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision_const_extract_protocols.json -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/DerivedSources-normal/arm64 -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/DerivedSources/arm64 -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-Swift.h -working-directory /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode -experimental-emit-module-separately -disable-cmo
+
+SwiftMergeGeneratedHeaders /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/AIShopVision-Swift.h /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-Swift.h (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-swiftHeaderTool -arch arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-Swift.h -o /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/GeneratedModuleMaps-iphonesimulator/AIShopVision-Swift.h
+
+Copy /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVision.swiftmodule/arm64-apple-ios-simulator.abi.json /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.abi.json (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.abi.json /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVision.swiftmodule/arm64-apple-ios-simulator.abi.json
+
+Copy /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVision.swiftmodule/arm64-apple-ios-simulator.swiftdoc /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.swiftdoc (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.swiftdoc /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVision.swiftmodule/arm64-apple-ios-simulator.swiftdoc
+
+Copy /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVision.swiftmodule/arm64-apple-ios-simulator.swiftmodule /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.swiftmodule (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.swiftmodule /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVision.swiftmodule/arm64-apple-ios-simulator.swiftmodule
+
+Copy /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVision.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.swiftsourceinfo (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.swiftsourceinfo /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVision.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo
+
+SwiftDriver AIShopVisionTests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-SwiftDriver -- /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -parse-as-library -module-name AIShopVisionTests -Onone @/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DXcode -plugin-path /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -F /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk/Developer/Library/Frameworks -c -j18 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKStatCaches.noindex/iphonesimulator27.0-24A5380g-510ffa00bc586f8b550ac1bc3e6d48663243818bda632a4370e1cc7a9fd181c5.sdkstatcache -output-file-map /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex -sdk-module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -package-name aishopvision -emit-const-values -const-gather-protocols-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests_const_extract_protocols.json -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/DerivedSources-normal/arm64 -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/DerivedSources/arm64 -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -working-directory /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode -experimental-emit-module-separately -disable-cmo
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/FileProvider-EABWK2WM8C5OORI3NY5S71SD.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreText-5YXB8U9GKFVQKFABGFS8OAPX5.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/DeveloperToolsSupport-896HG6FNATMZ06EFUIKO45BD1.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/Accessibility-9ZEIO6337DX4NJE2L2KIIY6EK.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/_LocationEssentials-3Q3V0G0K2XCX3PA0SMQ2ERFIX.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/Spatial-1YC9A1Q2P0CCFAEV5MPWO978L.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/Symbols-DGUFCM0IGAILUC4GD37CG3I3L.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/OSLog-BWVEHQ85AGKFTM38GOS005JSZ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/UserNotifications-1TRZAYSQO94JCFQLVXRQNLT8P.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/UIUtilities-77A1SCEPQB3H5B21Z9JXABJRK.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreTransferable-BDK4A7EWEJY0BLVWFQ1TC01QM.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreLocation-81FWEL45WQMR4QMR9DM7CWRJH.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/SwiftUICore-26Y5T4W9RP47W0U61WE2LPJW3.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/CoreMotion-7WMMHQF0FISWWD0SG3P2BJCCQ.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules/UIKit-7XMLDP3BLW0D33F38UFDZTO3D.pcm
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/XCUIAutomation-A49TN0V1XCALKB6UK7LQXZQ1B.pcm
+
+SwiftExplicitDependencyCompileModuleFromInterface arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/XCUIAutomation-AFMVVNT8DGF9.swiftmodule
+
+SwiftExplicitDependencyGeneratePcm arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/XCTest-DJE0ZM1H5OIGS1D2EZ9IOZKHB.pcm
+
+SwiftExplicitDependencyCompileModuleFromInterface arm64 /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules/XCTest-3A9OIBE1YWNP1.swiftmodule
+
+SwiftEmitModule normal arm64 Emitting\ module\ for\ AIShopVisionTests (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+
+SwiftCompile normal arm64 (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    
+
+SwiftCompile normal arm64 Compiling\ VisionFeatureAdapterTests.swift /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/Tests/AIShopVisionTests/VisionFeatureAdapterTests.swift (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+
+SwiftCompile normal arm64 /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/Tests/AIShopVisionTests/VisionFeatureAdapterTests.swift (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-SwiftPerFileCompile VisionFeatureAdapterTests.swift
+
+SwiftDriverJobDiscovery normal arm64 Emitting module for AIShopVisionTests (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+
+SwiftDriver\ Compilation\ Requirements AIShopVisionTests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-Swift-Compilation-Requirements -- /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -parse-as-library -module-name AIShopVisionTests -Onone @/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DXcode -plugin-path /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -F /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk/Developer/Library/Frameworks -c -j18 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKStatCaches.noindex/iphonesimulator27.0-24A5380g-510ffa00bc586f8b550ac1bc3e6d48663243818bda632a4370e1cc7a9fd181c5.sdkstatcache -output-file-map /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex -sdk-module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -package-name aishopvision -emit-const-values -const-gather-protocols-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests_const_extract_protocols.json -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/DerivedSources-normal/arm64 -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/DerivedSources/arm64 -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -working-directory /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode -experimental-emit-module-separately -disable-cmo
+
+Copy /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.swiftmodule/arm64-apple-ios-simulator.abi.json /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.abi.json (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.abi.json /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.swiftmodule/arm64-apple-ios-simulator.abi.json
+
+Copy /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.swiftmodule/arm64-apple-ios-simulator.swiftmodule /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.swiftmodule (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.swiftmodule /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.swiftmodule/arm64-apple-ios-simulator.swiftmodule
+
+Copy /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.swiftmodule/arm64-apple-ios-simulator.swiftdoc /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.swiftdoc (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.swiftdoc /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.swiftmodule/arm64-apple-ios-simulator.swiftdoc
+
+Copy /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.swiftsourceinfo (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-copy -exclude .DS_Store -exclude CVS -exclude .svn -exclude .git -exclude .hg -resolve-src-symlinks -rename /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.swiftsourceinfo /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.swiftmodule/Project/arm64-apple-ios-simulator.swiftsourceinfo
+
+SwiftDriverJobDiscovery normal arm64 Compiling VisionFeatureAdapter.swift (in target 'AIShopVision' from project 'AIShopVision')
+
+SwiftDriver\ Compilation AIShopVision normal arm64 com.apple.xcode.tools.swift.compiler (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-Swift-Compilation -- /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -parse-as-library -module-name AIShopVision -Onone @/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE -DXcode -plugin-path /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -F /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk/Developer/Library/Frameworks -c -j18 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKStatCaches.noindex/iphonesimulator27.0-24A5380g-510ffa00bc586f8b550ac1bc3e6d48663243818bda632a4370e1cc7a9fd181c5.sdkstatcache -output-file-map /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex -sdk-module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -package-name aishopvision -emit-const-values -const-gather-protocols-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision_const_extract_protocols.json -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/DerivedSources-normal/arm64 -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/DerivedSources/arm64 -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -emit-objc-header -emit-objc-header-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision-Swift.h -working-directory /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode -experimental-emit-module-separately -disable-cmo
+
+Ld /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVision.o normal (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/clang -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -r -isysroot /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -O0 -Xlinker -no_warn_duplicate_libraries -F/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -iframework /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -iframework /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk/Developer/Library/Frameworks -filelist /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.LinkFileList -nostdlib -Xlinker -object_path_lto -Xlinker /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision_lto.o -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -debug_variant -Xlinker -dependency_info -Xlinker /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision_dependency_info.dat -fobjc-link-runtime -L/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.swiftmodule -o /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVision.o
+
+ExtractAppIntentsMetadata (in target 'AIShopVision' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v27.1.5218.8.tc7YFS/Metal.xctoolchain --module-name AIShopVision --sdk-root /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk --xcode-version 27A5218g --platform-family iOS --deployment-target 17.0 --bundle-identifier aishopvision.AIShopVision --output /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVision.appintents --target-triple arm64-apple-ios17.0-simulator --binary-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVision.o --dependency-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision_dependency_info.dat --stringsdata-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.SwiftFileList --metadata-file-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/AIShopVision.DependencyMetadataFileList --static-metadata-file-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/AIShopVision.DependencyStaticMetadataFileList --swift-const-vals-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVision-t.build/Objects-normal/arm64/AIShopVision.SwiftConstValuesFileList --force --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-09-19 23:19:37.762 appintentsmetadataprocessor[21315:8972258] Starting appintentsmetadataprocessor export
+2026-09-19 23:19:37.804 appintentsmetadataprocessor[21315:8972258] Extracted no relevant App Intents symbols, skipping writing output
+
+ProcessInfoPlistFile /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/Info.plist /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/empty-AIShopVisionTests.plist (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-infoPlistUtility /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/empty-AIShopVisionTests.plist -producttype com.apple.product-type.bundle.unit-test -expandbuildsettings -format binary -platform iphonesimulator -o /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/Info.plist
+
+SwiftDriverJobDiscovery normal arm64 Compiling VisionFeatureAdapterTests.swift (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+
+SwiftDriver\ Compilation AIShopVisionTests normal arm64 com.apple.xcode.tools.swift.compiler (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode
+    builtin-Swift-Compilation -- /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -parse-as-library -module-name AIShopVisionTests -Onone @/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.SwiftFileList -DSWIFT_PACKAGE -DDEBUG -DXcode -plugin-path /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing -enable-experimental-feature DebugDescriptionMacro -sdk /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -target arm64-apple-ios17.0-simulator -g -module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex -Xfrontend -serialize-debugging-options -profile-coverage-mapping -profile-generate -enable-testing -index-store-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Index.noindex/DataStore -Xcc -D_LIBCPP_HARDENING_MODE\=_LIBCPP_HARDENING_MODE_DEBUG -swift-version 5 -I /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -Isystem /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/PackageFrameworks -F /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -F /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -F /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk/Developer/Library/Frameworks -c -j18 -enable-batch-mode -incremental -Xcc -ivfsstatcache -Xcc /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKStatCaches.noindex/iphonesimulator27.0-24A5380g-510ffa00bc586f8b550ac1bc3e6d48663243818bda632a4370e1cc7a9fd181c5.sdkstatcache -output-file-map /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests-OutputFileMap.json -save-temps -no-color-diagnostics -explicit-module-build -module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules -clang-scanner-module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex -sdk-module-cache-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules -emit-dependencies -emit-module -emit-module-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.swiftmodule -serialize-diagnostics -dependency-scan-serialize-diagnostics-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests-dependency-scan.dia -validate-clang-modules-once -clang-build-session-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/ModuleCache.noindex/Session.modulevalidation -Xcc -fmodules-prune-interval\=86400 -Xcc -fmodules-prune-after\=345600 -package-name aishopvision -emit-const-values -const-gather-protocols-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests_const_extract_protocols.json -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/include -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/DerivedSources-normal/arm64 -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/DerivedSources/arm64 -Xcc -I/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/DerivedSources -Xcc -DSWIFT_PACKAGE -Xcc -DDEBUG\=1 -working-directory /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/.swiftpm/xcode -experimental-emit-module-separately -disable-cmo
+
+Ld /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/AIShopVisionTests normal (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc -Xlinker -reproducible -target arm64-apple-ios17.0-simulator -Xlinker -bundle -sdk /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk -Xlinker -no_warn_duplicate_libraries -L/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -L/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -L/Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib -F/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/EagerLinkingTBDs/Debug-iphonesimulator -F/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/PackageFrameworks -F/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator -Fsystem /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Frameworks -Fsystem /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk/Developer/Library/Frameworks @/tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.LinkFileList -Xlinker -rpath -Xlinker /usr/lib/swift -Xlinker -rpath -Xlinker @loader_path -Xlinker -rpath -Xlinker /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/PackageFrameworks -Xlinker -rpath -Xlinker @loader_path/Frameworks -Xlinker -rpath -Xlinker @loader_path/../Frameworks -Xlinker -dead_strip -Xlinker -object_path_lto -Xlinker /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests_lto.o -Xclang-linker -rdynamic -Xlinker -no_deduplicate -Xlinker -objc_abi_version -Xlinker 2 -Xlinker -debug_variant -Xlinker -dependency_info -Xlinker /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests_dependency_info.dat -link-objc-runtime -profile-generate -L/Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/iphonesimulator -L/usr/lib/swift -Xlinker -add_ast_path -Xlinker /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.swiftmodule -Xlinker -needed_framework -Xlinker XCTest -framework XCTest -Xlinker -needed-lXCTestSwiftSupport -lXCTestSwiftSupport -o /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/AIShopVisionTests -no-stdlib-rpath
+
+ExtractAppIntentsMetadata (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsmetadataprocessor --toolchain-dir /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v27.1.5218.8.tc7YFS/Metal.xctoolchain --module-name AIShopVisionTests --sdk-root /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator27.0.sdk --xcode-version 27A5218g --platform-family iOS --deployment-target 17.0 --bundle-identifier aishopvision.AIShopVisionTests --output /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest --target-triple arm64-apple-ios17.0-simulator --binary-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/AIShopVisionTests --dependency-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests_dependency_info.dat --stringsdata-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/ExtractedAppShortcutsMetadata.stringsdata --source-file-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.SwiftFileList --metadata-file-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/AIShopVisionTests.DependencyMetadataFileList --static-metadata-file-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/AIShopVisionTests.DependencyStaticMetadataFileList --swift-const-vals-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/Objects-normal/arm64/AIShopVisionTests.SwiftConstValuesFileList --compile-time-extraction --deployment-aware-processing --no-app-shortcuts-localization
+2026-09-19 23:19:38.122 appintentsmetadataprocessor[21339:8972324] Starting appintentsmetadataprocessor export
+2026-09-19 23:19:38.123 appintentsmetadataprocessor[21339:8972324] warning: Metadata extraction skipped, no AppIntents.framework dependency found
+
+CopySwiftLibs /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-swiftStdLibTool --copy --verbose --scan-executable /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/AIShopVisionTests --scan-folder /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/Frameworks --scan-folder /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/PlugIns --scan-folder /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/SystemExtensions --scan-folder /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/Extensions --platform iphonesimulator --toolchain /var/run/com.apple.security.cryptexd/mnt/com.apple.MobileAsset.MetalToolchain-v27.1.5218.8.tc7YFS/Metal.xctoolchain --toolchain /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain --destination /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/Frameworks --strip-bitcode --scan-executable /Applications/Xcode-beta.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/usr/lib/libXCTestSwiftSupport.dylib --strip-bitcode-tool /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/bitcode_strip --emit-dependency-info /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/SwiftStdLibToolInputDependencies.dep --filter-for-swift-os
+Ignoring --strip-bitcode because --sign was not passed
+
+AppIntentsSSUTraining (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    /Applications/Xcode-beta.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/appintentsnltrainingprocessor --infoplist-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/Info.plist --temp-dir-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/ssu --bundle-id aishopvision.AIShopVisionTests --product-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest --extracted-metadata-path /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/Metadata.appintents --metadata-file-list /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/AIShopVision.build/Debug-iphonesimulator/AIShopVisionTests-p.build/AIShopVisionTests.DependencyMetadataFileList --source-file /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest/Info.plist --archive-ssu-assets
+2026-09-19 23:19:38.139 appintentsnltrainingprocessor[21340:8972325] Parsing options for appintentsnltrainingprocessor
+2026-09-19 23:19:38.139 appintentsnltrainingprocessor[21340:8972325] Starting AppIntents SSU YAML Generation
+2026-09-19 23:19:38.140 appintentsnltrainingprocessor[21340:8972325] No AppShortcuts found - Skipping.
+
+RegisterExecutionPolicyException /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    builtin-RegisterExecutionPolicyException /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest
+
+Touch /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest (in target 'AIShopVisionTests-product' from project 'AIShopVision')
+    cd /Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My\ Drive\ 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision
+    /usr/bin/touch -c /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Products/Debug-iphonesimulator/AIShopVisionTests.xctest
+
+PruneExplicitPrecompiledModules /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/SwiftExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /tmp/aishop-sprint001-probe.zXSWem/DerivedData/SDKExplicitPrecompiledModules
+
+PruneExplicitPrecompiledModules /tmp/aishop-sprint001-probe.zXSWem/DerivedData/Build/Intermediates.noindex/ExplicitPrecompiledModules
+
+Test Suite 'All tests' started at 2026-09-19 23:19:44.923.
+Test Suite 'AIShopVisionTests.xctest' started at 2026-09-19 23:19:44.925.
+Test Suite 'VisionFeatureAdapterTests' started at 2026-09-19 23:19:44.925.
+Test Case '-[AIShopVisionTests.VisionFeatureAdapterTests testLoaderPreservesEXIFOrientation]' started.
+Test Case '-[AIShopVisionTests.VisionFeatureAdapterTests testLoaderPreservesEXIFOrientation]' passed (0.075 seconds).
+Test Case '-[AIShopVisionTests.VisionFeatureAdapterTests testRejectsInvalidImage]' started.
+2026-09-19 23:19:45.002980-0400 xctest[21423:8973089] [xctest] createImageAtIndex:2056: *** ERROR: createImageAtIndex 1 could not find plugin for image source [12 bytes] 6E 6F 74 20 61 6E 20 69... 'not an i'
+2026-09-19 23:19:45.003501-0400 xctest[21423:8973089] [xctest] createImageAtIndex:2195: *** ERROR: createImageAtIndex[0] - 'n/a ' - failed to create image [-62]
+2026-09-19 23:19:45.003650-0400 xctest[21423:8973089] [xctest] *** ERROR: CGImageSourceCreateImageAtIndexEx:5291: create image at index failed
+2026-09-19 23:19:45.003702-0400 xctest[21423:8973089] [xctest] CGImageSourceCreateImageAtIndexEx:5322: *** ERROR: CGImageSourceCreateImageAtIndex[0] - 'n/a ' - failed to create image [1]
+Test Case '-[AIShopVisionTests.VisionFeatureAdapterTests testRejectsInvalidImage]' passed (0.009 seconds).
+Test Case '-[AIShopVisionTests.VisionFeatureAdapterTests testSimulatorFeaturePrintProbe]' started.
+2026-09-19 23:19:45.144956-0400 xctest[21423:8973773] fopen failed for data file: errno = 2 (No such file or directory)
+2026-09-19 23:19:45.690579-0400 xctest[21423:8973773] fopen failed for data file: errno = 2 (No such file or directory)
+2026-09-19 23:19:45.865469-0400 xctest[21423:8973715] [default] CSU exception: Failed to create espresso context.
+/Users/paboelustodo/Library/CloudStorage/GoogleDrive-pablo.elustondo@gmail.com/My Drive 2/1-GIT-PROJECTS/aishop/ios/AIShop/AIShopVision/Tests/AIShopVisionTests/VisionFeatureAdapterTests.swift:13: error: -[AIShopVisionTests.VisionFeatureAdapterTests testSimulatorFeaturePrintProbe] : failed: caught error: "Error Domain=NSOSStatusErrorDomain Code=-1 "Failed to create espresso context." UserInfo={NSLocalizedDescription=Failed to create espresso context.}"
+Test Case '-[AIShopVisionTests.VisionFeatureAdapterTests testSimulatorFeaturePrintProbe]' failed (0.973 seconds).
+Test Suite 'VisionFeatureAdapterTests' failed at 2026-09-19 23:19:45.986.
+	 Executed 3 tests, with 1 failure (1 unexpected) in 1.057 (1.061) seconds
+Test Suite 'AIShopVisionTests.xctest' failed at 2026-09-19 23:19:45.987.
+	 Executed 3 tests, with 1 failure (1 unexpected) in 1.057 (1.062) seconds
+Test Suite 'All tests' failed at 2026-09-19 23:19:45.987.
+	 Executed 3 tests, with 1 failure (1 unexpected) in 1.057 (1.064) seconds
+2026-09-19 23:24:05.007 xcodebuild[21188:8971595] [MT] IDETestOperationsObserverDebug: 266.840 elapsed -- Testing started completed.
+2026-09-19 23:24:05.007 xcodebuild[21188:8971595] [MT] IDETestOperationsObserverDebug: 0.000 sec, +0.000 sec -- start
+2026-09-19 23:24:05.007 xcodebuild[21188:8971595] [MT] IDETestOperationsObserverDebug: 266.840 sec, +266.840 sec -- end
+
+Test session results, code coverage, and logs:
+	/tmp/aishop-sprint001-probe.zXSWem/probe.xcresult
+
+Failing tests:
+	VisionFeatureAdapterTests.testSimulatorFeaturePrintProbe()
+
+** TEST FAILED **
+
+Testing started

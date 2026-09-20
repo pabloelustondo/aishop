@@ -17,6 +17,8 @@ or redefined here. Repository `AGENTS.md` and root governance apply to all work.
 3. [System model and use cases](03-system-model-and-use-cases/use-cases.md)
 4. [Test strategy](04-benchmarks-test-strategy-and-success-criteria/test-strategy.md)
    and [Sprint 001 fixtures](04-benchmarks-test-strategy-and-success-criteria/sprint-001-fixtures.md)
+   and [test host](04-benchmarks-test-strategy-and-success-criteria/sprint-001-test-host.md)
+   and [iPhone verification](04-benchmarks-test-strategy-and-success-criteria/sprint-001-iphone-verification.md)
 5. [Proof of concept](05-viable-proof-of-concept/proof-of-concept.md)
 6. [Architecture](06-solution-design-and-architecture/high-level-architecture.md)
 7. [Roadmap and Sprint 001](07-planning/roadmap.md)
@@ -26,6 +28,7 @@ or redefined here. Repository `AGENTS.md` and root governance apply to all work.
 10. [Review and release](10-review-and-release/review-and-release.md)
 11. [Operational reality](11-operational-reality/operational-reality.md)
 12. [Observability and learning](12-observability-insights-and-learning/observability.md)
+    and [Sprint 001 session log](12-observability-insights-and-learning/sprint-001-session-log.md)
 
 ## Current vertical slice
 

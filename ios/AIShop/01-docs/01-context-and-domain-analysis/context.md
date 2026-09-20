@@ -4,7 +4,7 @@
 
 AIShop has a basic iPhone client and server-side analysis capabilities. This
 experiment adds a reusable client vision component that can be developed mostly
-with prerecorded images and videos in Xcode and the iOS Simulator.
+with prerecorded images and videos on a developer machine.
 
 The phone should act as a real-time visual scanner, not merely record a video
 for later batch processing. Immediate guidance helps the shopper slow down,

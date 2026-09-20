@@ -4,7 +4,11 @@
 
 - Diff limited to approved component-scoped tasks.
 - Unit and fixture test results for positive, negative, and distractor videos.
-- Simulator demonstration showing a signal before playback completes.
+- Physical iPhone harness demonstration witnessed by Pablo, with real Vision,
+  a signal before fixture playback completes, and the final session report.
+- Pablo's sprint acceptance after that demonstration, separate from test results.
+- macOS gate result and the iPhone calibration record.
+- Session logs from the macOS gate run and from the iPhone session.
 - Best-frame, timestamp, similarity, latency, and dropped-frame diagnostics.
 - Session and evaluation reports for each fixture.
 - Known limitations and false positive or false negative observations.

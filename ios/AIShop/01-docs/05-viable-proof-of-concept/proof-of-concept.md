@@ -22,9 +22,9 @@ Use AVFoundation for timed frame extraction and Apple Vision image feature-print
 generation behind replaceable protocols. This sprint does not adopt YOLO or
 commit the product to one embedding implementation.
 
-Unverified: whether feature-print generation runs in the iOS Simulator, where
-some Vision requests fail for lack of a supported compute device. The first
-implementation task probes exactly this and stops the sprint if it fails.
+Probed 2026-09-19: feature-print generation fails in the iOS Simulator with
+`Failed to create espresso context`. Real-Vision tests therefore run natively on
+macOS; see [Sprint 001 Test Host](../04-benchmarks-test-strategy-and-success-criteria/sprint-001-test-host.md).
 Vision returns a distance, not a similarity, and its scale depends on the
 request revision.
 

@@ -8,6 +8,8 @@
 - Candidate score, threshold crossing, episode opened, updated, or closed.
 - Best-frame replacement and user confirmation or rejection.
 
+Sprint 001 makes these concrete in the [Sprint 001 Session Log](sprint-001-session-log.md).
+
 ## Metrics
 
 - Time to first useful signal and signal-to-feedback latency.

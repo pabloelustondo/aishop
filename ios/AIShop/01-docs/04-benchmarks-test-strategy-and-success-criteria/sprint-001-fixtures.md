@@ -1,7 +1,8 @@
 # AIShop iPhone App: Sprint 001 Fixtures
 
-Currently in `ios/AIShop/AIShopTests/`. Tasks decide the final folder and add
-the files to the test target's Resources phase, which is empty today.
+Currently in `ios/AIShop/AIShopTests/`. Tasks make the fixtures available to the
+`AIShopVision` package tests and to the debug harness, including on a physical
+iPhone. They never ship in a Release build.
 
 | Role | File | Length |
 |---|---|---|

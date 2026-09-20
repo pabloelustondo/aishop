@@ -1,7 +1,8 @@
 # AIShop iPhone App: Sprint 001 — Candidate Target Signal from Video
 
-Date: 2026-09-18, revised 2026-09-19. Status: PROPOSED; approval requires
-Pablo's commit. Continues in [Acceptance and End-to-End Gate](01-sprint-plan-acceptance.md).
+Date: 2026-09-18, revised 2026-09-19 after the Simulator probe. Status: PROPOSED; approval requires
+Pablo's commit. Continues in [Acceptance and End-to-End Gate](01-sprint-plan-acceptance.md);
+hosts are decided in [Sprint 001 Test Host](../../../04-benchmarks-test-strategy-and-success-criteria/sprint-001-test-host.md).
 
 ## Goal and story
 
@@ -11,6 +12,7 @@ inspect more closely.
 
 ## Scope
 
+- Develop and test on macOS with real Vision; verify on a physical iPhone last.
 - Define one local catalog entry: product ID, name, reference image, optional
   metadata, and a generated visual representation.
 - Expose a prerecorded video as an incremental timestamped frame stream.
@@ -21,9 +23,11 @@ inspect more closely.
 - Retain product ID, video timestamp, score, best frame, consecutive
   supporting-frame count, processing latency, and dropped-frame count.
 - On stop, build a session report from retained evidence, with no second pass.
+- Write the [structured session log](../../../12-observability-insights-and-learning/sprint-001-session-log.md) on every run, on every host.
 - Support deterministic advancement for tests and timestamp-paced replay for UX.
-- Add the [Sprint 001 fixtures](../../../04-benchmarks-test-strategy-and-success-criteria/sprint-001-fixtures.md) to the test target.
-- Add a debug-only diagnostic harness that needs neither sign-in nor network.
+- Add the [Sprint 001 fixtures](../../../04-benchmarks-test-strategy-and-success-criteria/sprint-001-fixtures.md) to the package tests and the debug harness, never to a Release build.
+- Add a debug-only diagnostic harness that needs neither sign-in nor network and
+  runs on a physical iPhone.
 
 ## Out of scope
 
@@ -39,12 +43,7 @@ adds candidate-region detection and compares crops for dense shelves. The first
 fixture target is a banana: an unpackaged item used only to probe the pipeline.
 It does not bring Sprint 009 produce handling into scope.
 
-## Risk
-
-Feature-print generation in the iOS Simulator is unverified; see the
-[proof of concept](../../../05-viable-proof-of-concept/proof-of-concept.md). Tasks order that probe first, with a stop condition.
-
 ## Gates
 
-Pablo commits this plan first. Only then may a separate Sprint Plan Tasks document
-be drafted and committed. Coding begins only after both approvals.
+Pablo commits this revised plan first. Only then is the Sprint Plan Tasks document
+revised and committed. Coding resumes only after both approvals.

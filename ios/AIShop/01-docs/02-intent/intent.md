@@ -8,8 +8,9 @@ alternatives, associate prices, and remember personal product preferences.
 ## Engineering intent
 
 Build a source-independent, on-device streaming vision pipeline whose core can
-be exercised deterministically with repository fixtures in the iOS Simulator.
-The live camera is an adapter, not a prerequisite for development.
+be exercised deterministically with repository fixtures on a developer machine,
+without a camera or a phone. The live camera is an adapter, not a prerequisite
+for development.
 
 ## Experience principles
 

@@ -3,6 +3,8 @@
 ## Expected constraints
 
 - Simulator timing and compute do not represent a physical iPhone.
+- Vision feature prints do not run in the iOS Simulator by default, so
+  real-Vision tests run on macOS.
 - Camera autofocus, exposure, stabilization, rolling shutter, and permissions
   require later device validation.
 - Vision behavior can vary with OS, hardware, orientation, and image preprocessing.
