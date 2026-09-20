@@ -11,9 +11,13 @@
 
 - Positive video: target visible during an annotated time interval.
 - Negative video: target absent.
-- Distractor video: visually similar product present.
+- Distractor video: visually similar product present; measurement-only in
+  Sprint 001.
 - Reference image: clear front view of the target product.
 - Later suites add blur, glare, distance, occlusion, rotation, and dense shelves.
+
+The Sprint 001 set and its annotation are recorded in
+[Sprint 001 Fixtures](sprint-001-fixtures.md).
 
 Fixtures must have documented origin and usage rights. Tests must not require a
 network call, user photo library, or live camera.
@@ -29,6 +33,6 @@ network call, user photo library, or live camera.
 ## Success boundary
 
 Sprint 001 is successful when the target produces a provisional signal within
-the expected interval, negative evidence does not produce an accepted signal,
+the expected interval, no candidate episode opens in a false-positive zone,
 and processing starts before the complete video is consumed. The fixture set is
 an engineering probe, not a claim of production accuracy.

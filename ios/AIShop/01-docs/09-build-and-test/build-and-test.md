@@ -8,7 +8,10 @@ No test should require camera permission, Photos permission, or network access.
 
 The simulator harness permits a tester to select a bundled or imported video,
 watch timestamp-paced replay, and inspect signals, frame score, latency, and the
-retained best frame.
+retained best frame. When playback stops it shows the session report.
+
+The app's normal entry sits behind Firebase sign-in. The harness opens through
+a debug-only launch path that needs neither sign-in nor network.
 
 ## Execution modes
 

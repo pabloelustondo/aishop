@@ -1,6 +1,7 @@
 # AIShop iPhone App: Sprint 001 — Candidate Target Signal from Video
 
-Date: 2026-09-18. Status: PROPOSED; approval requires Pablo's commit.
+Date: 2026-09-18, revised 2026-09-19. Status: PROPOSED; approval requires
+Pablo's commit. Continues in [Acceptance and End-to-End Gate](01-sprint-plan-acceptance.md).
 
 ## Goal and story
 
@@ -16,31 +17,32 @@ inspect more closely.
 - Sample at a configurable rate without waiting for the complete video.
 - Compare the whole frame and an optional central crop to the target.
 - Emit provisional signals and aggregate adjacent hits into one episode.
-- Retain product ID, video timestamp, similarity, best frame ID, consecutive
+- Close an episode after a configurable gap, on user stop, or at end of stream.
+- Retain product ID, video timestamp, score, best frame, consecutive
   supporting-frame count, processing latency, and dropped-frame count.
+- On stop, build a session report from retained evidence, with no second pass.
 - Support deterministic advancement for tests and timestamp-paced replay for UX.
-
-## Acceptance
-
-- One target catalog entry loads without camera or network access.
-- Analysis begins before the complete fixture video is consumed.
-- The positive fixture signals within its annotated target interval.
-- The negative fixture produces no accepted candidate signal.
-- A similar-product distractor records evidence without being called confirmed.
-- Repeated hits form one episode with the best frame, timestamp, and score.
-- Latency, analyzed frames, and dropped frames are reported.
-- The harness runs in unit/component tests and the iOS Simulator.
-- User-visible wording remains `possible match`.
+- Add the [Sprint 001 fixtures](../../../04-benchmarks-test-strategy-and-success-criteria/sprint-001-fixtures.md) to the test target.
+- Add a debug-only diagnostic harness that needs neither sign-in nor network.
 
 ## Out of scope
 
-Live camera capture, general object detection, bounding boxes, YOLO, OCR,
-barcode, multiple targets, shopping-list orchestration, tracking across regions,
-price, server upload, and exact SKU confirmation.
+Live camera capture, general object detection, bounding boxes, crops around the
+product, YOLO, OCR, barcode, multiple targets, shopping-list orchestration,
+tracking across regions, merging episodes into unique items, reprocessing media
+after stop, price, server upload, and exact SKU confirmation.
 
-## Controlled limitation and next increment
+## Controlled limitations
+
 The target must become a substantial, recognizable part of the frame. Sprint 002
-adds candidate-region detection and compares crops for dense shelves.
+adds candidate-region detection and compares crops for dense shelves. The first
+fixture target is a banana: an unpackaged item used only to probe the pipeline.
+It does not bring Sprint 009 produce handling into scope.
+
+## Risk
+
+Feature-print generation in the iOS Simulator is unverified; see the
+[proof of concept](../../../05-viable-proof-of-concept/proof-of-concept.md). Tasks order that probe first, with a stop condition.
 
 ## Gates
 

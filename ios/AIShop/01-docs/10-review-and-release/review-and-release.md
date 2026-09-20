@@ -6,6 +6,7 @@
 - Unit and fixture test results for positive, negative, and distractor videos.
 - Simulator demonstration showing a signal before playback completes.
 - Best-frame, timestamp, similarity, latency, and dropped-frame diagnostics.
+- Session and evaluation reports for each fixture.
 - Known limitations and false positive or false negative observations.
 
 ## Review questions
