@@ -1,40 +1,43 @@
 # Sprint 001 Component Anchor
 
-This diagram anchors the components and evidence flow defined by the
-[Sprint Plan Tasks](02-sprint-plan-tasks.md). Numbers identify task order.
+Proposed revision of the [Sprint Plan Tasks](02-sprint-plan-tasks.md) anchor.
+Numbers identify task ownership; diagrams flow downward for vertical reading.
 
 ```mermaid
 %%{init: {"themeVariables": {"fontSize": "20px"}, "flowchart": {"nodeSpacing": 35, "rankSpacing": 55}}}%%
 flowchart TB
-    F[Bundled video fixtures] --> S[3 VideoFixtureFrameStream]
-    S --> P[7 CandidateAnalysisPipeline]
-
-    C[2 LocalTargetCatalog] --> A[1 VisionFeatureAdapter]
-    A --> R[Target feature print]
-    R --> Q[4 CandidateScorer]
-    P --> Q
-    Q --> G[5 CandidateEpisodeAggregator]
-    G --> B[6 SessionReportBuilder]
-
-    N[Fixed annotations] --> E[8 FixtureEvaluator]
-    B --> E
-    E --> O[PASS or FAIL plus evaluation report]
-
-    subgraph Simulator[Offline iOS Simulator]
-        X[9 Application bootstrap] --> H[10 VisionDiagnosticHarness]
-        H --> P
-        B --> H
-    end
-
-    I[11 Xcode integration] -. assembles .-> Simulator
-    T[12 e2e/ios/run.zsh] --> X
-    O --> T
-    T --> D[13 Sprint evidence]
-
-    Q -- whole frame and centered crop --> G
-    G -- possible match --> H
+    F[2 Fixture resources] --> S[6 Video frame stream]
+    F --> C[5 Target catalog]
+    S --> P[10 Analysis pipeline]
+    C -- target descriptor --> Q[7 Candidate scorer]
+    P -- sampled frames --> Q
+    Q -. frame and crop feature requests .-> A[1 Vision feature adapter]
+    C -. reference feature request .-> A
+    Q -- scores --> G[8 Episode aggregator]
+    G -- episodes and best frames --> B[9 Session report builder]
+    P -. records events through .-> L[4 Session log]
+    B --> R[Session report and local images]
 ```
 
-Solid arrows are runtime or evidence flow. The dotted arrow is build-time
-assembly. Firebase, authentication, camera, and network are outside this
-debug-only fixture path; normal application startup remains unchanged.
+The pipeline uses the same components on both hosts. Solid arrows carry data;
+dotted arrows identify service dependencies. Images stay separate.
+
+```mermaid
+%%{init: {"themeVariables": {"fontSize": "20px"}, "flowchart": {"rankSpacing": 55}}}%%
+flowchart TB
+    M[3 macOS integration command] --> T[12 Real-pipeline integration suite]
+    T --> E[11 Fixture evaluator]
+    E --> PASS{Pipeline gate passes?}
+    PASS -- yes --> X[15 Xcode integration]
+    X --> BOOT[13 Debug app bootstrap]
+    BOOT --> UI[14 iPhone diagnostic harness]
+    UI --> PHONE[16 Pablo sees both fixtures on iPhone]
+    PHONE --> LOG[Export phone logs for evaluator 11]
+    LOG --> CHECK{Phone outcomes pass?}
+    CHECK -- yes --> D[17 Evidence and Pablo acceptance]
+    CHECK -- no --> FIX
+    PASS -- no --> FIX[Correct failing component and rerun]
+```
+
+The macOS command does not launch the app. Automated app-shell E2E coverage
+remains a recorded gap. Physical iPhone verification is required for acceptance.
