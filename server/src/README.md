@@ -2,8 +2,17 @@
 
 Este directorio implementa la recepción de evidencia, el reconocimiento de
 productos y la consulta/revisión de resultados de AI Shop.
-Actualmente contiene 90 archivos JavaScript al mismo nivel.
-Las siguientes agrupaciones describen responsabilidades existentes, no carpetas ya creadas.
+Sprint 015 separa únicamente el recorrido `/run` de una fotografía ya guardada.
+El resto del servidor permanece en sus rutas existentes.
+
+## Módulos extraídos
+
+- [server/src/agent/api/README.md](agent/api/README.md): lectura del contexto JSON.
+- [server/src/agent/analysis/README.md](agent/analysis/README.md): runner y collector.
+- [server/src/recognition/background/README.md](recognition/background/README.md): cuerpo de petición e interpretación.
+
+Las entradas antiguas del runner/collector reexportan las mismas funciones.
+Stores, prompt/esquema, configuración y composición Firebase no se trasladan.
 
 ## Por dónde empezar
 
@@ -25,9 +34,8 @@ El catálogo de VISTA no implica que todos los modos de reconocimiento usen cat�
 
 ## Guías
 
-- [Proceso de /run, paso a paso y con enlaces a funciones](../../docs/guides/server-side-analysis/analysis-run-functions.md).
-- [Mapa completo de módulos y destinos propuestos](../../docs/guides/server-side-analysis/source-module-map.md).
-- [Propuesta de reorganización y condiciones antes de mover código](../../docs/07-planning/proposals/server-source-modules.md).
+- [Proceso de /run, paso a paso y con enlaces a funciones](../../01-docs/guides/vision-agent-photo-analysis/analysis-run-functions.md).
+- [Mapa completo de módulos y destinos propuestos](../../01-docs/guides/vision-agent-photo-analysis/source-module-map.md).
+- [Propuesta de reorganización y condiciones antes de mover código](../../01-docs/07-planning/proposals/server-source-modules.md).
 
-No se ha movido código con este índice. La propuesta requiere su propio Plan y
-Tasks aprobados; las carpetas futuras tendrán un README específico.
+La reorganización global sigue diferida; este índice no autoriza mover otras áreas.

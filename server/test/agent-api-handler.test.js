@@ -468,6 +468,34 @@ test("the first run carries no note; a refine carries the caller's own", async (
   assert.equal(sent.body.analysis.status, "analyzed");
 });
 
+test("run JSON parsing preserves empty, trimmed and bounded context", async () => {
+  for (const [raw, expected] of [[undefined, null], [Buffer.alloc(0), null],
+    ["{}", null], ['{"context":null}', null], ['{"context":"  "}', null],
+    ['{"context":"  lower shelf  "}', "lower shelf"],
+    [JSON.stringify({ context: "x".repeat(500) }), "x".repeat(500)]]) {
+    const { handle, calls } = harness();
+    const request = jsonRequest("POST", `${BASE}/${ID}/run`);
+    request.rawBody = raw;
+    const sent = await send(handle, request);
+    assert.equal(sent.status, 200);
+    assert.equal(calls.find(([kind]) => kind === "run")[1].context, expected);
+  }
+});
+
+test("invalid run bodies fail before runner invocation with the same HTTP error", async () => {
+  for (const raw of ["{", "null", "[]", "true", '"text"',
+    '{"context":5}', '{"context":{}}', JSON.stringify({ context: "x".repeat(501) }),
+    JSON.stringify({ ignored: "x".repeat(8192) })]) {
+    const { handle, calls } = harness();
+    const request = jsonRequest("POST", `${BASE}/${ID}/run`);
+    request.rawBody = Buffer.from(raw);
+    const sent = await send(handle, request);
+    assert.equal(sent.status, 400);
+    assert.equal(sent.body.error.code, "context_invalid");
+    assert.equal(calls.some(([kind]) => kind === "run"), false);
+  }
+});
+
 test("a note longer than the ceiling is refused rather than truncated", async () => {
   const { handle, calls } = harness();
   const sent = await send(handle,

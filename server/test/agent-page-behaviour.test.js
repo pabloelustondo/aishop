@@ -3,8 +3,8 @@
  *
  * This file lives under `server/test/` rather than beside the page because
  * `npm --prefix server test` is the repository's only test runner; a file in
- * `dashboard/` would never be executed. The client-side end-to-end gap named
- * in `docs/00-sdlc2-governance/end-to-end-happy-path-gate.md` is unchanged —
+ * `02-web-ui/` would never be executed. The client-side end-to-end gap named
+ * in `01-docs/00-sdlc2-governance/end-to-end-happy-path-gate.md` is unchanged —
  * this covers the two decisions the page gets wrong, not the page.
  */
 import assert from "node:assert/strict";
@@ -17,10 +17,10 @@ import {
   shouldFallBackToRedirect,
   shouldRenewVideoUpload, uploadControlState, uploadVideoChunks,
   VIDEO_CHUNK_BYTES, VideoUploadTransportError
-} from "../../dashboard/scripts/agent.js";
+} from "../../02-web-ui/scripts/agent.js";
 
 test("upload presentation names one file and every supported format", () => {
-  const html = readFileSync(new URL("../../dashboard/agent.html", import.meta.url), "utf8");
+  const html = readFileSync(new URL("../../02-web-ui/agent.html", import.meta.url), "utf8");
   assert.match(html, />New shelf analysis</);
   assert.match(html, /Upload one photograph or video/);
   assert.match(html, /One file per analysis/);

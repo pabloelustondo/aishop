@@ -1,5 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
+test("runner and sampler old paths export the same functions as the focused module", async () => {
+  const original = await import("../src/agent-analysis-runner.js");
+  const focused = await import("../src/agent/analysis/agent-analysis-runner.js");
+  assert.deepEqual(Object.keys(original), Object.keys(focused));
+  assert.equal(original.createAgentAnalysisRunner, focused.createAgentAnalysisRunner);
+  assert.equal(original.createRunMemorySampler, focused.createRunMemorySampler);
+});
 import { ProviderError } from "../src/errors.js";
 import { createAgentAnalysisRunner, createRunMemorySampler }
   from "../src/agent-analysis-runner.js";

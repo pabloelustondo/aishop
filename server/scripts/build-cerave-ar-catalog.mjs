@@ -10,7 +10,7 @@
 //
 // Produces three things from one set of bytes:
 //   1. server/data/vista-catalog-cerave-ar.json   (what recognition reads)
-//   2. dashboard/catalog/{catalog.json,images/}   (what the web page serves)
+//   2. 02-web-ui/catalog/{catalog.json,images/}   (what the web page serves)
 //   3. dist/vista-catalog-cerave-ar-<version>.zip (what the phone imports)
 //
 // All-or-nothing: every packshot is fetched and verified before anything is
@@ -28,7 +28,7 @@ const AS_OF = new Date().toISOString().slice(0, 10);
 const CHECKED_AT = new Date().toISOString().replace(/\.\d{3}Z$/, "Z");
 
 const SERVER_CATALOG = new URL("../data/vista-catalog-cerave-ar.json", import.meta.url);
-const DASHBOARD = new URL("../../dashboard/catalog/", import.meta.url);
+const DASHBOARD = new URL("../../02-web-ui/catalog/", import.meta.url);
 const DASHBOARD_CATALOG = new URL("catalog.json", DASHBOARD);
 const DASHBOARD_IMAGES = new URL("images/", DASHBOARD);
 const DIST = new URL("../../dist/", import.meta.url);

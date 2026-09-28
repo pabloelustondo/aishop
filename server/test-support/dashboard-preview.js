@@ -1,7 +1,7 @@
 import http from "node:http";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
-const root = path.resolve("../dashboard");
+const root = path.resolve("../02-web-ui");
 const scanId = "00000000-0000-4000-8000-000000000001";
 const report = {
   productName: "Sea Salt",

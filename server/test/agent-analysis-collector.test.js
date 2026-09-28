@@ -1,5 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+
+test("collector compatibility entry exports the focused implementation without a wrapper", async () => {
+  const original = await import("../src/agent-analysis-collector.js");
+  const focused = await import("../src/agent/analysis/agent-analysis-collector.js");
+  assert.deepEqual(Object.keys(original), Object.keys(focused));
+  assert.equal(original.createAgentAnalysisCollector, focused.createAgentAnalysisCollector);
+});
 import { createAgentAnalysisCollector } from "../src/agent-analysis-collector.js";
 import { ProviderError } from "../src/errors.js";
 

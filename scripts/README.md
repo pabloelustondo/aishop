@@ -41,4 +41,4 @@ Do not repeat grants simply to test the API; sign in again after role changes.
 These files replace the combined dispatcher at Pablo's request.
 Future commands are saved as individual scripts before execution.
 Only syntax has been checked; these new scripts have not made live requests.
-Prior evidence: [guided test records](../docs/10-review-and-release/agent-vision-api-test/README.md).
+Prior evidence: [guided test records](../01-docs/10-review-and-release/agent-vision-api-test/README.md).

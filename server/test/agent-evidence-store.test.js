@@ -88,8 +88,34 @@ test("reads stored bytes back with their recorded media type", async () => {
   const source = await store.readSource({ ownerKey: OWNER, analysisId: ANALYSIS });
 
   assert.deepEqual(source.bytes, JPEG);
+  assert.equal(source.path, `agent/analyses/${OWNER}/${ANALYSIS}/source`);
   assert.equal(source.mediaType, "image/jpeg");
   assert.equal(source.sha256, createHash("sha256").update(JPEG).digest("hex"));
+});
+
+test("source read failures expose unavailable, not private storage details", async () => {
+  for (const failingOperation of ["download", "getMetadata"]) {
+    const store = createAgentEvidenceStore({ bucket: { file: path => {
+      assert.equal(path, `agent/analyses/${OWNER}/${ANALYSIS}/source`);
+      const operations = { download: async () => [JPEG],
+        getMetadata: async () => [{ contentType: "image/jpeg" }] };
+      operations[failingOperation] = async () => { throw new Error("PRIVATE bucket detail"); };
+      return operations;
+    } } });
+    await assert.rejects(store.readSource({ ownerKey: OWNER, analysisId: ANALYSIS }),
+      error => error instanceof AgentEvidenceUnavailableError
+        && !error.message.includes("PRIVATE"));
+  }
+});
+
+test("source reads validate owner and analysis before accessing storage", async () => {
+  const store = createAgentEvidenceStore({ bucket: { file: () => {
+    assert.fail("invalid identity must not reach storage");
+  } } });
+  for (const identity of [{ ownerKey: "../other", analysisId: ANALYSIS },
+    { ownerKey: OWNER, analysisId: "../other" }]) {
+    await assert.rejects(store.readSource(identity), TypeError);
+  }
 });
 
 test("creates an origin-bound resumable video session without legacy ACL options", async () => {

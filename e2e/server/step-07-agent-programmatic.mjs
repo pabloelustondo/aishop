@@ -4,8 +4,9 @@
 // granted `agent: true` with the committed administrator tool — the real
 // tool, as a child process, the way Pablo runs it. That account signs in
 // through Firebase's REST sign-in, makes the single call with `run=true`
-// and a note through the fixture provider transport, and receives the
-// analysed record in one answer. The ungranted account is refused with
+// and a note through the fixture provider transport, then collects the
+// background result. Sprint 015 additionally follows a saved JPEG through
+// /run, a pending collection and refinement. The ungranted account is refused with
 // 403 on every route; a third, granted account cannot see the first one's
 // record; revoking the first account ends its session.
 //
@@ -48,7 +49,16 @@ const services = createFirebaseAgentServices({
 });
 const queued = [];
 const taskEnqueuer = { enqueue: async input => { queued.push(input); } };
-const providerFetch = async (_url, options) => new Response(JSON.stringify(
+const providerCalls = [];
+let pendingNextRetrieve = false;
+const providerFetch = async (_url, options) => {
+  providerCalls.push({ method: options.method,
+    body: options.body ? JSON.parse(options.body) : null });
+  if (options.method === "GET" && pendingNextRetrieve) {
+    pendingNextRetrieve = false;
+    return new Response(JSON.stringify({ id: "resp_fixture", status: "in_progress" }));
+  }
+  return new Response(JSON.stringify(
   options.method === "POST" ? { id: "resp_fixture", status: "queued",
     model: "gpt-fixture", usage: { input_tokens: 1, output_tokens: 0 } }
     : options.method === "GET" ? { id: "resp_fixture", status: "completed",
@@ -56,6 +66,7 @@ const providerFetch = async (_url, options) => new Response(JSON.stringify(
       output_text: JSON.stringify(report) }
       : { id: "resp_fixture", deleted: true }
 ), { status: 200, headers: { "x-request-id": "req_fixture" } });
+};
 const handler = createFirebaseAgentHandler({
   apiKey: "offline-fixture-only", environment: "emulator", release: "fixture",
   logger: { info: () => {}, error: () => {} }, services, taskEnqueuer,
@@ -88,6 +99,11 @@ const singleCall = (idToken, fields) => {
   for (const [name, value] of Object.entries(fields)) form.append(name, value);
   return call(idToken, "POST", "", form);
 };
+// Match the private task envelope, including null attemptId for JPEG records.
+const deliver = task => background.taskHandler({ data: {
+  ownerKey: task.ownerKey, analysisId: task.analysisId,
+  runId: task.runId, attemptId: task.attemptId ?? null
+} });
 async function grant(action, subject) {
   const { stdout } = await run("node", [TOOL, action, subject, "--project", PROJECT],
     { env: { ...process.env, FIREBASE_AUTH_EMULATOR_HOST: process.env.FIREBASE_AUTH_EMULATOR_HOST } });
@@ -129,15 +145,64 @@ try {
   assert.equal(queued.length, 1, "start persisted and queued one private collection task");
   collectionTime += 16_000;
   const collection = queued.shift();
-  await background.taskHandler({ data: { ownerKey: collection.ownerKey,
-    analysisId: collection.analysisId, runId: collection.runId } });
+  await deliver(collection);
   const completed = await (await call(a.idToken, "GET", `/${analysis.analysisId}`)).json();
   assert.equal(completed.analysis.status, "analyzed");
   assert.equal(completed.analysis.report.identifiedProducts[0].count, 2);
 
   const stored = await singleCall(a.idToken, {});
   assert.equal(stored.status, 201);
-  assert.equal((await stored.json()).analysis.status, "uploaded", "without `run` the upload only stores");
+  const saved = (await stored.json()).analysis;
+  assert.equal(saved.status, "uploaded", "setup only stores; target test begins at /run");
+  const savedPath = `/${saved.analysisId}`;
+  const startsBefore = providerCalls.filter(call => call.method === "POST").length;
+  const started = await call(a.idToken, "POST", `${savedPath}/run`);
+  assert.equal(started.status, 200);
+  const startedBody = await started.json();
+  assert.equal(startedBody.analysis.status, "analyzing");
+  assert.equal(startedBody.analysis.runs[0].context, null);
+  assert.equal(providerCalls.filter(call => call.method === "POST").length, startsBefore + 1);
+  const startBody = providerCalls.filter(call => call.method === "POST").at(-1).body;
+  assert.equal(startBody.input[0].content.at(-1).image_url,
+    `data:image/jpeg;base64,${JPEG.toString("base64")}`, "uses the stored original JPEG");
+  assert.equal((await call(a.idToken, "POST", `${savedPath}/run`)).status, 409);
+  const providerCallsBeforeReads = providerCalls.length;
+  for (let i = 0; i < 2; i++) await call(a.idToken, "GET", savedPath);
+  assert.equal(providerCalls.length, providerCallsBeforeReads, "GET does not call the provider");
+  assert.equal(queued.length, 1, "duplicate start does not enqueue extra work");
+
+  pendingNextRetrieve = true;
+  collectionTime += 16_000;
+  const pendingTask = queued.shift();
+  assert.equal((await deliver(pendingTask)).pending, true);
+  assert.equal(queued.length, 1, "pending collection reschedules once");
+  assert.equal((await (await call(a.idToken, "GET", savedPath)).json()).analysis.status, "analyzing");
+  collectionTime += 16_000;
+  const doneTask = queued.shift();
+  assert.equal((await deliver(doneTask)).settled, true);
+  const settledBody = await (await call(a.idToken, "GET", savedPath)).json();
+  assert.equal(settledBody.analysis.status, "analyzed");
+  assert.deepEqual(settledBody.analysis.report, report);
+  assert.ok(!JSON.stringify(settledBody).includes("resp_fixture"), "provider ID stays private");
+  const callsAfterSettlement = providerCalls.length;
+  assert.equal((await deliver(doneTask)).skipped, true);
+  assert.equal(providerCalls.length, callsAfterSettlement, "duplicate task does not retrieve again");
+  assert.equal((await call(a.idToken, "POST", `${savedPath}/run`)).status, 400,
+    "completed photo requires a refinement note");
+
+  const refinement = await call(a.idToken, "POST", `${savedPath}/run`,
+    { context: "  Count only the lower shelf.  " });
+  assert.equal(refinement.status, 200);
+  collectionTime += 16_000;
+  const refineTask = queued.shift();
+  assert.notEqual(refineTask.runId, doneTask.runId);
+  assert.equal((await deliver(refineTask)).settled, true);
+  const refined = (await (await call(a.idToken, "GET", savedPath)).json()).analysis;
+  assert.equal(refined.runCount, 2);
+  assert.deepEqual(refined.runs[0].report, report);
+  assert.equal(refined.runs[1].context, "Count only the lower shelf.");
+  assert.equal(refined.runs[1].status, "analyzed");
+  assert.equal(providerCalls.filter(call => call.method === "POST").length, startsBefore + 2);
 
   const anonymous = await call(null, "GET");
   assert.equal(anonymous.status, 401);
@@ -160,6 +225,9 @@ try {
   const c = await signInEmulatorPassword({ email: emailC, password: PASSWORD });
   const strangers = await call(c.idToken, "GET", `/${analysis.analysisId}`);
   assert.equal(strangers.status, 404, "another owner's analysis is simply not there");
+  const callsBeforeStranger = providerCalls.length;
+  assert.equal((await call(c.idToken, "POST", `${savedPath}/run`, { context: "again" })).status, 404);
+  assert.equal(providerCalls.length, callsBeforeStranger, "another owner cannot start recognition");
 
   // --- revocation ends the session, not just the next sign-in ---------------
   await new Promise((resolve) => setTimeout(resolve, 1_100)); // token iat is in whole seconds
@@ -169,6 +237,7 @@ try {
   assert.equal(afterRevoke.status, 401, "a revoked account's existing token is refused at its next use");
 
   console.log("PASS step 07: grant with the tool, REST sign-in, single call analysed (fixture provider), "
+    + "saved JPEG /run, pending collection, duplicate fences, refine history, read-only GET, "
     + "403 without the claim on every route, 404 across owners, 401 after revocation.");
 } finally {
   server.close();

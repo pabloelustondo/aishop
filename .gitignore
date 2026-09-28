@@ -2,6 +2,7 @@
 .env.local
 DerivedData/
 .build/
+01-docs/guides/items-vision/.build/
 node_modules/
 .firebase/
 firebase-debug.log*

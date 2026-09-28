@@ -1,4 +1,6 @@
 import { createHash } from "node:crypto";
+import { buildBackgroundRequestBody } from "./recognition/background/request-body.js";
+import { interpretBackgroundResponse } from "./recognition/background/response-interpreter.js";
 import { sanitizeDiagnostics } from "./agent-diagnostics.js";
 import { ProviderError } from "./errors.js";
 import {
@@ -297,65 +299,13 @@ export function createOpenAIBackgroundAnalyzer({
     } finally { clearTimeout(timeout); }
   }
 
-  function interpret(payload, mode, diagnostics) {
-    const status = payload?.status ?? (extractMessage(payload) ? "completed" : null);
-    diagnostics.responseStatus = status;
-    const id = payload?.id == null ? null : responseId(payload.id);
-    if (status === "queued" || status === "in_progress") {
-      if (!id) throw new ProviderError("invalid-response", sanitizeDiagnostics({ ...diagnostics, failureClass: "provider_json" }));
-      return { status, responseId: id };
-    }
-    if (status === "incomplete") {
-      const failureClass = payload?.incomplete_details?.reason === "max_output_tokens"
-        ? "provider_output_limit" : "provider_incomplete";
-      throw new ProviderError("invalid-response", sanitizeDiagnostics({ ...diagnostics, failureClass }));
-    }
-    if (status === "failed" || status === "cancelled") {
-      throw new ProviderError("response", sanitizeDiagnostics({ ...diagnostics, failureClass: "provider_http" }));
-    }
-    if (status !== "completed") {
-      throw new ProviderError("invalid-response", sanitizeDiagnostics({ ...diagnostics, failureClass: "provider_json" }));
-    }
-    if (payload?.output?.some(item => item?.content?.some(part => part?.type === "refusal"))) {
-      throw new ProviderError("invalid-response", sanitizeDiagnostics({ ...diagnostics, failureClass: "provider_refusal" }));
-    }
-    const validationStarted = performance.now();
-    const message = extractMessage(payload);
-    if (!message) throw new ProviderError("empty-response", sanitizeDiagnostics({ ...diagnostics, failureClass: "provider_empty" }));
-    let report;
-    try { report = JSON.parse(message); }
-    catch { throw new ProviderError("invalid-response", sanitizeDiagnostics({ ...diagnostics, failureClass: "provider_json" })); }
-    try { assertValidReport(mode, report); }
-    catch { throw new ProviderError("invalid-response", sanitizeDiagnostics({ ...diagnostics, failureClass: "provider_schema" })); }
-    diagnostics.durations.report_validation = performance.now() - validationStarted;
-    return { status, responseId: id, report };
-  }
+  const interpret = (payload, mode, diagnostics) =>
+    interpretBackgroundResponse(payload, mode, diagnostics, { extractMessage, responseId });
 
   async function start({ imageBase64, mediaType, mode = ANALYSIS_MODES.targetProduct,
     images, context = null, onDiagnostics = () => {} }) {
-    const contract = ANALYSIS_CONTRACTS[mode];
-    if (!contract) throw new ProviderError("invalid-mode");
-    const note = typeof context === "string" && context.trim() !== "" ? context.trim() : null;
-    const supplied = Array.isArray(images) && images.length > 0
-      ? images : [{ imageBase64, mediaType, timestampMs: null }];
-    if (supplied.some(image => typeof image?.imageBase64 !== "string"
-      || typeof image?.mediaType !== "string")) throw new ProviderError("invalid-mode");
-    const visualInputs = supplied.flatMap((image, index) => [
-      ...(image.timestampMs === null || image.timestampMs === undefined ? [] : [{
-        type: "input_text", text: `Sampled video frame ${index + 1} at ${Number(image.timestampMs)} ms.`
-      }]),
-      { type: "input_image",
-        image_url: `data:${image.mediaType};base64,${image.imageBase64}`, detail: "auto" }
-    ]);
-    const call = await request({ method: "POST", url: RESPONSES_URL, mode, onDiagnostics, body: {
-      model, background: true, store: true,
-      text: { format: { type: "json_schema", name: contract.schemaName, strict: true, schema: contract.schema } },
-      input: [{ role: "user", content: [
-        { type: "input_text", text: contract.instruction },
-        ...(note ? [{ type: "input_text", text: `Additional instruction from the person requesting this analysis: ${note}` }] : []),
-        ...visualInputs
-      ] }]
-    } });
+    const body = buildBackgroundRequestBody({ model, imageBase64, mediaType, mode, images, context });
+    const call = await request({ method: "POST", url: RESPONSES_URL, mode, onDiagnostics, body });
     try { return interpret(call.payload, mode, call.diagnostics); }
     finally { call.notify(); }
   }

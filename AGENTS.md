@@ -4,14 +4,14 @@ These rules are mandatory throughout this repository.
 
 ## Mandatory governance
 
-- Before changing documentation, plans, code, tests, or releases, read [SDLC2-Governance](docs/00-sdlc2-governance/README.md).
-- Follow its document-review rules before editing root-level Markdown or any Markdown file under `docs/`.
+- Before changing documentation, plans, code, tests, or releases, read [SDLC2-Governance](01-docs/00-sdlc2-governance/README.md).
+- Follow its document-review rules before editing root-level Markdown or any Markdown file under `01-docs/`.
 - Follow its workflow rules before planning, implementing, reviewing, or releasing work.
 - Changes to `AGENTS.md` require Pablo's explicit instruction.
 
 ## File size
 
-- Decision documents contain at most 50 physical lines: root Markdown, everything under `docs/00-` through `docs/08-`, and any Markdown carrying an approval field.
+- Decision documents contain at most 50 physical lines: root Markdown, everything under `01-docs/00-` through `01-docs/08-`, and any Markdown carrying an approval field.
 - Split them into focused files; never compress content into dense or unreadable lines.
 - Every other file has no line limit, including evidence, reference material, source code, tests, schemas, generated reports, artifacts, and third-party files.
 - Existing violations must be split before the file is otherwise modified.
@@ -19,7 +19,7 @@ These rules are mandatory throughout this repository.
 
 ## Human review
 
-- Approval is Pablo's commit of the exact reviewed contents. See [Document Review](docs/00-sdlc2-governance/document-review.md).
+- Approval is Pablo's commit of the exact reviewed contents. See [Document Review](01-docs/00-sdlc2-governance/document-review.md).
 - An agent writes, and may stage. An agent never commits, pushes, merges, rebases, or amends.
 - Uncommitted work, staged or not, is a proposal; a later edit is unapproved until its own commit.
 - An agent may delete a governed file and stage the deletion; Pablo's commit approves it.

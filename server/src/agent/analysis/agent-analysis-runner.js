@@ -1,0 +1,211 @@
+import { sanitizeDiagnostics } from "../../agent-diagnostics.js";
+import { ANALYSIS_MODES } from "../../analysis-contracts.js";
+import { AgentEvidenceUnavailableError } from "../../agent-evidence-store.js";
+import { ProviderError } from "../../errors.js";
+
+/** Bounded per-run sampling; counters overlap and are deliberately never summed. */
+export function createRunMemorySampler({
+  readMemory = () => process.memoryUsage(), setIntervalImpl = setInterval,
+  clearIntervalImpl = clearInterval, setTimeoutImpl = setTimeout,
+  clearTimeoutImpl = clearTimeout, signal
+} = {}) {
+  const keys = { rssBytes: "rss", heapUsedBytes: "heapUsed", heapTotalBytes: "heapTotal",
+    externalBytes: "external", arrayBuffersBytes: "arrayBuffers" };
+  let baseline = null;
+  let final = null;
+  const sampledMax = {};
+  let sampleCount = 0;
+  let samplingFailures = 0;
+  let interval;
+  let deadline;
+  function sample() {
+    try {
+      const raw = readMemory();
+      final = Object.fromEntries(Object.entries(keys).map(([key, source]) => [key,
+        Number.isSafeInteger(raw?.[source]) && raw[source] >= 0 ? raw[source] : null]));
+      baseline ??= { ...final };
+      for (const [key, value] of Object.entries(final)) {
+        if (value !== null) sampledMax[key] = Math.max(sampledMax[key] ?? 0, value);
+      }
+      sampleCount++;
+      return { ...final };
+    } catch { samplingFailures++; final = null; return null; }
+  }
+  function stop() {
+    if (interval !== undefined) clearIntervalImpl(interval);
+    if (deadline !== undefined) clearTimeoutImpl(deadline);
+    interval = undefined;
+    deadline = undefined;
+    signal?.removeEventListener("abort", stop);
+  }
+  sample();
+  if (!signal?.aborted) {
+    try {
+      interval = setIntervalImpl(sample, 250);
+      interval?.unref?.();
+      deadline = setTimeoutImpl(stop, 120_000);
+      deadline?.unref?.();
+      signal?.addEventListener("abort", stop, { once: true });
+    } catch { samplingFailures++; stop(); }
+  }
+  const summary = () => ({ baseline: baseline && { ...baseline }, final: final && { ...final },
+    sampledMax: { ...sampledMax }, sampleCount, sampleIntervalMs: 250, samplingFailures });
+  return { sample, summary, capture: () => { sample(); return summary(); }, stop };
+}
+
+/** Open world. Catalog matching is a later increment, not a flag here. */
+const IMAGE_MODE = ANALYSIS_MODES.areaScan;
+
+/**
+ * Why a run failed, in terms the list page can show a person. A provider
+ * timeout and an unreadable object are different problems with different
+ * remedies, so they are never collapsed into one reason.
+ */
+function failureReason(error) {
+  if (error instanceof AgentEvidenceUnavailableError) return "storage_unavailable";
+  if (error instanceof ProviderError) {
+    return error.kind === "timeout" ? "provider_timeout" : "provider_failed";
+  }
+  return "unexpected_failure";
+}
+
+/**
+ * Starts background analysis for saved evidence (JPEG or prepared video frames).
+ *
+ * The record is moved to `analyzing` before the source is read and before the
+ * provider is called, so a run that dies mid-flight is visible as started
+ * rather than indistinguishable from one never attempted. Definite failures
+ * settle as failed. An ambiguous provider start or failed provider-ID write
+ * stays analyzing: blindly retrying could buy a second provider response.
+ *
+ * Errors propagate to the HTTP handler; a queue outage is the exception:
+ * durable provider identity/due time let the reconciler repair dispatch.
+ *
+ * A context note is optional on the first run and required to refine an
+ * analyzed record. The store enforces that rule and keeps the note per run.
+ */
+export function createAgentAnalysisRunner({
+  evidenceStore, analysisStore, analyzer, taskEnqueuer,
+  diagnostics = () => {}, configuration = {}, memorySampling = {}
+} = {}) {
+  if (typeof evidenceStore?.readSource !== "function") {
+    throw new TypeError("An agent evidence store is required.");
+  }
+  if (typeof analysisStore?.markAnalyzing !== "function") {
+    throw new TypeError("An agent analysis store is required.");
+  }
+  if (typeof analysisStore?.markProviderStarted !== "function"
+    || typeof analysisStore?.markFailed !== "function"
+    || typeof analysisStore?.read !== "function") {
+    throw new TypeError("A background-capable agent analysis store is required.");
+  }
+  if (typeof analyzer?.start !== "function") {
+    throw new TypeError("A background analysis adapter is required.");
+  }
+  if (typeof taskEnqueuer?.enqueue !== "function") {
+    throw new TypeError("An agent task enqueuer is required.");
+  }
+
+  return Object.freeze({
+    async run({ ownerKey, analysisId, attemptId = null, context = null,
+      diagnosticContext = {}, signal }) {
+      const started = performance.now();
+      const detail = sanitizeDiagnostics({ ...configuration, ...diagnosticContext, analysisId, attempt: 1 });
+      const correlation = { ...diagnosticContext, analysisId };
+      const durations = {};
+      const sampler = createRunMemorySampler({ ...memorySampling, signal });
+      const emit = (event, extra = {}) => {
+        const memorySnapshot = sampler.sample();
+        try { diagnostics(event, { ...correlation, ...detail, ...extra, memorySnapshot, memory: sampler.summary() }); } catch {}
+      };
+      async function stage(name, operation) {
+        const start = performance.now();
+        emit("stage.started", { stage: name });
+        try {
+          const value = await operation();
+          durations[name] = performance.now() - start;
+          emit("stage.completed", { stage: name, durationMs: durations[name] });
+          return value;
+        } catch (error) {
+          durations[name] = performance.now() - start;
+          emit("stage.failed", { stage: name, durationMs: durations[name] });
+          throw error;
+        }
+      }
+      try {
+        const reserved = await stage("reservation", () => analysisStore.markAnalyzing({
+          ownerKey, analysisId, attemptId, context, diagnostics: detail }));
+        Object.assign(detail, sanitizeDiagnostics({ ...reserved?.diagnostics, runId: reserved?.runId, runNumber: reserved?.runNumber, trigger: reserved?.trigger }));
+        emit("run.started");
+        let stageName = "source_read";
+        try {
+          const record = await stage("record_read_input", () =>
+            analysisStore.read({ ownerKey, analysisId }));
+          const video = record?.mediaType === "video/mp4"
+            || record?.mediaType === "video/quicktime";
+          const sources = video
+            ? await stage(stageName, () => evidenceStore.readFrames({ ownerKey,
+              analysisId, attemptId, frames: record.frames }))
+            : [await stage(stageName, () => evidenceStore.readSource({ ownerKey, analysisId }))];
+          const mode = video ? ANALYSIS_MODES.videoAreaScan : IMAGE_MODE;
+          stageName = "provider_start";
+          const provider = await stage(stageName, () => analyzer.start({
+            ...(video ? { images: sources.map(source => ({
+              imageBase64: source.bytes.toString("base64"),
+              mediaType: source.mediaType ?? "image/jpeg",
+              timestampMs: source.timestampMs
+            })) } : { imageBase64: sources[0].bytes.toString("base64"),
+              mediaType: sources[0].mediaType ?? "image/jpeg" }),
+            mode, context,
+            onDiagnostics: metadata => Object.assign(detail, sanitizeDiagnostics(metadata))
+          }));
+          emit("provider.started", { durationMs: durations.provider_start });
+          stageName = "provider_id_settlement";
+          const pending = await stage(stageName, () => analysisStore.markProviderStarted({
+            ownerKey, analysisId, attemptId, runId: reserved?.runId,
+            responseId: provider.responseId,
+            mode,
+            diagnostics: { ...detail, memory: sampler.capture(),
+              durations: { ...durations, ...detail.durations } }
+          }));
+          stageName = "task_dispatch";
+          try {
+            await stage(stageName, () => taskEnqueuer.enqueue({ ownerKey, analysisId,
+              attemptId, runId: reserved?.runId, dueAt: pending.dueAt }));
+          } catch (error) {
+            Object.assign(detail, { failureClass: "task_dispatch_failed" });
+            emit("task.dispatch_failed", { stage: stageName });
+            // The provider ID and due time are already durable. The scheduled
+            // reconciler owns recovery, so an unavailable queue must not turn
+            // a real background run into a client-visible failed run.
+          }
+          emit("run.backgrounded", { durationMs: performance.now() - started,
+            durations: { ...durations, ...detail.durations } });
+        } catch (error) {
+          Object.assign(detail, sanitizeDiagnostics(error.diagnostics));
+          detail.failureClass ??= stageName === "provider_id_settlement" ? "persistence_failed" : error instanceof AgentEvidenceUnavailableError ? "storage_unavailable"
+            : error instanceof ProviderError ? (error.kind === "timeout" ? "provider_timeout" : error.kind === "unconfigured" ? "provider_unconfigured" : "provider_network") : "unexpected_failure";
+          if (stageName === "provider_start") emit("provider.failed");
+          if (stageName === "provider_id_settlement") emit("persistence.failed", { stage: stageName });
+          const uncertainProviderStart = stageName === "provider_start"
+            && error instanceof ProviderError
+            && (error.kind === "timeout" || error.kind === "network");
+          if (!uncertainProviderStart && stageName !== "provider_id_settlement") {
+            try {
+              await stage("settlement", () => analysisStore.markFailed({ ownerKey,
+                analysisId, attemptId, runId: reserved?.runId,
+                reason: failureReason(error),
+                diagnostics: { ...detail, memory: sampler.capture(),
+                  durations: { ...durations, ...detail.durations } } }));
+              emit("run.failed", { durationMs: performance.now() - started });
+            } catch {
+              emit("persistence.failed", { failureClass: "persistence_failed", stage: "settlement" });
+            }
+          }
+          throw error;
+        }
+        return await stage("record_read", () => analysisStore.read({ ownerKey, analysisId }));
+      } finally { sampler.stop(); }
+    }
+  });
+}

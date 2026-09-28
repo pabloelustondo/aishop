@@ -430,6 +430,28 @@ test('a stale completion cannot close a different active run',async()=>{
  await assert.rejects(store.markFailed({ownerKey:OWNER,analysisId:ID,runId:'stale-run',reason:'provider_failed'}),AgentAnalysisStateError);
 });
 
+test("a duplicate photo reservation leaves the active run and history untouched", async () => {
+  const existing = { status: "analyzing", runs: [
+    { runId: "first", status: "analyzed", report: { summary: "earlier" } },
+    { runId: "current", status: "analyzing", context: "count lower shelf" }
+  ] };
+  const before = structuredClone(existing);
+  const { store, calls } = harness(existing);
+  await assert.rejects(store.markAnalyzing({ ownerKey: OWNER, analysisId: ID,
+    context: "duplicate click" }), AgentAnalysisStateError);
+  assert.deepEqual(existing, before);
+  assert.equal(calls.some(call => call[0] === "update"), false);
+});
+
+test("stale provider linkage cannot attach to another photo run", async () => {
+  const { store, calls } = harness({ status: "analyzing", runs: [
+    { runId: "current", status: "analyzing", diagnostics: {} }
+  ] });
+  await assert.rejects(store.markProviderStarted({ ownerKey: OWNER, analysisId: ID,
+    runId: "old", responseId: "resp_old", mode: "areaScan" }), AgentAnalysisStateError);
+  assert.equal(calls.some(call => call[0] === "update"), false);
+});
+
 test("source dimensions survive reservation and legacy dimensions remain null", async () => {
   const { store } = harness({ status: "uploaded", width: 1200, height: 900, byteLength: 500 });
   const run = await store.markAnalyzing({ ownerKey: OWNER, analysisId: ID,

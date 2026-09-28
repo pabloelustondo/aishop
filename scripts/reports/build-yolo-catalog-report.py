@@ -9,8 +9,8 @@ from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.utils import ImageReader
 
 ROOT = Path(__file__).resolve().parents[2]
-ASSETS = ROOT / 'docs/guides/vision-agent-api/existing-yolo-application/assets'
-OUT = ROOT / 'output/pdf/yolo-catalog-visual-review.pdf'
+ASSETS = ROOT / '01-docs/guides/vision-agent-api/existing-yolo-application/assets'
+OUT = ASSETS.parent / 'yolo-catalog-visual-review.pdf'
 OUT.parent.mkdir(parents=True, exist_ok=True)
 pdfmetrics.registerFont(TTFont('Arial', '/System/Library/Fonts/Supplemental/Arial.ttf'))
 pdfmetrics.registerFont(TTFont('ArialBold', '/System/Library/Fonts/Supplemental/Arial Bold.ttf'))

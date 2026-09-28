@@ -1,3 +1,4 @@
+import { readContext } from "./agent/api/run-context.js";
 import { createDiagnostics, sanitizeDiagnostics } from "./agent-diagnostics.js";
 import { createHash, randomUUID } from "node:crypto";
 import {
@@ -110,31 +111,6 @@ function toAgentError(error) {
     return agentError(error.kind === "timeout" ? "provider_timeout" : "provider_failed", error);
   }
   return agentError("unexpected_server_error", error);
-}
-
-/** `{ context }`, or nothing at all. An automatic first run sends no body. */
-function readContext(request) {
-  const raw = request.rawBody;
-  if (!raw || raw.length === 0) return null;
-  if (raw.length > MAX_CONTEXT_REQUEST_BYTES) throw agentError("context_invalid");
-
-  let payload;
-  try {
-    payload = JSON.parse(Buffer.isBuffer(raw) ? raw.toString("utf8") : String(raw));
-  } catch (error) {
-    throw agentError("context_invalid", error);
-  }
-  if (payload === null || typeof payload !== "object" || Array.isArray(payload)) {
-    throw agentError("context_invalid");
-  }
-
-  const { context } = payload;
-  if (context === undefined || context === null) return null;
-  if (typeof context !== "string") throw agentError("context_invalid");
-  const note = context.trim();
-  if (note === "") return null;
-  if (note.length > MAX_CONTEXT_CHARS) throw agentError("context_invalid");
-  return note;
 }
 
 /**

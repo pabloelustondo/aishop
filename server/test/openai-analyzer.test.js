@@ -67,6 +67,70 @@ test("background start stores the response without an output cap", async () => {
   assert.equal(PROVIDER_CONTROL_TIMEOUT_MS, 15_000);
 });
 
+test("background photo body preserves the complete contract with and without a note", async () => {
+  for (const context of [null, "   ", "  Count only the lower shelf.  "]) {
+    let captured;
+    const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "fixture-only",
+      fetchImpl: async (url, options) => {
+        assert.equal(url, "https://api.openai.com/v1/responses");
+        assert.equal(options.method, "POST");
+        captured = JSON.parse(options.body);
+        return responseJson({ id: "resp_snapshot", status: "queued" });
+      } });
+    assert.deepEqual(await analyzer.start({ ...image, mode: "areaScan", context }),
+      { status: "queued", responseId: "resp_snapshot" });
+    const contract = ANALYSIS_CONTRACTS.areaScan;
+    assert.deepEqual(captured, {
+      model: DEFAULT_MODEL, background: true, store: true,
+      text: { format: { type: "json_schema", name: contract.schemaName,
+        strict: true, schema: contract.schema } },
+      input: [{ role: "user", content: [
+        { type: "input_text", text: contract.instruction },
+        ...(context?.trim() ? [{ type: "input_text",
+          text: "Additional instruction from the person requesting this analysis: Count only the lower shelf." }] : []),
+        { type: "input_image", image_url: `data:image/jpeg;base64,${image.imageBase64}`,
+          detail: "auto" }
+      ] }]
+    });
+  }
+});
+
+test("background interpretation preserves terminal error classes and redaction", async () => {
+  const cases = [
+    [{ status: "queued" }, "invalid-response", "provider_json"],
+    [{ status: "incomplete", incomplete_details: { reason: "max_output_tokens" } }, "invalid-response", "provider_output_limit"],
+    [{ status: "incomplete" }, "invalid-response", "provider_incomplete"],
+    [{ status: "failed" }, "response", "provider_http"],
+    [{ status: "cancelled" }, "response", "provider_http"],
+    [{ status: "unknown" }, "invalid-response", "provider_json"],
+    [{ status: "completed", output: [{ content: [{ type: "refusal", refusal: "PRIVATE" }] }] }, "invalid-response", "provider_refusal"],
+    [{ status: "completed" }, "empty-response", "provider_empty"],
+    [{ status: "completed", output_text: "PRIVATE malformed JSON" }, "invalid-response", "provider_json"],
+    [{ status: "completed", output_text: '{"summary":"PRIVATE"}' }, "invalid-response", "provider_schema"]
+  ];
+  for (const [payload, kind, failureClass] of cases) {
+    const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "fixture-only",
+      fetchImpl: async () => responseJson(payload) });
+    await assert.rejects(analyzer.retrieve({ responseId: "resp_fixture", mode: "areaScan" }),
+      error => error instanceof ProviderError && error.kind === kind
+        && error.diagnostics.failureClass === failureClass
+        && !JSON.stringify(error).includes("PRIVATE"));
+  }
+});
+
+test("background accepts both text representations and the legacy inferred completed status", async () => {
+  for (const payload of [
+    { output_text: JSON.stringify(areaReport) },
+    { id: "resp_done", status: "completed", output: [{ type: "message",
+      content: [{ type: "output_text", text: JSON.stringify(areaReport) }] }] }
+  ]) {
+    const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "fixture-only",
+      fetchImpl: async () => responseJson(payload) });
+    assert.deepEqual(await analyzer.retrieve({ responseId: "resp_done", mode: "areaScan" }),
+      { status: "completed", responseId: payload.id ?? null, report: areaReport });
+  }
+});
+
 test("background video start sends ordered timestamped frames under the video contract", async () => {
   let requestBody;
   const analyzer = createOpenAIBackgroundAnalyzer({ apiKey: "test",

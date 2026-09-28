@@ -75,15 +75,15 @@ test("no word appears in two catalog names", () => {
 });
 
 test("the browsable copy and the server copy are the same bytes", () => {
-  // Two copies exist because hosting serves static files from `dashboard/`
+  // Two copies exist because hosting serves static files from `02-web-ui/`
   // and cannot reach `server/data`. A silent divergence would let the page
   // show one catalog while recognition answers against another.
   const digest = (path) => createHash("sha256")
     .update(readFileSync(new URL(path, import.meta.url))).digest("hex");
   assert.equal(
     digest("../data/vista-catalog-cerave-ar.json"),
-    digest("../../dashboard/catalog/catalog.json"),
-    "dashboard/catalog/catalog.json has drifted from server/data"
+    digest("../../02-web-ui/catalog/catalog.json"),
+    "02-web-ui/catalog/catalog.json has drifted from server/data"
   );
 });
 
@@ -91,7 +91,7 @@ test("every catalog packshot is present for the browser to show", () => {
   const catalog = JSON.parse(readFileSync(
     new URL("../data/vista-catalog-cerave-ar.json", import.meta.url), "utf8"));
   for (const product of catalog.products) {
-    const path = new URL(`../../dashboard/catalog/${product.local_image_file}`,
+    const path = new URL(`../../02-web-ui/catalog/${product.local_image_file}`,
       import.meta.url);
     const bytes = readFileSync(path);
     assert.equal(createHash("sha256").update(bytes).digest("hex"),

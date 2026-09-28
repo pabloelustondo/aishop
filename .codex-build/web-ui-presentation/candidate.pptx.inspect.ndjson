@@ -1,0 +1,168 @@
+{"kind":"deck","id":"pr/3n06u0","name":"Deck"}
+{"kind":"layout","layoutId":"4e0c73e6-b728-4137-94f0-41705bdf02c9","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"90c182aa-a6b4-4661-839c-ab07269f7ec6","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/ld3kck","slide":1,"title":"AI SHOP · LOW-LEVEL DESIGN","textShapes":4}
+{"kind":"textbox","id":"sh/6t8re1kn","slide":1,"text":"AI SHOP · LOW-LEVEL DESIGN","textPreview":"AI SHOP · LOW-LEVEL DESIGN","textChars":26,"textLines":1,"bbox":[72,72,560,34]}
+{"kind":"textbox","id":"sh/twjqpwjy","slide":1,"text":"Vision Agent\nWeb UI","textPreview":"Vision Agent | Web UI","textChars":19,"textLines":2,"bbox":[72,138,550,160]}
+{"kind":"textbox","id":"sh/8vq9gb2d","slide":1,"text":"From hosted page to authenticated analysis workflow","textPreview":"From hosted page to authenticated analysis workflow","textChars":51,"textLines":1,"bbox":[74,326,500,72]}
+{"kind":"shape","id":"sh/j6h8jm1w","slide":1,"bbox":[650,82,560,550]}
+{"kind":"textbox","id":"sh/lszqlwj2","slide":1,"text":"Hosted Agent page · agent.html","textPreview":"Hosted Agent page · agent.html","textChars":30,"textLines":1,"bbox":[700,644,460,24]}
+{"kind":"image","id":"im/jidwza5o","slide":1,"name":"","geometry":"roundRect","alt":"Hosted AI Shop Agent page showing a shelf photograph and analysis results","bbox":[662,94,536,526]}
+{"kind":"notes","id":"nt/ld3kck","slide":1,"text":"This presentation explains the static browser client published from 02-web-ui/. The browser selects evidence, transfers files, requests work, observes durable status, and renders results. Authorization, storage verification, background processing, and OpenAI calls remain server-side. Code entry point: 02-web-ui/agent.html. Client controller: 02-web-ui/scripts/agent.js."}
+{"kind":"slide","id":"sl/t3n1l1","slide":2,"title":"Browser and server boundary","textShapes":19}
+{"kind":"textbox","id":"sh/vu14j6dc","slide":2,"text":"Browser and server boundary","textPreview":"Browser and server boundary","textChars":27,"textLines":1,"bbox":[64,42,1040,58]}
+{"kind":"shape","id":"sh/wvalcbex","slide":2,"bbox":[64,112,1152,0]}
+{"kind":"textbox","id":"sh/xwjmlgvi","slide":2,"text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[1160,48,56,34]}
+{"kind":"textbox","id":"sh/ixs3elw3","slide":2,"text":"PUBLIC BROWSER","textPreview":"PUBLIC BROWSER","textChars":14,"textLines":1,"bbox":[74,142,240,24]}
+{"kind":"textbox","id":"sh/jyl4nqdo","slide":2,"text":"FIREBASE HOSTING","textPreview":"FIREBASE HOSTING","textChars":16,"textLines":1,"bbox":[501,142,250,24]}
+{"kind":"textbox","id":"sh/kzulgbet","slide":2,"text":"SERVER PLATFORM","textPreview":"SERVER PLATFORM","textChars":15,"textLines":1,"bbox":[916,142,250,24]}
+{"kind":"shape","id":"sh/503mpgve","slide":2,"bbox":[72,190,280,160]}
+{"kind":"textbox","id":"sh/6lc3ilcz","slide":2,"text":"Static web client","textPreview":"Static web client","textChars":17,"textLines":1,"bbox":[90,206,244,30]}
+{"kind":"textbox","id":"sh/7ml4rqdk","slide":2,"text":"HTML · CSS · JavaScript\nFirebase Auth session","textPreview":"HTML · CSS · JavaScript | Firebase Auth session","textChars":45,"textLines":2,"bbox":[88,240,248,102]}
+{"kind":"shape","id":"sh/7elsby54","slide":2,"bbox":[500,190,250,160]}
+{"kind":"textbox","id":"sh/6tsr2d4j","slide":2,"text":"Hosting","textPreview":"Hosting","textChars":7,"textLines":1,"bbox":[518,206,214,30]}
+{"kind":"textbox","id":"sh/tg3ad8nu","slide":2,"text":"02-web-ui/ assets\n/v1/... rewrites","textPreview":"02-web-ui/ assets | /v1/... rewrites","textChars":34,"textLines":2,"bbox":[516,240,218,102]}
+{"kind":"shape","id":"sh/8fu943mp","slide":2,"bbox":[900,190,280,112]}
+{"kind":"textbox","id":"sh/zq1s7y5s","slide":2,"text":"Agent API","textPreview":"Agent API","textChars":9,"textLines":1,"bbox":[918,206,244,30]}
+{"kind":"textbox","id":"sh/ypsryt47","slide":2,"text":"identity · roles · records","textPreview":"identity · roles · records","textChars":26,"textLines":1,"bbox":[916,240,248,54]}
+{"kind":"shape","id":"sh/lsja98ny","slide":2,"bbox":[900,350,280,112]}
+{"kind":"textbox","id":"sh/kra903md","slide":2,"text":"Durable services","textPreview":"Durable services","textChars":16,"textLines":1,"bbox":[918,366,244,30]}
+{"kind":"textbox","id":"sh/3m5sjilc","slide":2,"text":"Storage · Firestore · Tasks","textPreview":"Storage · Firestore · Tasks","textChars":27,"textLines":1,"bbox":[916,400,248,54]}
+{"kind":"shape","id":"sh/ilwbax4r","slide":2,"bbox":[900,520,280,96]}
+{"kind":"textbox","id":"sh/ehgvi1oz","slide":2,"text":"OpenAI","textPreview":"OpenAI","textChars":6,"textLines":1,"bbox":[918,536,244,30]}
+{"kind":"textbox","id":"sh/fipcbm5k","slide":2,"text":"external recognition model","textPreview":"external recognition model","textChars":26,"textLines":1,"bbox":[916,570,248,38]}
+{"kind":"shape","id":"sh/03ydkr6p","slide":2,"bbox":[352,270,148,0]}
+{"kind":"shape","id":"sh/147udwna","slide":2,"bbox":[750,246,150,24]}
+{"kind":"shape","id":"sh/250vm1ov","slide":2,"bbox":[1040,302,0,48]}
+{"kind":"shape","id":"sh/n69cf65g","slide":2,"bbox":[1180,246,24,322]}
+{"kind":"shape","id":"sh/o7idob61","slide":2,"bbox":[430,486,300,88]}
+{"kind":"textbox","id":"sh/p8rehgnm","slide":2,"text":"Video bytes","textPreview":"Video bytes","textChars":11,"textLines":1,"bbox":[448,502,264,30]}
+{"kind":"textbox","id":"sh/i9wvaxor","slide":2,"text":"temporary Storage session URI","textPreview":"temporary Storage session URI","textChars":29,"textLines":1,"bbox":[446,536,268,30]}
+{"kind":"shape","id":"sh/3a5c32pc","slide":2,"bbox":[212,350,218,180]}
+{"kind":"shape","id":"sh/l4vy9k7u","slide":2,"bbox":[730,406,170,124]}
+{"kind":"textbox","id":"sh/k32xgfq9","slide":2,"text":"Solid: authenticated application requests","textPreview":"Solid: authenticated application requests","textChars":41,"textLines":1,"bbox":[72,642,420,24]}
+{"kind":"textbox","id":"sh/z2tg7apo","slide":2,"text":"Dashed: direct resumable video transfer","textPreview":"Dashed: direct resumable video transfer","textChars":39,"textLines":1,"bbox":[742,642,438,24]}
+{"kind":"notes","id":"nt/t3n1l1","slide":2,"text":"firebase.json publishes 02-web-ui/ as the Hosting root. Static assets receive no-cache headers. The page loads Firebase App, Firebase Auth, and generated Firebase initialization. Relative /v1 routes reach the API through Hosting rewrites, but the API verifies every token and claim. Direct video upload is the exception: the browser uses a temporary Storage capability URI without attaching the Firebase bearer token."}
+{"kind":"slide","id":"sl/6p6qal","slide":3,"title":"Four hosted web applications","textShapes":17}
+{"kind":"textbox","id":"sh/gbuh4jud","slide":3,"text":"Four hosted web applications","textPreview":"Four hosted web applications","textChars":28,"textLines":1,"bbox":[64,42,1040,58]}
+{"kind":"shape","id":"sh/valgvets","slide":3,"bbox":[64,112,1152,0]}
+{"kind":"textbox","id":"sh/u9cz29cn","slide":3,"text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1160,48,56,34]}
+{"kind":"shape","id":"sh/5gny1oba","slide":3,"bbox":[490,142,300,92]}
+{"kind":"textbox","id":"sh/4fuh8jup","slide":3,"text":"02-web-ui/","textPreview":"02-web-ui/","textChars":10,"textLines":1,"bbox":[508,158,264,26]}
+{"kind":"textbox","id":"sh/3elgzet4","slide":3,"text":"Firebase Hosting public root","textPreview":"Firebase Hosting public root","textChars":28,"textLines":1,"bbox":[508,190,264,18]}
+{"kind":"shape","id":"sh/idcz69cj","slide":3,"bbox":[54,340,270,144]}
+{"kind":"textbox","id":"sh/lkjypkbq","slide":3,"text":"Vision Agent","textPreview":"Vision Agent","textChars":12,"textLines":1,"bbox":[72,356,234,30]}
+{"kind":"textbox","id":"sh/kjaxwzu5","slide":3,"text":"agent.html\nUpload and manage analyses","textPreview":"agent.html | Upload and manage analyses","textChars":37,"textLines":2,"bbox":[70,390,238,86]}
+{"kind":"shape","id":"sh/yp47eto7","slide":3,"bbox":[354,340,270,144]}
+{"kind":"textbox","id":"sh/zqdo7yps","slide":3,"text":"Admin All Runs","textPreview":"Admin All Runs","textChars":14,"textLines":1,"bbox":[372,356,234,30]}
+{"kind":"textbox","id":"sh/krmpg36x","slide":3,"text":"allruns.html\nRead across owners","textPreview":"allruns.html | Read across owners","textChars":31,"textLines":2,"bbox":[370,390,238,86]}
+{"kind":"shape","id":"sh/lsf6987i","slide":3,"bbox":[654,340,270,144]}
+{"kind":"textbox","id":"sh/mto7ido3","slide":3,"text":"Inspection Review","textPreview":"Inspection Review","textChars":17,"textLines":1,"bbox":[672,356,234,30]}
+{"kind":"textbox","id":"sh/7uxobipo","slide":3,"text":"index.html\nReview evidence packages","textPreview":"index.html | Review evidence packages","textChars":35,"textLines":2,"bbox":[670,390,238,86]}
+{"kind":"shape","id":"sh/8v6pkn69","slide":3,"bbox":[954,340,270,144]}
+{"kind":"textbox","id":"sh/9wf6ds7u","slide":3,"text":"Catalog Browser","textPreview":"Catalog Browser","textChars":15,"textLines":1,"bbox":[972,356,234,30]}
+{"kind":"textbox","id":"sh/uho7mdof","slide":3,"text":"catalog.html\nBrowse static catalog","textPreview":"catalog.html | Browse static catalog","textChars":34,"textLines":2,"bbox":[970,390,238,86]}
+{"kind":"shape","id":"sh/vixofip0","slide":3,"bbox":[189,234,451,106]}
+{"kind":"shape","id":"sh/rmho3i5s","slide":3,"bbox":[489,234,151,106]}
+{"kind":"shape","id":"sh/6l8nax47","slide":3,"bbox":[640,234,149,106]}
+{"kind":"shape","id":"sh/toz65s3y","slide":3,"bbox":[640,234,449,106]}
+{"kind":"shape","id":"sh/snq5cnmd","slide":3,"bbox":[245,555,250,82]}
+{"kind":"textbox","id":"sh/jyxozi5w","slide":3,"text":"base.css","textPreview":"base.css","textChars":8,"textLines":1,"bbox":[263,571,214,30]}
+{"kind":"textbox","id":"sh/ixon6d4b","slide":3,"text":"shared visual primitives","textPreview":"shared visual primitives","textChars":24,"textLines":1,"bbox":[261,605,218,24]}
+{"kind":"shape","id":"sh/5kz61sn2","slide":3,"bbox":[760,555,280,82]}
+{"kind":"textbox","id":"sh/4jq58nmh","slide":3,"text":"Firebase Auth","textPreview":"Firebase Auth","textChars":13,"textLines":1,"bbox":[778,571,244,30]}
+{"kind":"textbox","id":"sh/vux4vy5k","slide":3,"text":"three authenticated applications","textPreview":"three authenticated applications","textChars":32,"textLines":1,"bbox":[776,605,248,24]}
+{"kind":"textbox","id":"sh/uton2d4f","slide":3,"text":"Each page has its own controller and API contract","textPreview":"Each page has its own controller and API contract","textChars":49,"textLines":1,"bbox":[360,666,560,28]}
+{"kind":"notes","id":"nt/6p6qal","slide":3,"text":"The Hosting root contains four related browser applications. agent.html is the Vision Agent. allruns.html is the administrator companion and requires admin: true. index.html reviews inspection and VISTA evidence packages. catalog.html reads static catalog JSON and product images. These pages share Hosting and base visual language, not one client controller or one API contract."}
+{"kind":"slide","id":"sl/zwnovh","slide":4,"title":"Vision Agent client structure","textShapes":18}
+{"kind":"textbox","id":"sh/8jupsjed","slide":4,"text":"Vision Agent client structure","textPreview":"Vision Agent client structure","textChars":29,"textLines":1,"bbox":[64,42,1040,58]}
+{"kind":"shape","id":"sh/7ilojeds","slide":4,"bbox":[64,112,1152,0]}
+{"kind":"textbox","id":"sh/mhc7q9w7","slide":4,"text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1160,48,56,34]}
+{"kind":"shape","id":"sh/hon6povu","slide":4,"bbox":[120,148,1040,146]}
+{"kind":"textbox","id":"sh/wnepwje9","slide":4,"text":"agent.html · visible browser page","textPreview":"agent.html · visible browser page","textChars":33,"textLines":1,"bbox":[150,168,980,30]}
+{"kind":"textbox","id":"sh/vm5onedo","slide":4,"text":"Authentication","textPreview":"Authentication","textChars":14,"textLines":1,"bbox":[166,226,200,28]}
+{"kind":"textbox","id":"sh/ulw7utw3","slide":4,"text":"Upload composer","textPreview":"Upload composer","textChars":15,"textLines":1,"bbox":[416,226,200,28]}
+{"kind":"textbox","id":"sh/5c76t8v6","slide":4,"text":"Transfer progress","textPreview":"Transfer progress","textChars":17,"textLines":1,"bbox":[666,226,200,28]}
+{"kind":"textbox","id":"sh/4bep03el","slide":4,"text":"Analysis cards","textPreview":"Analysis cards","textChars":14,"textLines":1,"bbox":[916,226,200,28]}
+{"kind":"shape","id":"sh/mdcrad8n","slide":4,"bbox":[72,392,250,92]}
+{"kind":"textbox","id":"sh/nelsjip8","slide":4,"text":"agent.css + base.css","textPreview":"agent.css + base.css","textChars":20,"textLines":1,"bbox":[90,408,214,30]}
+{"kind":"textbox","id":"sh/ozu9cnqt","slide":4,"text":"styles the visible page","textPreview":"styles the visible page","textChars":23,"textLines":1,"bbox":[88,442,218,34]}
+{"kind":"shape","id":"sh/903als7e","slide":4,"bbox":[400,354,480,122]}
+{"kind":"textbox","id":"sh/a1cbed8j","slide":4,"text":"agent.js","textPreview":"agent.js","textChars":8,"textLines":1,"bbox":[418,370,444,30]}
+{"kind":"textbox","id":"sh/b2lsnip4","slide":4,"text":"events · rendering · transfer · polling","textPreview":"events · rendering · transfer · polling","textChars":39,"textLines":1,"bbox":[416,404,448,64]}
+{"kind":"shape","id":"sh/w3etgnqp","slide":4,"bbox":[330,566,270,92]}
+{"kind":"textbox","id":"sh/x4naps7a","slide":4,"text":"Firebase Auth","textPreview":"Firebase Auth","textChars":13,"textLines":1,"bbox":[348,582,234,30]}
+{"kind":"textbox","id":"sh/q5sr2t8f","slide":4,"text":"current user and ID token","textPreview":"current user and ID token","textChars":25,"textLines":1,"bbox":[346,616,238,34]}
+{"kind":"shape","id":"sh/r61sby90","slide":4,"bbox":[680,566,270,92]}
+{"kind":"textbox","id":"sh/vydgnq1g","slide":4,"text":"Agent API","textPreview":"Agent API","textChars":9,"textLines":1,"bbox":[698,582,234,30]}
+{"kind":"textbox","id":"sh/ud4fulkv","slide":4,"text":"authenticated analysis requests","textPreview":"authenticated analysis requests","textChars":31,"textLines":1,"bbox":[696,616,238,34]}
+{"kind":"shape","id":"sh/h0fyp0jm","slide":4,"bbox":[640,294,0,60]}
+{"kind":"shape","id":"sh/wz6xwv21","slide":4,"bbox":[96,221,101,171]}
+{"kind":"shape","id":"sh/7adgjqlk","slide":4,"bbox":[465,476,175,90]}
+{"kind":"shape","id":"sh/m94fqlkz","slide":4,"bbox":[640,476,175,90]}
+{"kind":"textbox","id":"sh/9cvyl03a","slide":4,"text":"DOM events and rendering","textPreview":"DOM events and rendering","textChars":24,"textLines":1,"bbox":[895,364,240,24]}
+{"kind":"textbox","id":"sh/8bmxsv25","slide":4,"text":"ID token","textPreview":"ID token","textChars":8,"textLines":1,"bbox":[315,518,170,22]}
+{"kind":"textbox","id":"sh/r6hgva1o","slide":4,"text":"API calls","textPreview":"API calls","textChars":9,"textLines":1,"bbox":[795,518,170,22]}
+{"kind":"notes","id":"nt/zwnovh","slide":4,"text":"agent.html declares the authenticated and signed-out regions, upload form, progress, analysis cards, and empty state. agent.js sits between those visible regions and external services. It receives DOM events, updates the page, obtains the current Firebase ID token, and sends authenticated Agent API requests. Video functions also reserve sessions, transfer chunks, inspect progress, and recover. agent.css is page-specific while base.css provides shared styling primitives."}
+{"kind":"slide","id":"sl/ku9v5e","slide":5,"title":"Authenticated Agent request","textShapes":16}
+{"kind":"textbox","id":"sh/9srals7q","slide":5,"text":"Authenticated Agent request","textPreview":"Authenticated Agent request","textChars":27,"textLines":1,"bbox":[64,42,1040,58]}
+{"kind":"shape","id":"sh/m50rqdoz","slide":5,"bbox":[64,112,1152,0]}
+{"kind":"textbox","id":"sh/nq98jipk","slide":5,"text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1160,48,56,34]}
+{"kind":"shape","id":"sh/wv29wn61","slide":5,"bbox":[90,142,170,64]}
+{"kind":"textbox","id":"sh/xwbaps7m","slide":5,"text":"Person","textPreview":"Person","textChars":6,"textLines":1,"bbox":[108,158,134,30]}
+{"kind":"shape","id":"sh/at0rudob","slide":5,"bbox":[175,216,0,420]}
+{"kind":"shape","id":"sh/bu9snipg","slide":5,"bbox":[310,142,170,64]}
+{"kind":"textbox","id":"sh/szy9k36x","slide":5,"text":"agent.js","textPreview":"agent.js","textChars":8,"textLines":1,"bbox":[328,158,134,30]}
+{"kind":"shape","id":"sh/d07qd87i","slide":5,"bbox":[395,216,0,420]}
+{"kind":"shape","id":"sh/x4fml0n6","slide":5,"bbox":[535,142,170,64]}
+{"kind":"textbox","id":"sh/c365sv6l","slide":5,"text":"Firebase Auth","textPreview":"Firebase Auth","textChars":13,"textLines":1,"bbox":[553,158,134,30]}
+{"kind":"textbox","id":"sh/b2x4ja50","slide":5,"text":"external to static page","textPreview":"external to static page","textChars":23,"textLines":1,"bbox":[551,192,138,6]}
+{"kind":"shape","id":"sh/ahonq5of","slide":5,"bbox":[620,216,0,420]}
+{"kind":"shape","id":"sh/l8zmpkn2","slide":5,"bbox":[760,142,170,64]}
+{"kind":"textbox","id":"sh/k7q5wf6h","slide":5,"text":"Hosting","textPreview":"Hosting","textChars":7,"textLines":1,"bbox":[778,158,134,30]}
+{"kind":"shape","id":"sh/z6h4na5w","slide":5,"bbox":[845,216,0,420]}
+{"kind":"shape","id":"sh/y58nu5or","slide":5,"bbox":[990,142,170,64]}
+{"kind":"textbox","id":"sh/9cz6tkne","slide":5,"text":"Agent API","textPreview":"Agent API","textChars":9,"textLines":1,"bbox":[1008,158,134,30]}
+{"kind":"textbox","id":"sh/8bq50fmt","slide":5,"text":"external to static page","textPreview":"external to static page","textChars":23,"textLines":1,"bbox":[1006,192,138,6]}
+{"kind":"shape","id":"sh/sfypw3up","slide":5,"bbox":[1075,216,0,420]}
+{"kind":"shape","id":"sh/tg76p8va","slide":5,"bbox":[175,250,220,0]}
+{"kind":"textbox","id":"sh/6dg7utcz","slide":5,"text":"1  Trigger action","textPreview":"1  Trigger action","textChars":17,"textLines":1,"bbox":[181,226,208,22]}
+{"kind":"shape","id":"sh/7eponydk","slide":5,"bbox":[395,310,225,0]}
+{"kind":"textbox","id":"sh/gjip03u1","slide":5,"text":"2  Request ID token","textPreview":"2  Request ID token","textChars":19,"textLines":1,"bbox":[401,286,213,22]}
+{"kind":"shape","id":"sh/h4rqt8vm","slide":5,"bbox":[395,370,225,0]}
+{"kind":"textbox","id":"sh/uh07ydcv","slide":5,"text":"3  Return token","textPreview":"3  Return token","textChars":15,"textLines":1,"bbox":[401,346,213,22]}
+{"kind":"shape","id":"sh/fi9orydg","slide":5,"bbox":[395,430,450,0]}
+{"kind":"textbox","id":"sh/wnepojux","slide":5,"text":"4  Send /v1 request + Bearer token","textPreview":"4  Send /v1 request + Bearer token","textChars":34,"textLines":1,"bbox":[401,406,438,22]}
+{"kind":"shape","id":"sh/xon6hov2","slide":5,"bbox":[845,490,230,0]}
+{"kind":"textbox","id":"sh/zex0j61w","slide":5,"text":"5  Rewrite request","textPreview":"5  Rewrite request","textChars":18,"textLines":1,"bbox":[851,466,218,22]}
+{"kind":"shape","id":"sh/ydoja10b","slide":5,"bbox":[1075,550,0,0]}
+{"kind":"textbox","id":"sh/lgfilgj2","slide":5,"text":"6  Verify identity and role","textPreview":"6  Verify identity and role","textChars":27,"textLines":1,"bbox":[1081,526,150,22]}
+{"kind":"shape","id":"sh/kf61cbih","slide":5,"bbox":[395,610,680,0]}
+{"kind":"textbox","id":"sh/bad0f610","slide":5,"text":"7  Return data or safe error","textPreview":"7  Return data or safe error","textChars":28,"textLines":1,"bbox":[401,586,668,22]}
+{"kind":"notes","id":"nt/ku9v5e","slide":5,"text":"The HTML loads Firebase Auth before agent.js. start() observes onAuthStateChanged(). Before a protected request, authorized() gets the current user's ID token and sets the Authorization header. Hosting forwards the relative route to the API. The API verifies identity, custom claims, and ownership. request() parses the normal response envelope. Server failures retain a safe requestId for diagnosis."}
+{"kind":"slide","id":"sl/35v2u9","slide":6,"title":"Upload and observation lifecycle","textShapes":12}
+{"kind":"textbox","id":"sh/4jaxgj2t","slide":6,"text":"Upload and observation lifecycle","textPreview":"Upload and observation lifecycle","textChars":32,"textLines":1,"bbox":[64,42,1040,58]}
+{"kind":"shape","id":"sh/3i1w7e18","slide":6,"bbox":[64,112,1152,0]}
+{"kind":"textbox","id":"sh/ihsfetk3","slide":6,"text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1160,48,56,34]}
+{"kind":"shape","id":"sh/d83ed8jq","slide":6,"bbox":[470,136,340,74]}
+{"kind":"textbox","id":"sh/snuxk3i5","slide":6,"text":"Select and validate file","textPreview":"Select and validate file","textChars":24,"textLines":1,"bbox":[490,158,300,25]}
+{"kind":"shape","id":"sh/rm1wby1k","slide":6,"bbox":[90,286,300,122]}
+{"kind":"textbox","id":"sh/qlsfit0z","slide":6,"text":"Photograph","textPreview":"Photograph","textChars":10,"textLines":1,"bbox":[108,302,264,30]}
+{"kind":"textbox","id":"sh/1c3yh8jm","slide":6,"text":"POST JPEG\ncreate record and start run","textPreview":"POST JPEG | create record and start run","textChars":37,"textLines":2,"bbox":[106,336,268,64]}
+{"kind":"shape","id":"sh/0buxo3i1","slide":6,"bbox":[490,286,300,122]}
+{"kind":"textbox","id":"sh/6h4zy1w7","slide":6,"text":"Video","textPreview":"Video","textChars":5,"textLines":1,"bbox":[508,302,264,30]}
+{"kind":"textbox","id":"sh/7idg76ds","slide":6,"text":"reserve record\ntransfer bytes · complete","textPreview":"reserve record | transfer bytes · complete","textChars":40,"textLines":2,"bbox":[506,336,268,64]}
+{"kind":"shape","id":"sh/sjmh0red","slide":6,"bbox":[890,286,300,122]}
+{"kind":"textbox","id":"sh/tkfi9wvi","slide":6,"text":"Recovery","textPreview":"Recovery","textChars":8,"textLines":1,"bbox":[908,302,264,30]}
+{"kind":"textbox","id":"sh/uloz21w3","slide":6,"text":"resume · cancel · start fresh","textPreview":"resume · cancel · start fresh","textChars":29,"textLines":1,"bbox":[906,336,268,64]}
+{"kind":"shape","id":"sh/fmx0b6do","slide":6,"bbox":[240,210,400,76]}
+{"kind":"shape","id":"sh/g76h4be9","slide":6,"bbox":[640,210,0,76]}
+{"kind":"shape","id":"sh/h8fidgvu","slide":6,"bbox":[790,347,100,0]}
+{"kind":"shape","id":"sh/apkzqhwz","slide":6,"bbox":[365,500,550,104]}
+{"kind":"textbox","id":"sh/vqtgzmdk","slide":6,"text":"Observe durable state","textPreview":"Observe durable state","textChars":21,"textLines":1,"bbox":[383,516,514,30]}
+{"kind":"textbox","id":"sh/zip4bep0","slide":6,"text":"render → wait 15 s → GET again","textPreview":"render → wait 15 s → GET again","textChars":30,"textLines":1,"bbox":[381,550,518,46]}
+{"kind":"shape","id":"sh/ehgni98f","slide":6,"bbox":[240,408,125,144]}
+{"kind":"shape","id":"sh/1k76do76","slide":6,"bbox":[640,408,0,92]}
+{"kind":"shape","id":"sh/0jy5kjql","slide":6,"bbox":[915,408,125,144]}
+{"kind":"textbox","id":"sh/re547ep4","slide":6,"text":"Exit: analyzed · failed · cancelled · hidden page · observation ceiling","textPreview":"Exit: analyzed · failed · cancelled · hidden page · observation ceiling","textChars":71,"textLines":1,"bbox":[250,648,780,28]}
+{"kind":"notes","id":"nt/35v2u9","slide":6,"text":"upload() receives one file. JPEG handling posts multipart data and can start the first run. Video handling reserves an uploading record, transfers bounded chunks to Storage, and calls /complete. Interrupted transfers can retain a local session. The UI offers Resume upload, Cancel upload, or Start fresh. refresh() reads durable records. scheduleObservation() polls every 15 seconds and stops when work settles, the page hides, or ten minutes pass. Polling observes server work; it does not execute recognition."}

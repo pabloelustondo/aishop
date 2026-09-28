@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { attemptLine, OBSERVATION_CEILING_MS, OBSERVATION_INTERVAL_MS,
   ownerText, queryString, shouldPollAnalyses,
-  signInErrorMessage } from "../../dashboard/scripts/allruns.js";
+  signInErrorMessage } from "../../02-web-ui/scripts/allruns.js";
 
 test("All runs observes only pages containing active server records", () => {
   assert.equal(OBSERVATION_INTERVAL_MS, 15_000);
