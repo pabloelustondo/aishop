@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">The fine-print map</title>
+<desc id="desc">A route into the implementation whenever you need detail. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">The fine-print map</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">A route into the implementation whenever you need detail</tspan></text>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="231">Foundations</tspan></text>
+<text font-family="Arial" font-size="33" font-weight="400" fill="#102C43"><tspan x="76" y="277">Intent, test hosts, architecture, frame flow, concurrency</tspan></text>
+<rect x="76" y="333" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="377">Frame analysis</tspan></text>
+<text font-family="Arial" font-size="33" font-weight="400" fill="#102C43"><tspan x="76" y="423">Input contracts, decoding, load, reference, Vision, scoring</tspan></text>
+<rect x="76" y="479" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="523">Episodes and evidence</tspan></text>
+<text font-family="Arial" font-size="33" font-weight="400" fill="#102C43"><tspan x="76" y="569">State, records, storage, replay, lifecycle, failures</tspan></text>
+<rect x="76" y="625" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="669">Verification</tspan></text>
+<text font-family="Arial" font-size="33" font-weight="400" fill="#102C43"><tspan x="76" y="715">Annotations, measured outcomes, calibration, app and phone</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../../../../ios/AIShop/AIShopVision/Sources/AIShopVision" aria-label="Source package" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Source package</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests" aria-label="Test package" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Test package</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/01-docs/04-benchmarks-test-strategy-and-success-criteria/sprint-001-iphone-verification.md" aria-label="Acceptance record" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="1030" y="878">Acceptance record</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">30</tspan></text>
+</svg>

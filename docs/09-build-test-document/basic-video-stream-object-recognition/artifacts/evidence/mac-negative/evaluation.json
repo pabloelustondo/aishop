@@ -1,0 +1,11 @@
+{
+  "analyzedFrames" : 26,
+  "expectedSignalFound" : true,
+  "falsePositiveMinimumDistance" : 0.9055255055427551,
+  "falsePositiveOpenings" : [
+
+  ],
+  "fixtureID" : "negative",
+  "minimumDecisionMargin" : 0.4761390835046768,
+  "passed" : true
+}

@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">How to test</title>
+<desc id="desc">Each test host answers a different question. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">How to test</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">Each test host answers a different question</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="237">Native Mac</tspan></text>
+<text font-family="Arial" font-size="36" font-weight="700" fill="#102C43"><tspan x="76" y="293">./e2e/ios/run.zsh</tspan></text>
+<text font-family="Arial" font-size="29" font-weight="400" fill="#506476"><tspan x="76" y="342">29 required tests passed with real Apple Vision</tspan></text>
+<rect x="76" y="370" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="425">Simulator app tests</tspan></text>
+<text font-family="Arial" font-size="36" font-weight="700" fill="#102C43"><tspan x="76" y="481">AIShop-VisionDiagnostics scheme</tspan></text>
+<text font-family="Arial" font-size="29" font-weight="400" fill="#506476"><tspan x="76" y="530">25 app tests passed, including Firebase bypass</tspan></text>
+<rect x="76" y="558" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="613">Physical iPhone</tspan></text>
+<text font-family="Arial" font-size="36" font-weight="700" fill="#102C43"><tspan x="76" y="669">Watch both fixtures, export both logs</tspan></text>
+<text font-family="Arial" font-size="29" font-weight="400" fill="#506476"><tspan x="76" y="718">Pending demonstration and Mac/phone calibration</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#805500"><tspan x="76" y="828">Debug and Release builds pass. A Mac or Simulator result cannot accept the sprint.</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../../e2e/ios/run.zsh" aria-label="Gate script" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Gate script</tspan></text>
+</a>
+<a href="../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests" aria-label="Package tests" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Package tests</tspan></text>
+</a>
+<a href="../../../../ios/AIShop/AIShopTests" aria-label="App tests" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="1030" y="878">App tests</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">04</tspan></text>
+</svg>

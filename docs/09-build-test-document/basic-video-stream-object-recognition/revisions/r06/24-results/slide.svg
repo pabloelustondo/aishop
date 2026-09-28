@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">Measured fixture results</title>
+<desc id="desc">Saved macOS evidence from 20 September 2026. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">Measured fixture results</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">Saved macOS evidence from 20 September 2026</tspan></text>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="231">Positive fixture</tspan></text>
+<text font-family="Arial" font-size="34" font-weight="700" fill="#102C43"><tspan x="76" y="278">56 analyzed frames; 1 episode</tspan></text>
+<text font-family="Arial" font-size="27" font-weight="400" fill="#506476"><tspan x="76" y="317">Opened at 24.5 s; best frame at 25.0 s</tspan></text>
+<rect x="76" y="333" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="377">Negative fixture</tspan></text>
+<text font-family="Arial" font-size="34" font-weight="700" fill="#102C43"><tspan x="76" y="424">26 analyzed frames; 0 episodes</tspan></text>
+<text font-family="Arial" font-size="27" font-weight="400" fill="#506476"><tspan x="76" y="463">No openings in either fixture's false-positive zones</tspan></text>
+<rect x="76" y="479" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="523">Detection delay</tspan></text>
+<text font-family="Arial" font-size="34" font-weight="700" fill="#102C43"><tspan x="76" y="570">6.2 s after the expected zone begins</tspan></text>
+<text font-family="Arial" font-size="27" font-weight="400" fill="#506476"><tspan x="76" y="609">The expected interval begins at 18.3 s</tspan></text>
+<rect x="76" y="625" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="669">Evidence strength</tspan></text>
+<text font-family="Arial" font-size="34" font-weight="700" fill="#102C43"><tspan x="76" y="716">Best distance 0.34894; threshold 0.42939</tspan></text>
+<text font-family="Arial" font-size="27" font-weight="400" fill="#506476"><tspan x="76" y="755">Closest false-positive-zone distance across fixtures: 0.90553</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476"><tspan x="76" y="828">Zero dropped frames in these deterministic runs. Phone behavior is unmeasured.</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../artifacts/evidence/mac-positive/evaluation.json" aria-label="Positive evaluation" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Positive evaluation</tspan></text>
+</a>
+<a href="../../../artifacts/evidence/mac-negative/evaluation.json" aria-label="Negative evaluation" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Negative evaluation</tspan></text>
+</a>
+<a href="../../../artifacts/evidence/mac-positive/report.json" aria-label="Positive report" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="1030" y="878">Positive report</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">24</tspan></text>
+</svg>

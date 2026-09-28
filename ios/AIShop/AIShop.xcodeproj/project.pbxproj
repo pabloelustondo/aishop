@@ -59,6 +59,13 @@
 		400000000000000000000033 /* ScanModeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000034 /* ScanModeButton.swift */; };
 		400000000000000000000034 /* AppVersion.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300000000000000000000035 /* AppVersion.swift */; };
 /* End PBXBuildFile section */
+		400000000000000000000035 = {isa = PBXBuildFile; fileRef = 300000000000000000000036; };
+		400000000000000000000036 = {isa = PBXBuildFile; fileRef = 300000000000000000000037; };
+		400000000000000000000037 = {isa = PBXBuildFile; fileRef = 300000000000000000000038; };
+		400000000000000000000038 = {isa = PBXBuildFile; fileRef = 300000000000000000000039; };
+		400000000000000000000039 = {isa = PBXBuildFile; fileRef = 30000000000000000000003A; };
+		40000000000000000000003A = {isa = PBXBuildFile; fileRef = 30000000000000000000003B; };
+		40000000000000000000003B = {isa = PBXBuildFile; productRef = A00000000000000000000004; };
 
 /* Begin PBXContainerItemProxy section */
 		700000000000000000000001 /* PBXContainerItemProxy */ = {
@@ -125,9 +132,15 @@
 		300000000000000000000034 /* ScanModeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScanModeButton.swift; sourceTree = "<group>"; };
 		300000000000000000000035 /* AppVersion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppVersion.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
+		300000000000000000000036 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationBootstrap.swift; sourceTree = "<group>"; };
+		300000000000000000000037 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiagnosticFixture.swift; sourceTree = "<group>"; };
+		300000000000000000000038 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionHarnessModel.swift; sourceTree = "<group>"; };
+		300000000000000000000039 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionDiagnosticHarness.swift; sourceTree = "<group>"; };
+		30000000000000000000003A = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ApplicationBootstrapTests.swift; sourceTree = "<group>"; };
+		30000000000000000000003B = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionHarnessModelTests.swift; sourceTree = "<group>"; };
 
 /* Begin PBXFrameworksBuildPhase section */
-		500000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (400000000000000000000028, 400000000000000000000029, 40000000000000000000002A); runOnlyForDeploymentPostprocessing = 0; };
+		500000000000000000000001 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (400000000000000000000028, 400000000000000000000029, 40000000000000000000002A, 40000000000000000000003B); runOnlyForDeploymentPostprocessing = 0; };
 		500000000000000000000004 /* Frameworks */ = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXFrameworksBuildPhase section */
 
@@ -156,31 +169,34 @@
 				100000000000000000000006 /* Camera */,
 				100000000000000000000007 /* UI */,
 				100000000000000000000008 /* Support */,
+				10000000000000000000000B /* Diagnostics */,
 			);
 			path = AIShop;
 			sourceTree = "<group>";
 		};
-		100000000000000000000004 /* App */ = {isa = PBXGroup; children = (300000000000000000000001, 300000000000000000000002); path = App; sourceTree = "<group>"; };
+		100000000000000000000004 /* App */ = {isa = PBXGroup; children = (300000000000000000000001, 300000000000000000000002, 300000000000000000000036); path = App; sourceTree = "<group>"; };
 		100000000000000000000005 /* Analysis */ = {isa = PBXGroup; children = (300000000000000000000003, 300000000000000000000004, 300000000000000000000005, 300000000000000000000029, 30000000000000000000002A, 300000000000000000000030, 300000000000000000000006, 300000000000000000000007, 30000000000000000000001F); path = Analysis; sourceTree = "<group>"; };
 		10000000000000000000000A /* Auth */ = {isa = PBXGroup; children = (30000000000000000000002C, 30000000000000000000002D, 30000000000000000000002E, 30000000000000000000002F); path = Auth; sourceTree = "<group>"; };
 		100000000000000000000006 /* Camera */ = {isa = PBXGroup; children = (300000000000000000000008, 300000000000000000000009, 30000000000000000000000A, 30000000000000000000000B, 30000000000000000000000C, 30000000000000000000000D, 30000000000000000000000E); path = Camera; sourceTree = "<group>"; };
 		100000000000000000000007 /* UI */ = {isa = PBXGroup; children = (30000000000000000000000F, 300000000000000000000021, 300000000000000000000010, 30000000000000000000001E, 300000000000000000000011, 300000000000000000000012, 300000000000000000000013, 300000000000000000000014, 300000000000000000000024, 300000000000000000000025, 300000000000000000000026, 300000000000000000000027, 300000000000000000000028, 300000000000000000000033, 300000000000000000000034, 300000000000000000000035); path = UI; sourceTree = "<group>"; };
 		100000000000000000000008 /* Support */ = {isa = PBXGroup; children = (300000000000000000000015, 300000000000000000000023, 300000000000000000000032); path = Support; sourceTree = "<group>"; };
-		100000000000000000000009 /* AIShopTests */ = {isa = PBXGroup; children = (300000000000000000000016, 300000000000000000000017, 300000000000000000000018, 30000000000000000000001B, 30000000000000000000001C, 30000000000000000000001D, 300000000000000000000020, 300000000000000000000022, 30000000000000000000002B, 300000000000000000000031); path = AIShopTests; sourceTree = "<group>"; };
+		100000000000000000000009 /* AIShopTests */ = {isa = PBXGroup; children = (300000000000000000000016, 300000000000000000000017, 300000000000000000000018, 30000000000000000000001B, 30000000000000000000001C, 30000000000000000000001D, 300000000000000000000020, 300000000000000000000022, 30000000000000000000002B, 300000000000000000000031, 30000000000000000000003A, 30000000000000000000003B); path = AIShopTests; sourceTree = "<group>"; };
+		10000000000000000000000B /* Diagnostics */ = {isa = PBXGroup; children = (300000000000000000000037, 300000000000000000000038, 300000000000000000000039); path = Diagnostics; sourceTree = "<group>"; };
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
 		200000000000000000000001 /* AIShop */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 800000000000000000000002 /* Build configuration list for PBXNativeTarget "AIShop" */;
-			buildPhases = (500000000000000000000001, 500000000000000000000002, 500000000000000000000003);
+			buildPhases = (500000000000000000000001, 500000000000000000000002, 500000000000000000000003, 500000000000000000000007);
 			buildRules = ();
 			dependencies = ();
 			name = AIShop;
 			packageProductDependencies = (
 				A00000000000000000000001 /* FirebaseCore */,
 				A00000000000000000000002 /* FirebaseAuth */,
-				A00000000000000000000003 /* GoogleSignIn */
+				A00000000000000000000003 /* GoogleSignIn */,
+				A00000000000000000000004 /* AIShopVision */
 			);
 			productName = AIShop;
 			productReference = 300000000000000000000019 /* AIShop.app */;
@@ -211,7 +227,8 @@
 			mainGroup = 100000000000000000000001;
 			packageReferences = (
 				900000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
-				900000000000000000000002 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */
+				900000000000000000000002 /* XCRemoteSwiftPackageReference "GoogleSignIn-iOS" */,
+				900000000000000000000003 /* XCLocalSwiftPackageReference "AIShopVision" */
 			);
 			productRefGroup = 100000000000000000000002 /* Products */;
 			projectDirPath = "";
@@ -240,11 +257,24 @@
 				40000000000000000000002B, 40000000000000000000002C, 40000000000000000000002D,
 				40000000000000000000002E, 40000000000000000000002F,
 				400000000000000000000032, 400000000000000000000033, 400000000000000000000034,
+				400000000000000000000035, 400000000000000000000036, 400000000000000000000037, 400000000000000000000038,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		500000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (400000000000000000000015, 400000000000000000000016, 400000000000000000000017, 400000000000000000000018, 400000000000000000000019, 40000000000000000000001A, 40000000000000000000001D, 40000000000000000000001F, 400000000000000000000027, 400000000000000000000030); runOnlyForDeploymentPostprocessing = 0; };
+		500000000000000000000005 /* Sources */ = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (400000000000000000000015, 400000000000000000000016, 400000000000000000000017, 400000000000000000000018, 400000000000000000000019, 40000000000000000000001A, 40000000000000000000001D, 40000000000000000000001F, 400000000000000000000027, 400000000000000000000030, 400000000000000000000039, 40000000000000000000003A); runOnlyForDeploymentPostprocessing = 0; };
 /* End PBXSourcesBuildPhase section */
+		500000000000000000000007 /* Debug Vision fixtures */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			alwaysOutOfDate = 1;
+			files = ();
+			inputPaths = ("$(SRCROOT)/scripts/copy-vision-fixtures.sh", "$(SRCROOT)/AIShopVision/Tests/AIShopVisionTests/Resources/banana.JPG", "$(SRCROOT)/AIShopVision/Tests/AIShopVisionTests/Resources/video_with_banana_trimmed.mov", "$(SRCROOT)/AIShopVision/Tests/AIShopVisionTests/Resources/video_without_banana_trimmed.mov");
+			outputPaths = ("$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/VisionFixtures");
+			name = "Debug Vision fixtures";
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"$SRCROOT/scripts/copy-vision-fixtures.sh\"\n";
+		};
 
 /* Begin PBXTargetDependency section */
 		700000000000000000000002 /* PBXTargetDependency */ = {isa = PBXTargetDependency; target = 200000000000000000000001 /* AIShop */; targetProxy = 700000000000000000000001 /* PBXContainerItemProxy */; };
@@ -279,6 +309,8 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		900000000000000000000003 = {isa = XCLocalSwiftPackageReference; relativePath = AIShopVision; };
+		A00000000000000000000004 = {isa = XCSwiftPackageProductDependency; package = 900000000000000000000003; productName = AIShopVision; };
 		A00000000000000000000001 /* FirebaseCore */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 900000000000000000000001 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;

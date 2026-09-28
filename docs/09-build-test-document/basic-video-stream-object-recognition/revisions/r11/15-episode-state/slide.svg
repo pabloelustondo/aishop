@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">The candidate episode lifecycle</title>
+<desc id="desc">Chapter 3: turn frame scores into retained evidence. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">The candidate episode lifecycle</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">Chapter 3: turn frame scores into retained evidence</tspan></text>
+<rect x="180" y="212" width="1240" height="106" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="253">No active episode</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="288">The first supporting sample becomes pending</tspan></text>
+<path d="M 797 321 H 803 V 335 H 810 L 800 345 L 790 335 H 797 Z" fill="#17667B"/>
+<rect x="180" y="360" width="1240" height="106" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="401">Pending support</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="436">Next consecutive supporting slot opens an episode</tspan></text>
+<path d="M 797 469 H 803 V 483 H 810 L 800 493 L 790 483 H 797 Z" fill="#17667B"/>
+<rect x="180" y="508" width="1240" height="106" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="549">Open episode</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="584">Further support refreshes time and may improve the best frame</tspan></text>
+<path d="M 797 617 H 803 V 631 H 810 L 800 641 L 790 631 H 797 Z" fill="#17667B"/>
+<rect x="180" y="656" width="1240" height="106" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="697">Closed episode</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="732">Gap, stop, cancellation, error, or end closes the episode</tspan></text>
+<text font-family="Arial" font-size="26" font-weight="400" fill="#506476"><tspan x="76" y="829">A missed slot or unsupported sample resets pending support.</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/CandidateEpisodeAggregator/CandidateEpisodeAggregator.swift" aria-label="Episode aggregator" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Episode aggregator</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests/CandidateEpisodeAggregatorTests.swift" aria-label="Episode tests" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Episode tests</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests/PipelineIntegrationSuite.swift" aria-label="Lifecycle integration" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="1030" y="878">Lifecycle integration</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">15</tspan></text>
+</svg>

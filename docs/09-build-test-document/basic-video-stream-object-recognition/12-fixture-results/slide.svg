@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">Measured fixture outcome</title>
+<desc id="desc">The frozen profile passes the current Mac acceptance rules. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">Measured fixture outcome</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">The frozen profile passes the current Mac acceptance rules</tspan></text>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="231">Positive fixture</tspan></text>
+<text font-family="Arial" font-size="34" font-weight="700" fill="#102C43"><tspan x="76" y="278">56 analyzed frames</tspan></text>
+<text font-family="Arial" font-size="27" font-weight="400" fill="#506476"><tspan x="76" y="317">One episode opens at 24.5 s</tspan></text>
+<rect x="76" y="333" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="377">Negative fixture</tspan></text>
+<text font-family="Arial" font-size="34" font-weight="700" fill="#102C43"><tspan x="76" y="424">26 analyzed frames</tspan></text>
+<text font-family="Arial" font-size="27" font-weight="400" fill="#506476"><tspan x="76" y="463">No candidate episode</tspan></text>
+<rect x="76" y="479" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="523">Best evidence</tspan></text>
+<text font-family="Arial" font-size="34" font-weight="700" fill="#102C43"><tspan x="76" y="570">25.0 s, central-crop comparison</tspan></text>
+<text font-family="Arial" font-size="27" font-weight="400" fill="#506476"><tspan x="76" y="609">The retained image is the whole 1080 × 1920 frame</tspan></text>
+<rect x="76" y="625" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="669">Delay and closure</tspan></text>
+<text font-family="Arial" font-size="34" font-weight="700" fill="#102C43"><tspan x="76" y="716">6.2 s after the expected interval begins</tspan></text>
+<text font-family="Arial" font-size="27" font-weight="400" fill="#506476"><tspan x="76" y="755">The episode closes at 27.5 s after a support gap</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476"><tspan x="76" y="828">No episode opens in either fixture's false-positive zones. General accuracy remains unmeasured.</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests/PipelineIntegrationSuite.swift" aria-label="Integration suite" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Integration suite</tspan></text>
+</a>
+<a href="../../../../ios/AIShop/AIShopVision/Sources/AIShopVisionEvaluation/FixtureEvaluator.swift" aria-label="Fixture evaluator" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Fixture evaluator</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">12</tspan></text>
+</svg>

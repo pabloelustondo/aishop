@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">What this foundation gives us</title>
+<desc id="desc">Reusable mechanisms with explicit next-step boundaries. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">What this foundation gives us</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">Reusable mechanisms with explicit next-step boundaries</tspan></text>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="231">A shared processing path</tspan></text>
+<text font-family="Arial" font-size="33" font-weight="400" fill="#102C43"><tspan x="76" y="277">Hosts change; core analysis and evidence stay together</tspan></text>
+<rect x="76" y="333" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="377">Observable decisions</tspan></text>
+<text font-family="Arial" font-size="33" font-weight="400" fill="#102C43"><tspan x="76" y="423">Stable identities, frozen rules, ordered events, replayable reports</tspan></text>
+<rect x="76" y="479" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="523">Testable separation</tspan></text>
+<text font-family="Arial" font-size="33" font-weight="400" fill="#102C43"><tspan x="76" y="569">Fixture input, production inference, independent evaluation</tspan></text>
+<rect x="76" y="625" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="669">Still to establish</tspan></text>
+<text font-family="Arial" font-size="33" font-weight="400" fill="#102C43"><tspan x="76" y="715">Physical iPhone acceptance, live camera, regions, and broader accuracy</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/CandidateAnalysisPipeline/CandidateAnalysisPipeline.swift" aria-label="Production pipeline" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Production pipeline</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests/PipelineIntegrationSuite.swift" aria-label="Integration suite" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Integration suite</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/AIShopVision/Package.swift" aria-label="Package boundaries" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="1030" y="878">Package boundaries</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">29</tspan></text>
+</svg>

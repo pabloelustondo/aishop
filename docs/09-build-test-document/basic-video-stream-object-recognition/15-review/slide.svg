@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">What the implementation establishes</title>
+<desc id="desc">Evidence for the design decisions, with acceptance still open. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">What the implementation establishes</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">Evidence for the design decisions, with acceptance still open</tspan></text>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="231">Incremental behavior</tspan></text>
+<text font-family="Arial" font-size="33" font-weight="400" fill="#102C43"><tspan x="76" y="277">Real video reaches the consumer before EOF</tspan></text>
+<rect x="76" y="333" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="377">Controlled workload</tspan></text>
+<text font-family="Arial" font-size="33" font-weight="400" fill="#102C43"><tspan x="76" y="423">One active consumer and one pending eligible frame</tspan></text>
+<rect x="76" y="479" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="523">Reproducible evidence</tspan></text>
+<text font-family="Arial" font-size="33" font-weight="400" fill="#102C43"><tspan x="76" y="569">Stable frame IDs, fixed thresholds, replayable reports</tspan></text>
+<rect x="76" y="625" width="1448" height="1" fill="#D0DBE1" stroke="none" stroke-width="0"/>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="669">Explicit uncertainty</tspan></text>
+<text font-family="Arial" font-size="33" font-weight="400" fill="#102C43"><tspan x="76" y="715">Provisional signals and an independent annotation evaluator</tspan></text>
+<text font-family="Arial" font-size="26" font-weight="400" fill="#805500"><tspan x="76" y="829">Still open: physical-iPhone demonstration, exported-log calibration, human review, and acceptance.</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../../ios/AIShop/AIShopVision/Sources/AIShopVision" aria-label="Pipeline components" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Pipeline components</tspan></text>
+</a>
+<a href="../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests/PipelineIntegrationSuite.swift" aria-label="Integration suite" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Integration suite</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">15</tspan></text>
+</svg>

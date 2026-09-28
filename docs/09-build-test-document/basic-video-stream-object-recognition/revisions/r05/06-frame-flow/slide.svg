@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">One frame through the pipeline</title>
+<desc id="desc">The order of work is also the order of evidence. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">One frame through the pipeline</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">The order of work is also the order of evidence</tspan></text>
+<rect x="180" y="196" width="1240" height="92" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="237">Receive and sample</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="272">Record whether the decoded frame is eligible</tspan></text>
+<path d="M 797 291 H 803 V 305 H 810 L 800 315 L 790 305 H 797 Z" fill="#17667B"/>
+<rect x="180" y="318" width="1240" height="92" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="359">Measure</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="394">Produce whole-frame and crop distances</tspan></text>
+<path d="M 797 413 H 803 V 427 H 810 L 800 437 L 790 427 H 797 Z" fill="#17667B"/>
+<rect x="180" y="440" width="1240" height="92" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="481">Aggregate</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="516">Open, update, or close a candidate episode</tspan></text>
+<path d="M 797 535 H 803 V 549 H 810 L 800 559 L 790 549 H 797 Z" fill="#17667B"/>
+<rect x="180" y="562" width="1240" height="92" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="603">Retain and record</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="638">Save best-image evidence before logging its episode event</tspan></text>
+<path d="M 797 657 H 803 V 671 H 810 L 800 681 L 790 671 H 797 Z" fill="#17667B"/>
+<rect x="180" y="684" width="1240" height="92" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="725">Publish</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="760">Send the latest score, signal, and metrics to the host</tspan></text>
+<text font-family="Arial" font-size="26" font-weight="400" fill="#506476"><tspan x="76" y="829">First update arrives before EOF. The pipeline never needs a second video pass.</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/CandidateAnalysisPipeline/CandidateAnalysisPipeline.swift" aria-label="Pipeline source" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Pipeline source</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/CandidateAnalysisPipeline/PipelineRecorder.swift" aria-label="Recorder" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Recorder</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests/CandidateAnalysisPipelineTests.swift" aria-label="Pipeline tests" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="1030" y="878">Pipeline tests</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">06</tspan></text>
+</svg>

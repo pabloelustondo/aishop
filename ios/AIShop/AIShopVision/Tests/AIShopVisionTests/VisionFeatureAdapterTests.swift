@@ -6,7 +6,7 @@ import XCTest
 @testable import AIShopVision
 
 final class VisionFeatureAdapterTests: XCTestCase {
-    func testSimulatorFeaturePrintProbe() throws {
+    func testNativeFeaturePrintProbe() throws {
         let adapter = VisionFeatureAdapter()
         let image = try makeImage()
         // Real production adapter and real Vision; never stub this compatibility gate.
@@ -29,6 +29,14 @@ final class VisionFeatureAdapterTests: XCTestCase {
         XCTAssertEqual(loaded.orientation, .right)
         XCTAssertEqual(loaded.image.width, 320)
         XCTAssertEqual(loaded.image.height, 240)
+        let adapter = VisionFeatureAdapter()
+        let actual = try adapter.featurePrint(for: loaded)
+        let correctlyOriented = try adapter.featurePrint(for: OrientedImage(
+            image: loaded.image, orientation: .right
+        ))
+        let incorrectlyOriented = try adapter.featurePrint(for: OrientedImage(image: loaded.image))
+        XCTAssertEqual(try actual.distance(to: correctlyOriented), 0, accuracy: 0.0001)
+        XCTAssertGreaterThan(try actual.distance(to: incorrectlyOriented), 0.0001)
     }
 
     func testRejectsInvalidImage() {

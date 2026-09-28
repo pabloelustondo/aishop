@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">The Vision adapter</title>
+<desc id="desc">A small boundary around Apple's feature-print request. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">The Vision adapter</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">A small boundary around Apple's feature-print request</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="230">01</tspan></text>
+<text font-family="Arial" font-size="32" font-weight="400" fill="#102C43"><tspan x="160" y="230">Preserve encoded reference-image orientation</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="299">02</tspan></text>
+<text font-family="Arial" font-size="32" font-weight="400" fill="#102C43"><tspan x="160" y="299">Use revision 2 with scaleFill preprocessing</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="368">03</tspan></text>
+<text font-family="Arial" font-size="32" font-weight="400" fill="#102C43"><tspan x="160" y="368">Reject incompatible revisions or invalid distances</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="447">Selected Swift lines</tspan></text>
+<rect x="76" y="458" width="1448" height="212" fill="#EEF5F6" stroke="none" stroke-width="0"/>
+<text font-family="Courier New" font-size="26" font-weight="400" fill="#102C43"><tspan x="98" y="492">let request = VNGenerateImageFeaturePrintRequest()</tspan><tspan x="98" y="522.94">request.revision = revision</tspan><tspan x="98" y="553.88">request.imageCropAndScaleOption = .scaleFill</tspan><tspan x="98" y="584.8199999999999">let handler = VNImageRequestHandler(</tspan><tspan x="98" y="615.76">    cgImage: image.image, orientation: image.orientation, options: [:]</tspan><tspan x="98" y="646.7">)</tspan></text>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="772">Vision tests exercise real inference and orientation</tspan></text>
+<text font-family="Arial" font-size="27" font-weight="400" fill="#506476"><tspan x="76" y="818">Underlying inference errors remain visible. There is no mock fallback.</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/VisionFeatureAdapter.swift" aria-label="Vision adapter" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Vision adapter</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests/VisionFeatureAdapterTests.swift" aria-label="Vision tests" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Vision tests</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">12</tspan></text>
+</svg>

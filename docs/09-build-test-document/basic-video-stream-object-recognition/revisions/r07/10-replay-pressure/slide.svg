@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">Replay under load</title>
+<desc id="desc">A bounded queue favors current evidence. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">Replay under load</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">A bounded queue favors current evidence</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="230">01</tspan></text>
+<text font-family="Arial" font-size="32" font-weight="400" fill="#102C43"><tspan x="160" y="230">Deterministic mode waits for the consumer</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="299">02</tspan></text>
+<text font-family="Arial" font-size="32" font-weight="400" fill="#102C43"><tspan x="160" y="299">Paced mode keeps one pending eligible frame</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="368">03</tspan></text>
+<text font-family="Arial" font-size="32" font-weight="400" fill="#102C43"><tspan x="160" y="368">A newer pending frame replaces stale work</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="447">Selected Swift lines</tspan></text>
+<rect x="76" y="458" width="1448" height="181" fill="#EEF5F6" stroke="none" stroke-width="0"/>
+<text font-family="Courier New" font-size="26" font-weight="400" fill="#102C43"><tspan x="98" y="492">let (frames, continuation) = AsyncThrowingStream&lt;VideoFrame, Error&gt;.makeStream(</tspan><tspan x="98" y="522.94">    bufferingPolicy: .bufferingNewest(1))</tspan><tspan x="98" y="553.88">if case .dropped(let old) = continuation.yield(frame) {</tspan><tspan x="98" y="584.8199999999999">    try self.drop(old, observer: observer)</tspan><tspan x="98" y="615.76">}</tspan></text>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="772">Slow-consumer tests force drops and then stop</tspan></text>
+<text font-family="Arial" font-size="27" font-weight="400" fill="#506476"><tspan x="76" y="818">Received = skipped + dropped + analyzed in a successful session.</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/VideoFixtureFrameStream/VideoFixtureFrameStream.swift" aria-label="Stream implementation" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Stream implementation</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests/PipelineIntegrationSuite.swift" aria-label="Integration suite" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Integration suite</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/SessionReportBuilder/SessionReportBuilder.swift" aria-label="Report builder" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="1030" y="878">Report builder</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">10</tspan></text>
+</svg>

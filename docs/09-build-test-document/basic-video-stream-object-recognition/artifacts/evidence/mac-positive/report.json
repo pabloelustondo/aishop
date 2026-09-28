@@ -1,0 +1,28 @@
+{
+  "analyzedFrames" : 56,
+  "droppedFrames" : 0,
+  "episodes" : [
+    {
+      "bestDistance" : 0.3489357531070709,
+      "bestFrameID" : "positive:384000\/15360",
+      "bestTimestamp" : 25,
+      "bestVariant" : "centralCrop",
+      "closeReason" : "gap",
+      "closedAt" : 27.5,
+      "evidenceState" : "possible match",
+      "id" : "banana-probe-episode-1",
+      "lastSupportedAt" : 26,
+      "openedAt" : 24.5,
+      "productID" : "banana-probe",
+      "startedAt" : 24,
+      "supportingFrameCount" : 5
+    }
+  ],
+  "fixtureID" : "positive",
+  "meanLatency" : 0.0074762566967235345,
+  "p95Latency" : 0.008587916614487767,
+  "receivedFrames" : 826,
+  "sessionID" : "06F24660-079C-4AF1-9609-2276B2DF62F0",
+  "skippedFrames" : 770,
+  "streamEnd" : "exhausted"
+}

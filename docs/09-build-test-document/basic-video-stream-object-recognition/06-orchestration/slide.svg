@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">Pipeline orchestration</title>
+<desc id="desc">CandidateAnalysisPipeline. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">Pipeline orchestration</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">CandidateAnalysisPipeline</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="230">01</tspan></text>
+<text font-family="Arial" font-size="32" font-weight="400" fill="#102C43"><tspan x="160" y="230">Start a worker away from the UI thread</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="299">02</tspan></text>
+<text font-family="Arial" font-size="32" font-weight="400" fill="#102C43"><tspan x="160" y="299">Compose stream, scorer, aggregator, and recorder</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="368">03</tspan></text>
+<text font-family="Arial" font-size="32" font-weight="400" fill="#102C43"><tspan x="160" y="368">Finalize once after stop, cancellation, error, or EOF</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="447">Selected Swift lines</tspan></text>
+<rect x="76" y="458" width="1448" height="181" fill="#EEF5F6" stroke="none" stroke-width="0"/>
+<text font-family="Courier New" font-size="26" font-weight="400" fill="#102C43"><tspan x="98" y="492">let worker = Task.detached { try await self.execute(onUpdate: onUpdate) }</tspan><tspan x="98" y="522.94">return try await withTaskCancellationHandler { try await worker.value } onCancel: {</tspan><tspan x="98" y="553.88">    self.stream.cancel()</tspan><tspan x="98" y="584.8199999999999">    worker.cancel()</tspan><tspan x="98" y="615.76">}</tspan></text>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="772">CandidateAnalysisPipelineTests + PipelineIntegrationSuite</tspan></text>
+<text font-family="Arial" font-size="27" font-weight="400" fill="#506476"><tspan x="76" y="818">Real frames arrive before EOF. Reports rebuild from logs. Cancellation finalizes once.</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/CandidateAnalysisPipeline/CandidateAnalysisPipeline.swift" aria-label="Pipeline source" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Pipeline source</tspan></text>
+</a>
+<a href="../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests/CandidateAnalysisPipelineTests.swift" aria-label="Pipeline tests" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Pipeline tests</tspan></text>
+</a>
+<a href="../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests/PipelineIntegrationSuite.swift" aria-label="Integration suite" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="1030" y="878">Integration suite</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">06</tspan></text>
+</svg>

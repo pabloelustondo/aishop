@@ -3,22 +3,35 @@ import SwiftUI
 
 @main
 struct AIShopApp: App {
-    @StateObject private var session: AuthSession
-
-    init() {
-        FirebaseApp.configure()
-        _session = StateObject(wrappedValue: AuthSession())
-    }
+    @StateObject private var startup = AppStartup()
 
     var body: some Scene {
         WindowGroup {
-            content
-                .environmentObject(session)
-                .preferredColorScheme(.dark)
+            Group {
+                #if DEBUG
+                if startup.session == nil { VisionDiagnosticHarness() }
+                #endif
+                if let session = startup.session {
+                    NormalApplicationContent(session: session).environmentObject(session)
+                }
+            }
+            .preferredColorScheme(.dark)
         }
     }
 
-    @ViewBuilder private var content: some View {
+}
+
+@MainActor private final class AppStartup: ObservableObject {
+    let session: AuthSession? = ApplicationBootstrap.normalSession {
+        FirebaseApp.configure()
+        return AuthSession()
+    }
+}
+
+private struct NormalApplicationContent: View {
+    @ObservedObject var session: AuthSession
+
+    @ViewBuilder var body: some View {
         if session.phase == .signedIn {
             launchView
         } else {

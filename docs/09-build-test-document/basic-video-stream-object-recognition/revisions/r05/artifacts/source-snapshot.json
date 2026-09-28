@@ -1,0 +1,204 @@
+{
+  "date": "2026-09-20",
+  "base": "cbc68ad6bf5300b02b6b41584f3d171252eac251",
+  "head": "90a5f8bbc04ae516ca1a73d11b692458cbadd68e",
+  "branch": "codex/ios-vision-sprint-001-target-signal",
+  "files": [
+    {
+      "file": "e2e/ios/calibrate-scorer.rb",
+      "sha256": "0605008090bab9e3ced6ae5f793ab0bb8030f1f921b8c96e67451f83007629ae"
+    },
+    {
+      "file": "e2e/ios/required-tests.txt",
+      "sha256": "3cc10d11cccdb5666a24b9f24ca51e844789c73c97bf84c69427f1d4d608af22"
+    },
+    {
+      "file": "e2e/ios/run.zsh",
+      "sha256": "b79d895b310d20ffc80a2d960a0c9cb7d30d11649f22676b8d20102ae1693988"
+    },
+    {
+      "file": "e2e/ios/verify-app-bundle.rb",
+      "sha256": "37a51e854e56eacfd879633d7719617f716ebadb67751fac06bb905b1508f775"
+    },
+    {
+      "file": "e2e/ios/verify-results.rb",
+      "sha256": "ef7f649653b4a546c03516ae7734d0baeabbcfb6ed54dabdde4142a560862169"
+    },
+    {
+      "file": "ios/AIShop/AIShop.xcodeproj/project.pbxproj",
+      "sha256": "9ea045155ab4e3a84117360d9e70ed3a4cc0435abeb373186bdba8d3d2381e4a"
+    },
+    {
+      "file": "ios/AIShop/AIShop.xcodeproj/xcshareddata/xcschemes/AIShop-VisionDiagnostics.xcscheme",
+      "sha256": "a013ace103291c4b53ddd4e3cda4eef672ced71224a38f7e243bfd9bf48eeda7"
+    },
+    {
+      "file": "ios/AIShop/AIShop/App/AIShopApp.swift",
+      "sha256": "383bf895343cfc2c3d47e0e681278b21162b08c01886c3264a32757e62445320"
+    },
+    {
+      "file": "ios/AIShop/AIShop/App/ApplicationBootstrap.swift",
+      "sha256": "7e24e38873629463b949b07cdb9eabcae4493288e3889b98e79ac447c3697176"
+    },
+    {
+      "file": "ios/AIShop/AIShop/Diagnostics/DiagnosticFixture.swift",
+      "sha256": "69d14a7d1b5e7efed2761afa0d5121c23159950f9a8ac0b600c9851305e6ef30"
+    },
+    {
+      "file": "ios/AIShop/AIShop/Diagnostics/VisionDiagnosticHarness.swift",
+      "sha256": "4b7f132b44980ce81db45d865cb4b9d8f94f14822f5ac54d4d3eaf6339599721"
+    },
+    {
+      "file": "ios/AIShop/AIShop/Diagnostics/VisionHarnessModel.swift",
+      "sha256": "3be0c9476565e68fb81f5e4f4ff49e3b9c87d0976d8d8dd98c182d36dc0c48c2"
+    },
+    {
+      "file": "ios/AIShop/AIShopTests/ApplicationBootstrapTests.swift",
+      "sha256": "b754c39794821619917bed0231624de5ea6ff6c88b95e09f99a1b0b8cf23d242"
+    },
+    {
+      "file": "ios/AIShop/AIShopTests/VisionHarnessModelTests.swift",
+      "sha256": "9d2160430b88b3d8a6e9ac1ff462eefa9d4ed340f3fd608ebbb7c2018ce0f29a"
+    },
+    {
+      "file": "ios/AIShop/AIShopTests/video_with_banana.MOV",
+      "sha256": "3558f16ab27e154dedc79610c647937d629b9cb91c537a261cc806b6710a68c7"
+    },
+    {
+      "file": "ios/AIShop/AIShopTests/video_without_banana.MOV",
+      "sha256": "f5f424f6ad1588e89324f005d463dd557cd9cdeb893b78d4cfdf2c4b5f35e94e"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Package.swift",
+      "sha256": "ad0a9a2a1bfc24af415351ed6af9ed4d8bccc4206c15a189a29446781ba5e654"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/CandidateAnalysisPipeline/CandidateAnalysisPipeline.swift",
+      "sha256": "efb2a4bfce025c1cf112e9260eff7de04fff9ffd6ffac7ec9081e4ea32199015"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/CandidateAnalysisPipeline/PipelineRecorder.swift",
+      "sha256": "777973a4ea232fe76a6a2d918540994937649c510705f34f02c04cacab1ba4bd"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/CandidateEpisodeAggregator/CandidateEpisodeAggregator.swift",
+      "sha256": "79bc38108a92d891233fc26a75627427b896cc405a5a7d7a7aa194b65073315a"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/CandidateScorer/CandidateScorer.swift",
+      "sha256": "cb136872760720d49e021e315676ed8e538e1e916827b5728128519b46c1fdf0"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/CandidateScorer/ScoringProfile.swift",
+      "sha256": "95eb6b24575e2267688ca43efd84999c6fc2bfdf9282ad2e51883dcbd02c6707"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/LocalTargetCatalog/LocalTargetCatalog.swift",
+      "sha256": "7a4da5299deeca597f5901b7b334523dda6a7168554350d81447c8f7b63166c8"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/SessionLog/LogValue.swift",
+      "sha256": "f15030245876e3d73255e9b39818a871b5197bd40d83f46d3918706328c1ac11"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/SessionLog/SessionLog.swift",
+      "sha256": "94607ed5160eafa29dbb680333f485b9f82302dc2cc73be93ca8e6caee346033"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/SessionReportBuilder/RetainedImageStore.swift",
+      "sha256": "1b23b56debb26aa17e10076d2e611fb8a56c9d940340aff356507408f1a08aef"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/SessionReportBuilder/SessionReportBuilder.swift",
+      "sha256": "f88519d00a091cd85304c1a05c3b44bf7aeeba93e0315c152be86c697de39a89"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/VideoFixtureFrameStream/FrameStream.swift",
+      "sha256": "e3c18f1b5c2683f98c76d9e8605b3872e631e0e17092a9000a989f26b3abbb46"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/VideoFixtureFrameStream/VideoFixtureFrameStream.swift",
+      "sha256": "c8c93fb424094b936927cc6c46a1908e5c189080d679b7f4a07e7c40cc37b108"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVision/VisionFeatureAdapter.swift",
+      "sha256": "cd7d7f727d57b362e6b992814d4d183efda21891d0cc975e737f1ed50811e510"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVisionEvaluate/main.swift",
+      "sha256": "3ce6b0d266ae041fe5ee36f1a6a7620be13f11de1a5be8fac05557b8fe1dd493"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Sources/AIShopVisionEvaluation/FixtureEvaluator.swift",
+      "sha256": "2419873d93284222a7231a6d5463c6a619bd8783a8673c2d976228bd731a5c7e"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/CandidateAnalysisPipelineTests.swift",
+      "sha256": "6bf74322dc6e24cc1488c1d2bf4bc0cf9a95d2e7c95493d5717578ef5288dcb2"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/CandidateEpisodeAggregatorTests.swift",
+      "sha256": "b5ceafdab0061d76f6e28c830803437a7c0bba76b566f502e38436b9d65fd2f4"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/CandidateScorerTests.swift",
+      "sha256": "6faaab3588f4e9266c21d141d272fbc654f2c832f15717b58fb1f6954e5b9df9"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/FixtureEvaluatorTests.swift",
+      "sha256": "4e943d6c44106f5013ef08a62c1f55cab5c187b7be566b934026bf86a4caf9b4"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/FixtureResources.swift",
+      "sha256": "d940c109852eb7578afd4d357afd99136fb5ca7d23969c8d6cd33a84225744dc"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/FixtureResourcesTests.swift",
+      "sha256": "101dffeed0d6f210ee714cb57db55241ecca35c3dfbf1b2afbd267aa5a9c1816"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/LocalTargetCatalogTests.swift",
+      "sha256": "7cf80e6cf27aa3792129c6a22ce61a0fc6cecbef63ea6e2314d32e4cfc29b869"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/PipelineIntegrationSuite.swift",
+      "sha256": "c57736deded85d521b378f837ab6f31aefd1fd300e9f400cf8d86d14cbd68a5d"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/Resources/annotations.json",
+      "sha256": "9450153eec934e619a58e300d550fe9415bdcd194ee63048f0517d16c8f601aa"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/Resources/banana.JPG",
+      "sha256": "bfa0e47d6025a274bf34da372a8c6c0d7d39893838dd25fe42529fe1139ebb7a"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/Resources/video_with_banana_trimmed.mov",
+      "sha256": "1f4dfcf6f3e02cd370c8a71fdec0ca9bf5a171a7df18812b7b8d8aae26ab4648"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/Resources/video_without_banana_trimmed.mov",
+      "sha256": "93fda716a48cc5e09be36284da95973d5e6dbfcb49d6fbf748fb958a782c9c01"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/SessionLogTests.swift",
+      "sha256": "913d9bace12f4e175daf69ff19d4cdc5359be13a89e3335eaa730977a04ed30a"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/SessionReportBuilderTests.swift",
+      "sha256": "a0e586b2bf1ea44d22e5077c10f4fc381bd89a8c7fd1b6b2088d07e7fec1d0b9"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/VideoFixtureFrameStreamTests.swift",
+      "sha256": "f2c1bd5a5bc4ba6f23ed2d41d5257d24d7e891287b83f162345160b7833266b7"
+    },
+    {
+      "file": "ios/AIShop/AIShopVision/Tests/AIShopVisionTests/VisionFeatureAdapterTests.swift",
+      "sha256": "6a66b14f1349e2af191bd4ebf7a93a29fd04cc170d24cb2e63bae3f960f28cdb"
+    },
+    {
+      "file": "ios/AIShop/scripts/copy-vision-fixtures.sh",
+      "sha256": "52bb820c19d86ed3fd81478cfca7fc8e5d826b0f5e9495c2498d8a1dd772efb5"
+    }
+  ]
+}

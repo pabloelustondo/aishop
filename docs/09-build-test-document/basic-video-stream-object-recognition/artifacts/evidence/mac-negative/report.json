@@ -1,0 +1,14 @@
+{
+  "analyzedFrames" : 26,
+  "droppedFrames" : 0,
+  "episodes" : [
+
+  ],
+  "fixtureID" : "negative",
+  "meanLatency" : 0.007700858964548947,
+  "p95Latency" : 0.008692624978721142,
+  "receivedFrames" : 390,
+  "sessionID" : "8BCF2397-530F-4455-9E25-6235F2C031CF",
+  "skippedFrames" : 364,
+  "streamEnd" : "exhausted"
+}

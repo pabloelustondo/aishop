@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">One ordered evidence path</title>
+<desc id="desc">PipelineRecorder connects the log and the live report. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">One ordered evidence path</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">PipelineRecorder connects the log and the live report</tspan></text>
+<rect x="180" y="212" width="1240" height="106" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="253">Concurrent callbacks</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="288">Stream events and analysis results may arrive from different tasks</tspan></text>
+<path d="M 797 321 H 803 V 335 H 810 L 800 345 L 790 335 H 797 Z" fill="#17667B"/>
+<rect x="180" y="360" width="1240" height="106" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="401">Recorder lock</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="436">Serialize each complete append-and-consume operation</tspan></text>
+<path d="M 797 469 H 803 V 483 H 810 L 800 493 L 790 483 H 797 Z" fill="#17667B"/>
+<rect x="180" y="508" width="1240" height="106" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="549">Session log</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="584">Assign sequence and write the JSONL event</tspan></text>
+<path d="M 797 617 H 803 V 631 H 810 L 800 641 L 790 631 H 797 Z" fill="#17667B"/>
+<rect x="180" y="656" width="1240" height="106" fill="#EEF5F6" stroke="#D0DBE1" stroke-width="1"/>
+<text font-family="Arial" font-size="32" font-weight="700" fill="#102C43" text-anchor="middle"><tspan x="800" y="697">Report builder</tspan></text>
+<text font-family="Arial" font-size="25" font-weight="400" fill="#506476" text-anchor="middle"><tspan x="800" y="732">Consume that same event before releasing the lock</tspan></text>
+<text font-family="Arial" font-size="26" font-weight="400" fill="#506476"><tspan x="76" y="829">One ordering rule prevents the live report from drifting from the log.</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/CandidateAnalysisPipeline/PipelineRecorder.swift" aria-label="Recorder" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Recorder</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/SessionLog/SessionLog.swift" aria-label="Log writer" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Log writer</tspan></text>
+</a>
+<a href="../../../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/SessionReportBuilder/SessionReportBuilder.swift" aria-label="Report builder" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="1030" y="878">Report builder</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">17</tspan></text>
+</svg>

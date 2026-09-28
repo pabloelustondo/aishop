@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900" width="1600" height="900" style="max-width:100%;height:auto;display:block" role="img" aria-labelledby="title desc">
+<title id="title">Incremental frame delivery</title>
+<desc id="desc">VideoFixtureFrameStream. Read in top-to-bottom order. Speaker notes are in the paired Markdown file.</desc>
+<rect width="1600" height="900" fill="#FFFFFF"/>
+<text font-family="Arial" font-size="50" font-weight="700" fill="#102C43"><tspan x="76" y="92">Incremental frame delivery</tspan></text>
+<text font-family="Arial" font-size="28" font-weight="400" fill="#506476"><tspan x="78" y="146">VideoFixtureFrameStream</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="230">01</tspan></text>
+<text font-family="Arial" font-size="32" font-weight="400" fill="#102C43"><tspan x="160" y="230">Decode one video sample and keep its presentation timestamp</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="299">02</tspan></text>
+<text font-family="Arial" font-size="32" font-weight="400" fill="#102C43"><tspan x="160" y="299">Select eligible slots at 2 frames per second</tspan></text>
+<text font-family="Arial" font-size="30" font-weight="700" fill="#17667B"><tspan x="76" y="368">03</tspan></text>
+<text font-family="Arial" font-size="32" font-weight="400" fill="#102C43"><tspan x="160" y="368">Replay holds one active consumer and one replaceable pending frame</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="447">Selected Swift lines</tspan></text>
+<rect x="76" y="458" width="1448" height="181" fill="#EEF5F6" stroke="none" stroke-width="0"/>
+<text font-family="Courier New" font-size="26" font-weight="400" fill="#102C43"><tspan x="98" y="492">let (frames, continuation) = AsyncThrowingStream&lt;VideoFrame, Error&gt;.makeStream(</tspan><tspan x="98" y="522.94">    bufferingPolicy: .bufferingNewest(1))</tspan><tspan x="98" y="553.88">if case .dropped(let old) = continuation.yield(frame) {</tspan><tspan x="98" y="584.8199999999999">    try self.drop(old, observer: observer)</tspan><tspan x="98" y="615.76">}</tspan></text>
+<text font-family="Arial" font-size="29" font-weight="700" fill="#17667B"><tspan x="76" y="772">VideoFixtureFrameStreamTests</tspan></text>
+<text font-family="Arial" font-size="27" font-weight="400" fill="#506476"><tspan x="76" y="818">Both videos repeat with stable frame IDs. Slow replay drops stale work and stops cleanly.</tspan></text>
+<text font-family="Arial" font-size="23" font-weight="400" fill="#506476"><tspan x="76" y="878">Code:</tspan></text>
+<a href="../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/VideoFixtureFrameStream/VideoFixtureFrameStream.swift" aria-label="Frame stream" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="170" y="878">Frame stream</tspan></text>
+</a>
+<a href="../../../../ios/AIShop/AIShopVision/Sources/AIShopVision/VideoFixtureFrameStream/FrameStream.swift" aria-label="Stream contract" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="600" y="878">Stream contract</tspan></text>
+</a>
+<a href="../../../../ios/AIShop/AIShopVision/Tests/AIShopVisionTests/VideoFixtureFrameStreamTests.swift" aria-label="Streaming tests" style="cursor:pointer">
+<text text-decoration="underline" font-family="Arial" font-size="23" font-weight="400" fill="#17667B"><tspan x="1030" y="878">Streaming tests</tspan></text>
+</a>
+<text font-family="Arial" font-size="18" font-weight="400" fill="#506476"><tspan x="1522" y="868">07</tspan></text>
+</svg>

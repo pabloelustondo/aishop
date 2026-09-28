@@ -1,0 +1,143 @@
+AIShopVision macOS gate; evidence: /var/folders/4w/sskt3tp10hbf7pjcc2d9lm_c0000gn/T//aishop-vision-gate.WKGEA0
+warning: '--skip-update' option is deprecated and will be removed in a future release
+Building for debugging...
+[Pre-planning 1 / 212]
+[59 / 107]
+[60 / 108] AIShopVision
+[70 / 191]
+[80 / 191]
+[83 / 191]
+[90 / 191]
+[94 / 191]
+[100 / 191]
+[105 / 191]
+[106 / 191]
+[117 / 191]
+[124 / 191]
+[128 / 191]
+[129 / 191]
+[143 / 191] AIShopVision
+[150 / 192] AIShopVisionEvaluation
+[152 / 194] AIShopVisionEvaluation
+[164 / 196] AIShopVisionEvaluate
+[168 / 200] AIShopVisionEvaluate
+[175 / 200] AIShopVisionEvaluate-product
+[177 / 200] AIShopVision
+[178 / 200] AIShopVision
+[180 / 200] AIShopVision
+[188 / 201] AIShopVisionEvaluate-product
+[190 / 201] AIShopVisionTests-product
+[199 / 229]
+[202 / 229]
+[203 / 229]
+[218 / 229] AIShopVisionTests-product
+[223 / 229] AIShopVisionTests-product
+[225 / 229] AIShopVisionTests-product
+Build complete! (9.95 secs.)
+Test Suite 'All tests' started at 2026-09-20 15:58:32.598.
+Test Suite 'AIShopVisionTests.xctest' started at 2026-09-20 15:58:32.600.
+Test Suite 'CandidateAnalysisPipelineTests' started at 2026-09-20 15:58:32.600.
+Test Case '-[AIShopVisionTests.CandidateAnalysisPipelineTests testRealPipelineStartsBeforeEOFAndReplaysItsReport]' started.
+Test Case '-[AIShopVisionTests.CandidateAnalysisPipelineTests testRealPipelineStartsBeforeEOFAndReplaysItsReport]' passed (1.550 seconds).
+Test Case '-[AIShopVisionTests.CandidateAnalysisPipelineTests testStopFinalizesOnceAndErrorsRemainFailures]' started.
+Test Case '-[AIShopVisionTests.CandidateAnalysisPipelineTests testStopFinalizesOnceAndErrorsRemainFailures]' passed (0.058 seconds).
+Test Suite 'CandidateAnalysisPipelineTests' passed at 2026-09-20 15:58:34.208.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 1.608 (1.609) seconds
+Test Suite 'CandidateEpisodeAggregatorTests' started at 2026-09-20 15:58:34.208.
+Test Case '-[AIShopVisionTests.CandidateEpisodeAggregatorTests testConsecutiveHitsBestFrameAndEarliestTie]' started.
+Test Case '-[AIShopVisionTests.CandidateEpisodeAggregatorTests testConsecutiveHitsBestFrameAndEarliestTie]' passed (0.000 seconds).
+Test Case '-[AIShopVisionTests.CandidateEpisodeAggregatorTests testExactThresholdGapAndRepeatedEpisode]' started.
+Test Case '-[AIShopVisionTests.CandidateEpisodeAggregatorTests testExactThresholdGapAndRepeatedEpisode]' passed (0.000 seconds).
+Test Case '-[AIShopVisionTests.CandidateEpisodeAggregatorTests testMissedSlotAndUnsupportedFrameResetOpeningStreak]' started.
+Test Case '-[AIShopVisionTests.CandidateEpisodeAggregatorTests testMissedSlotAndUnsupportedFrameResetOpeningStreak]' passed (0.000 seconds).
+Test Suite 'CandidateEpisodeAggregatorTests' passed at 2026-09-20 15:58:34.209.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.000 (0.000) seconds
+Test Suite 'CandidateScorerTests' started at 2026-09-20 15:58:34.209.
+Test Case '-[AIShopVisionTests.CandidateScorerTests testRealFixtureScoresAreFiniteAndRecorded]' started.
+Test Case '-[AIShopVisionTests.CandidateScorerTests testRealFixtureScoresAreFiniteAndRecorded]' passed (1.784 seconds).
+Test Suite 'CandidateScorerTests' passed at 2026-09-20 15:58:35.993.
+	 Executed 1 test, with 0 failures (0 unexpected) in 1.784 (1.784) seconds
+Test Suite 'FixtureEvaluatorTests' started at 2026-09-20 15:58:35.993.
+Test Case '-[AIShopVisionTests.FixtureEvaluatorTests testFixedZoneBoundariesAndGaps]' started.
+Test Case '-[AIShopVisionTests.FixtureEvaluatorTests testFixedZoneBoundariesAndGaps]' passed (0.000 seconds).
+Test Case '-[AIShopVisionTests.FixtureEvaluatorTests testRejectsMissingOrIncompleteEvidence]' started.
+Test Case '-[AIShopVisionTests.FixtureEvaluatorTests testRejectsMissingOrIncompleteEvidence]' passed (0.000 seconds).
+Test Suite 'FixtureEvaluatorTests' passed at 2026-09-20 15:58:35.994.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.001 (0.001) seconds
+Test Suite 'FixtureResourcesTests' started at 2026-09-20 15:58:35.994.
+Test Case '-[AIShopVisionTests.FixtureResourcesTests testAnnotationsAreBundledAndOriginalsAreExcluded]' started.
+Test Case '-[AIShopVisionTests.FixtureResourcesTests testAnnotationsAreBundledAndOriginalsAreExcluded]' passed (0.000 seconds).
+Test Case '-[AIShopVisionTests.FixtureResourcesTests testBothTrimmedVideosDecode]' started.
+Test Case '-[AIShopVisionTests.FixtureResourcesTests testBothTrimmedVideosDecode]' passed (0.047 seconds).
+Test Case '-[AIShopVisionTests.FixtureResourcesTests testReferenceIdentityAndOrientation]' started.
+Test Case '-[AIShopVisionTests.FixtureResourcesTests testReferenceIdentityAndOrientation]' passed (0.004 seconds).
+Test Suite 'FixtureResourcesTests' passed at 2026-09-20 15:58:36.045.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.051 (0.051) seconds
+Test Suite 'LocalTargetCatalogTests' started at 2026-09-20 15:58:36.045.
+Test Case '-[AIShopVisionTests.LocalTargetCatalogTests testMissingReferenceFailsWithoutFallback]' started.
+Test Case '-[AIShopVisionTests.LocalTargetCatalogTests testMissingReferenceFailsWithoutFallback]' passed (0.000 seconds).
+Test Case '-[AIShopVisionTests.LocalTargetCatalogTests testRealTargetLoadsOnceWithStableIdentity]' started.
+Test Case '-[AIShopVisionTests.LocalTargetCatalogTests testRealTargetLoadsOnceWithStableIdentity]' passed (0.024 seconds).
+Test Suite 'LocalTargetCatalogTests' passed at 2026-09-20 15:58:36.069.
+	 Executed 2 tests, with 0 failures (0 unexpected) in 0.024 (0.024) seconds
+Test Suite 'PipelineIntegrationSuite' started at 2026-09-20 15:58:36.069.
+Test Case '-[AIShopVisionTests.PipelineIntegrationSuite testCalibrationRejectsTamperingAndReportsDecisionDisagreement]' started.
+Test Case '-[AIShopVisionTests.PipelineIntegrationSuite testCalibrationRejectsTamperingAndReportsDecisionDisagreement]' passed (2.128 seconds).
+Test Case '-[AIShopVisionTests.PipelineIntegrationSuite testPacedPipelineDropsStaleWorkAndStopsCleanly]' started.
+Test Case '-[AIShopVisionTests.PipelineIntegrationSuite testPacedPipelineDropsStaleWorkAndStopsCleanly]' passed (3.544 seconds).
+Test Case '-[AIShopVisionTests.PipelineIntegrationSuite testProductionPipelineBothFixturesAndRepeatability]' started.
+Test Case '-[AIShopVisionTests.PipelineIntegrationSuite testProductionPipelineBothFixturesAndRepeatability]' passed (4.160 seconds).
+Test Case '-[AIShopVisionTests.PipelineIntegrationSuite testRealPipelineClosesOpenEpisodeAtEOFAndStop]' started.
+Test Case '-[AIShopVisionTests.PipelineIntegrationSuite testRealPipelineClosesOpenEpisodeAtEOFAndStop]' passed (2.648 seconds).
+Test Case '-[AIShopVisionTests.PipelineIntegrationSuite testTaskCancellationFinalizesExactlyOnce]' started.
+Test Case '-[AIShopVisionTests.PipelineIntegrationSuite testTaskCancellationFinalizesExactlyOnce]' passed (0.104 seconds).
+Test Suite 'PipelineIntegrationSuite' passed at 2026-09-20 15:58:48.654.
+	 Executed 5 tests, with 0 failures (0 unexpected) in 12.584 (12.585) seconds
+Test Suite 'SessionLogTests' started at 2026-09-20 15:58:48.654.
+Test Case '-[AIShopVisionTests.SessionLogTests testMissingScoreOrSummaryFailsValidation]' started.
+Test Case '-[AIShopVisionTests.SessionLogTests testMissingScoreOrSummaryFailsValidation]' passed (0.001 seconds).
+Test Case '-[AIShopVisionTests.SessionLogTests testOrderedJSONLMatchesSystemSink]' started.
+Test Case '-[AIShopVisionTests.SessionLogTests testOrderedJSONLMatchesSystemSink]' passed (0.001 seconds).
+Test Case '-[AIShopVisionTests.SessionLogTests testRejectsCorruptTruncatedAndReorderedLogs]' started.
+Test Case '-[AIShopVisionTests.SessionLogTests testRejectsCorruptTruncatedAndReorderedLogs]' passed (0.001 seconds).
+Test Case '-[AIShopVisionTests.SessionLogTests testRejectsOverwriteAndWriteFailure]' started.
+Test Case '-[AIShopVisionTests.SessionLogTests testRejectsOverwriteAndWriteFailure]' passed (0.000 seconds).
+Test Suite 'SessionLogTests' passed at 2026-09-20 15:58:48.656.
+	 Executed 4 tests, with 0 failures (0 unexpected) in 0.003 (0.003) seconds
+Test Suite 'SessionReportBuilderTests' started at 2026-09-20 15:58:48.656.
+Test Case '-[AIShopVisionTests.SessionReportBuilderTests testLiveAndLogRebuiltReportsMatchWithSeparateImages]' started.
+Test Case '-[AIShopVisionTests.SessionReportBuilderTests testLiveAndLogRebuiltReportsMatchWithSeparateImages]' passed (0.118 seconds).
+Test Suite 'SessionReportBuilderTests' passed at 2026-09-20 15:58:48.775.
+	 Executed 1 test, with 0 failures (0 unexpected) in 0.118 (0.118) seconds
+Test Suite 'VideoFixtureFrameStreamTests' started at 2026-09-20 15:58:48.775.
+Test Case '-[AIShopVisionTests.VideoFixtureFrameStreamTests testBothVideosStreamIncrementallyAndRepeatDeterministically]' started.
+Test Case '-[AIShopVisionTests.VideoFixtureFrameStreamTests testBothVideosStreamIncrementallyAndRepeatDeterministically]' passed (3.213 seconds).
+Test Case '-[AIShopVisionTests.VideoFixtureFrameStreamTests testRejectsInvalidRateAndUnreadableVideo]' started.
+Test Case '-[AIShopVisionTests.VideoFixtureFrameStreamTests testRejectsInvalidRateAndUnreadableVideo]' passed (0.003 seconds).
+Test Case '-[AIShopVisionTests.VideoFixtureFrameStreamTests testReplayDropsStaleFramesAndStopsWithoutLeakingWork]' started.
+Test Case '-[AIShopVisionTests.VideoFixtureFrameStreamTests testReplayDropsStaleFramesAndStopsWithoutLeakingWork]' passed (0.512 seconds).
+Test Suite 'VideoFixtureFrameStreamTests' passed at 2026-09-20 15:58:52.503.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 3.728 (3.728) seconds
+Test Suite 'VisionFeatureAdapterTests' started at 2026-09-20 15:58:52.503.
+Test Case '-[AIShopVisionTests.VisionFeatureAdapterTests testLoaderPreservesEXIFOrientation]' started.
+Test Case '-[AIShopVisionTests.VisionFeatureAdapterTests testLoaderPreservesEXIFOrientation]' passed (0.014 seconds).
+Test Case '-[AIShopVisionTests.VisionFeatureAdapterTests testNativeFeaturePrintProbe]' started.
+Test Case '-[AIShopVisionTests.VisionFeatureAdapterTests testNativeFeaturePrintProbe]' passed (0.007 seconds).
+Test Case '-[AIShopVisionTests.VisionFeatureAdapterTests testRejectsInvalidImage]' started.
+Test Case '-[AIShopVisionTests.VisionFeatureAdapterTests testRejectsInvalidImage]' passed (0.000 seconds).
+Test Suite 'VisionFeatureAdapterTests' passed at 2026-09-20 15:58:52.525.
+	 Executed 3 tests, with 0 failures (0 unexpected) in 0.021 (0.022) seconds
+Test Suite 'AIShopVisionTests.xctest' passed at 2026-09-20 15:58:52.525.
+	 Executed 29 tests, with 0 failures (0 unexpected) in 19.923 (19.925) seconds
+Test Suite 'All tests' passed at 2026-09-20 15:58:52.525.
+	 Executed 29 tests, with 0 failures (0 unexpected) in 19.923 (19.927) seconds
+INTEGRATION_EVIDENCE positive /var/folders/4w/sskt3tp10hbf7pjcc2d9lm_c0000gn/T//aishop-vision-gate.WKGEA0/positive-run-1-8BA6EFF3-3CEA-46C0-82E7-F4555FC540BB/session.jsonl
+INTEGRATION_EVIDENCE positive /var/folders/4w/sskt3tp10hbf7pjcc2d9lm_c0000gn/T//aishop-vision-gate.WKGEA0/positive-run-2-4343219C-04E3-4374-9AB2-3DA0270BD4EF/session.jsonl
+INTEGRATION_EVIDENCE negative /var/folders/4w/sskt3tp10hbf7pjcc2d9lm_c0000gn/T//aishop-vision-gate.WKGEA0/negative-run-1-EB80ABCC-ABD1-4E43-8C39-3E0F4DA95EA4/session.jsonl
+INTEGRATION_EVIDENCE negative /var/folders/4w/sskt3tp10hbf7pjcc2d9lm_c0000gn/T//aishop-vision-gate.WKGEA0/negative-run-2-A5BE0B54-3034-4884-836E-C302234797D9/session.jsonl
+◇ Test run started.
+↳ Testing Library Version: 2073
+↳ Target Platform: arm64e-apple-macos14.0
+✔ Test run with 0 tests in 0 suites passed after 0.001 seconds.
+Verified 29 executed tests, no skips; 29 required checks present
+PASS: macOS pipeline tests; evidence: /var/folders/4w/sskt3tp10hbf7pjcc2d9lm_c0000gn/T//aishop-vision-gate.WKGEA0

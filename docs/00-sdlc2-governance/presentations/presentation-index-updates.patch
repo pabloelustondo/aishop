@@ -1,0 +1,107 @@
+diff --git a/docs/00-sdlc2-governance/README.md b/docs/00-sdlc2-governance/README.md
+--- a/docs/00-sdlc2-governance/README.md
++++ b/docs/00-sdlc2-governance/README.md
+@@ -1,6 +1,6 @@
++AI-MODIFIED - 2026-09-21T15:57Z
++
+ # SDLC2-Governance
+-
+-HumanReviewerInitials: PME
+ 
+ This folder contains the mandatory operating rules for AI Shop's SDLC2 workflow.
+ 
+@@ -12,11 +12,15 @@
+ - [Environment Separation](environment-separation.md) requires every project to declare its environments before deployment and binds every deployment, evidence record, and agent authority to one named environment.
+ - [Diagram Readability](diagram-readability.md) makes vertically scrolling,
+   readable diagrams the default and prevents horizontal-scroll dependence.
+-- [Presentations](presentations/README.md) defines the shared form of anything
+-  explained to Pablo on slides: a visual plus speaker notes, with fine print.
+-- [Good Sprint Walkthroughs](good-sprint-walkthroughs/README.md) defines the
+-  Walkthrough, the type of presentation an implementing agent prepares when a
+-  sprint awaits review.
++- [Technical Presentation Standards](presentations/visual-code-review.md) defines
++  pictures, vertical UML, human understanding, and the three presentation purposes.
++  It links the selected sample and the guides for design and code review.
++- [Technical Walkthroughs](presentations/technical-walkthroughs.md) adds visible
++  code navigation, source documentation, and verifiable implementation evidence.
++- [Existing-Code Design](presentations/existing-code-design.md) separates current
++  behavior, proposed fixes, affected files, and verification.
++- [Earlier Walkthrough Patterns](good-sprint-walkthroughs/README.md) remains a
++  supporting collection of examples.
+ 
+ Agents must read the relevant rule before changing documentation, planning a sprint, implementing code, reviewing work, or preparing a commit or release.
+ 
+diff --git a/docs/00-sdlc2-governance/presentations/README.md b/docs/00-sdlc2-governance/presentations/README.md
+--- a/docs/00-sdlc2-governance/presentations/README.md
++++ b/docs/00-sdlc2-governance/presentations/README.md
+@@ -1,23 +1,20 @@
++AI-MODIFIED - 2026-09-21T15:57Z
++
+ # Presentations
+ 
+-Status: PROPOSAL. It becomes a rule when Pablo commits it and links it from the
+-[governance index](../README.md). It builds on the
+-[Reviewability proposal](../reviewability-proposal.md) and on
+-[Diagram Readability](../diagram-readability.md).
++Start with [Technical presentation standards](visual-code-review.md).
++They define the shared visual and human-reading principles and the three purposes:
++general explanation/design before code, implemented-code walkthrough, and design
++for a change to existing code.
+ 
+-"Presentation" is the parent word: any set of slides prepared for Pablo in the
+-shared form, whatever its purpose. A type of presentation adds a purpose and the
+-content that purpose requires. The first defined type is the
+-[Walkthrough](../good-sprint-walkthroughs/README.md).
++Read the common standards and the guide for the requested purpose. The
++[selected sample](samples/README.md) demonstrates the intended experience.
+ 
+-This folder is an untyped presentation describing the state of governance on
+-2026-09-20. It follows its own rules.
++## Earlier patterns
+ 
+-## For agents
+-
+-Read every slide and its notes here before preparing any presentation. Then read
+-the rule for the type you were asked for. If the type has no rule, follow this
+-folder only, and say that the type is undefined.
++The chapter files below explain the original presentation model. Use them as
++supporting patterns where consistent with the current standards. Code navigation
++belongs visibly beside the concept being reviewed; it is not confined to fine print.
+ 
+ ## Slides
+ 
+diff --git a/docs/00-sdlc2-governance/good-sprint-walkthroughs/README.md b/docs/00-sdlc2-governance/good-sprint-walkthroughs/README.md
+--- a/docs/00-sdlc2-governance/good-sprint-walkthroughs/README.md
++++ b/docs/00-sdlc2-governance/good-sprint-walkthroughs/README.md
+@@ -1,22 +1,15 @@
++AI-MODIFIED - 2026-09-21T15:57Z
++
+ # Good Sprint Walkthroughs
+ 
+-Status: PROPOSAL. It becomes a rule when Pablo commits it and links it from the
+-[governance index](../README.md).
++Use the [current walkthrough standard](../presentations/technical-walkthroughs.md)
++and its shared presentation principles. The [selected example](../presentations/samples/README.md)
++shows the intended experience for human review.
+ 
+-A Walkthrough is a type of [Presentation](../presentations/README.md). Read that
+-rule first: the slide unit, the line budget, the shared checks, and the
+-lifecycle are defined there and are not repeated here.
+-
+-This folder is a rule and an example at once. It defines the walkthrough deck an
+-implementing agent prepares when a sprint is implemented and waiting for review.
+-It is itself built as such a deck.
+-
+-## For agents
+-
+-Read every slide and its notes before preparing a walkthrough. Slides 1 to 7 are
+-the rule. Slides 8 to 16 are patterns, each shown with a real example from iPhone
+-Sprint 001. Slide 17 is the process. Examples show the pattern; they are not the
+-record of that sprint, and their links point into its working tree.
++The patterns below remain useful examples. Their order and count are not mandatory.
++Follow the current standard when earlier wording confines source details to notes:
++folder/file roles and starting symbols must also be visible beside relevant concepts.
++Examples are not the current record of a sprint; verify the actual source and evidence.
+ 
+ ## Slides
+ 
